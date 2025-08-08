@@ -1,0 +1,122 @@
+<!-- filepath: /Users/dealshare/Documents/GitHub/kamna-erp/erp/templates/catalog_items_create.html -->
+<div class="container" style="max-width:820px;">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 mb-0">Create Item</h2>
+    <a href="/app/catalog/items" class="btn btn-outline-secondary btn-sm">Back to List</a>
+  </div>
+  <div class="card-like">
+    <div id="alert" class="alert alert-danger py-2 px-3" style="display:none;"></div>
+    <form id="itemForm">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <div class="mb-2">
+            <label class="form-label">Name</label>
+            <input id="name" class="form-control" required>
+          </div>
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label">Product Type</label>
+              <select id="ptype" class="form-select">
+                <option value="GOODS" selected>GOODS</option>
+                <option value="SERVICE">SERVICE</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Status</label>
+              <select id="status" class="form-select">
+                <option value="DRAFT" selected>DRAFT</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="ARCHIVED">ARCHIVED</option>
+              </select>
+            </div>
+          </div>
+          <div class="row g-2 mt-1">
+            <div class="col-md-4"><div class="form-check"><input id="for_sales" class="form-check-input" type="checkbox"><label class="form-check-label" for="for_sales">For Sales</label></div></div>
+            <div class="col-md-4"><div class="form-check"><input id="for_purchase" class="form-check-input" type="checkbox"><label class="form-check-label" for="for_purchase">For Purchase</label></div></div>
+            <div class="col-md-4"><div class="form-check"><input id="for_mfg" class="form-check-input" type="checkbox"><label class="form-check-label" for="for_mfg">For Manufacture</label></div></div>
+          </div>
+          <div class="row g-2 mt-1">
+            <div class="col-md-6"><label class="form-label">Brand</label><select id="brand" class="form-select"><option value="">— None —</option></select></div>
+            <div class="col-md-6"><label class="form-label">Category (child)</label><select id="category" class="form-select"><option value="">— None —</option></select></div>
+          </div>
+          <div class="row g-2 mt-1">
+            <div class="col-md-6"><label class="form-label">UoM</label><select id="uom" class="form-select"><option value="">— Select —</option></select></div>
+            <div class="col-md-6"><label class="form-label">Tax Rate</label><select id="tax" class="form-select"><option value="">— None —</option></select></div>
+          </div>
+          <div class="mt-2">
+            <label class="form-label">Description</label>
+            <textarea id="desc" rows="4" class="form-control"></textarea>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Image</label>
+          <div id="imgPreview" class="ratio ratio-1x1 bg-light rounded d-flex align-items-center justify-content-center" style="max-width:220px;">
+            <span class="text-muted">No Image</span>
+          </div>
+          <input id="image" type="file" accept="image/*" class="form-control mt-2">
+        </div>
+      </div>
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <a href="/app/catalog/items" class="btn btn-outline-secondary">Cancel</a>
+        <button class="btn btn-primary" type="submit">Create</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const API = '/api/catalog/items';
+  const API_BRANDS = '/api/catalog/brands';
+  const API_CATS = '/api/catalog/categories';
+  const API_UOMS = '/api/catalog/uoms';
+  const API_TAX = '/api/catalog/tax-rates';
+
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function apiFetch(url, options={}){ const headers = Object.assign({ 'Authorization': `Bearer ${token()}` }, options.headers||{}); const res = await fetch(url, { ...options, headers }); if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); } return res; }
+
+  function setPreview(file){ if(!file){ document.getElementById('imgPreview').innerHTML='<span class="text-muted">No Image</span>'; return; } const url = URL.createObjectURL(file); document.getElementById('imgPreview').innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">`; }
+
+  async function loadLookups(){
+    const [bres, cres, ures, tres] = await Promise.all([
+      apiFetch(`${API_BRANDS}/`),
+      apiFetch(`${API_CATS}/?parent__isnull=false&active=true`),
+      apiFetch(`${API_UOMS}/`),
+      apiFetch(`${API_TAX}/`),
+    ]);
+    const brands = (await bres.json()).results || [];
+    const cats = (await cres.json()).results || [];
+    const uoms = (await ures.json()).results || [];
+    const taxes = (await tres.json()).results || [];
+    document.getElementById('brand').innerHTML = '<option value="">— None —</option>' + brands.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+    document.getElementById('category').innerHTML = '<option value="">— None —</option>' + cats.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    document.getElementById('uom').innerHTML = '<option value="">— Select —</option>' + uoms.map(u=>`<option value="${u.id}">${u.code} - ${u.name}</option>`).join('');
+    document.getElementById('tax').innerHTML = '<option value="">— None —</option>' + taxes.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  }
+
+  function guard(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; return; } fetch('/api/auth/me/', { headers: { Authorization: `Bearer ${t}` }}).then(r=>{ if(r.status===401) window.location='/'; }); }
+
+  function payloadFromForm(){ const pt = document.getElementById('ptype').value; const cat = document.getElementById('category').value; const uom = document.getElementById('uom').value; const p = { name: document.getElementById('name').value.trim(), product_type: pt, status: document.getElementById('status').value, for_sales: document.getElementById('for_sales').checked, for_purchase: document.getElementById('for_purchase').checked, for_manufacture: document.getElementById('for_mfg').checked, brand: document.getElementById('brand').value||null, category: cat||null, uom: uom||null, tax_rate: document.getElementById('tax').value||null, description: document.getElementById('desc').value }; return p; }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    guard();
+    loadLookups();
+    document.getElementById('image').addEventListener('change', (e)=> setPreview(e.target.files[0]||null));
+    document.getElementById('ptype').addEventListener('change', ()=>{
+      const isGoods = document.getElementById('ptype').value === 'GOODS';
+      document.getElementById('uom').disabled = !isGoods;
+    });
+    document.getElementById('itemForm').addEventListener('submit', async (e)=>{
+      e.preventDefault(); const alert = document.getElementById('alert'); alert.style.display='none';
+      try{
+        const p = payloadFromForm();
+        const res = await apiFetch(API+'/', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(p) });
+        if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; }
+        const item = await res.json();
+        const file = document.getElementById('image').files[0];
+        if(file){ const form = new FormData(); form.append('image', file); const up = await apiFetch(`${API}/${item.id}/image/`, { method:'POST', body: form }); if(!up.ok){ console.warn('Image upload failed'); } }
+        alert.classList.remove('alert-danger'); alert.classList.add('alert-success'); alert.textContent = `Created with SKU ${item.sku}`; alert.style.display='block';
+        setTimeout(()=>{ window.location = `/app/catalog/items/${item.id}`; }, 600);
+      }catch(err){ alert.textContent = String(err); alert.style.display='block'; }
+    });
+  });
+</script>

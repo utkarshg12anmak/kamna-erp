@@ -31,12 +31,17 @@ from .views import (
     module_sales,
     module_finance,
     module_catalog_items,
+    module_catalog_items_new,
+    module_catalog_item_view,
+    module_catalog_item_edit,
     module_catalog_brands,
     module_catalog_categories,
     module_catalog_uoms,
     module_catalog_taxrates,
 )
 from .api_auth_views import AuthMeView
+from django.conf import settings
+from django.conf.urls.static import static
 
 router = DefaultRouter()
 router.register(r"api/catalog/brands", BrandViewSet, basename="brand")
@@ -53,6 +58,9 @@ urlpatterns = [
     path("app/", module_hub, name="module_hub_slash"),
     path("app/catalog", module_catalog, name="module_catalog"),
     path("app/catalog/items", module_catalog_items, name="module_catalog_items"),
+    path("app/catalog/items/new", module_catalog_items_new, name="module_catalog_items_new"),
+    path("app/catalog/items/<int:id>", module_catalog_item_view, name="module_catalog_item_view"),
+    path("app/catalog/items/<int:id>/edit", module_catalog_item_edit, name="module_catalog_item_edit"),
     path("app/catalog/brands", module_catalog_brands, name="module_catalog_brands"),
     path("app/catalog/categories", module_catalog_categories, name="module_catalog_categories"),
     path("app/catalog/uoms", module_catalog_uoms, name="module_catalog_uoms"),
@@ -62,3 +70,6 @@ urlpatterns = [
     path("app/sales", module_sales, name="module_sales"),
     path("app/finance", module_finance, name="module_finance"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

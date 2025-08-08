@@ -1,0 +1,151 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h5 mb-0">Items</h2>
+    <a href="/app/catalog/items/new" class="btn btn-primary btn-sm">New Item</a>
+  </div>
+  <div class="card-like mb-3">
+    <div class="row g-2">
+      <div class="col-md-3"><input id="q" class="form-control form-control-sm" placeholder="Search name or SKU..."></div>
+      <div class="col-md-2"><select id="brand" class="form-select form-select-sm"><option value="">Brand</option></select></div>
+      <div class="col-md-2"><select id="category" class="form-select form-select-sm"><option value="">Category (child only)</option></select></div>
+      <div class="col-md-2"><select id="ptype" class="form-select form-select-sm"><option value="">Product Type</option><option value="GOODS">GOODS</option><option value="SERVICE">SERVICE</option></select></div>
+      <div class="col-md-3 d-flex gap-2 align-items-center flex-wrap">
+        <div class="btn-group btn-group-sm" role="group" aria-label="Status">
+          <button type="button" data-status="" class="btn btn-outline-secondary active" id="st_all">All</button>
+          <button type="button" data-status="ACTIVE" class="btn btn-outline-secondary" id="st_active">Active</button>
+          <button type="button" data-status="DRAFT" class="btn btn-outline-secondary" id="st_draft">Draft</button>
+          <button type="button" data-status="ARCHIVED" class="btn btn-outline-secondary" id="st_archived">Archived</button>
+        </div>
+        <div class="form-check form-check-inline"><input id="f_sales" class="form-check-input" type="checkbox"><label class="form-check-label" for="f_sales">Sales</label></div>
+        <div class="form-check form-check-inline"><input id="f_purchase" class="form-check-input" type="checkbox"><label class="form-check-label" for="f_purchase">Purchase</label></div>
+        <div class="form-check form-check-inline"><input id="f_mfg" class="form-check-input" type="checkbox"><label class="form-check-label" for="f_mfg">Manufacture</label></div>
+        <button id="clearFilters" class="btn btn-outline-secondary btn-sm" type="button">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-like">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead><tr>
+          <th style="width:56px;">Thumb</th>
+          <th>Name</th>
+          <th>SKU</th>
+          <th>Brand</th>
+          <th>Category</th>
+          <th>UoM</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Updated</th>
+          <th class="text-end">Actions</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div id="pager" class="d-flex justify-content-between align-items-center mt-2">
+      <div id="pageInfo" class="small text-muted"></div>
+      <div class="btn-group btn-group-sm">
+        <button id="prevPage" class="btn btn-outline-secondary" type="button">Previous</button>
+        <button id="nextPage" class="btn btn-outline-secondary" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div id="historyModal" class="modal-backdrop-custom" style="display:none;">
+  <div class="modal-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Item History</h5>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeHistory()">✕</button>
+    </div>
+    <div id="historyList" class="list-group small" style="max-height:50vh; overflow:auto;"></div>
+  </div>
+</div>
+
+<style>
+  .modal-backdrop-custom { position: fixed; inset: 0; background: rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; z-index: 1050; }
+  .modal-card { width: 100%; max-width: 520px; background:#fff; border:1px solid var(--border); border-radius:12px; padding:16px; }
+  .timeline-icon { width: 24px; height:24px; display:inline-flex; align-items:center; justify-content:center; border-radius: 999px; margin-right:8px; font-weight:700; }
+  .tl-add { background:#E6F4FF; color:#1D4ED8; }
+  .tl-update { background:#FEF3C7; color:#92400E; }
+  .tl-delete { background:#FEE2E2; color:#991B1B; }
+</style>
+
+<script>
+  const API_ITEMS = '/api/catalog/items';
+  const API_BRANDS = '/api/catalog/brands';
+  const API_CATS = '/api/catalog/categories';
+  const PAGE_SIZE = 10; let currentPage = 1; let currentSearch = ''; let currentStatus = '';
+
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function apiFetch(url, options={}){ const headers = Object.assign({ 'Authorization': `Bearer ${token()}` }, options.headers||{}); const res = await fetch(url, { ...options, headers }); if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); } return res; }
+  function fmtDate(v){ if(!v) return ''; return new Date(v).toLocaleString(); }
+  function imgCell(src){ if(!src) return '<div class="ratio ratio-1x1 bg-light rounded" style="width:48px; overflow:hidden;"></div>'; const u = (typeof src === 'string') ? (src.startsWith('http') ? src : (src.startsWith('/') ? src : ('/media/' + src))) : (src && src.url ? src.url : null); const out = u ? `<img src="${u}" style="width:48px; height:48px; object-fit:cover; border-radius:6px;">` : '<div class="ratio ratio-1x1 bg-light rounded" style="width:48px; overflow:hidden;"></div>'; return out; }
+  function badge(v){ return `<span class="badge ${v==='ACTIVE'?'text-bg-success': v==='DRAFT'?'text-bg-secondary':'text-bg-dark'}">${v}</span>`; }
+
+  function row(r){ return `
+    <tr>
+      <td>${imgCell(r.image)}</td>
+      <td><a href="/app/catalog/items/${r.id}">${r.name}</a></td>
+      <td><code>${r.sku}</code></td>
+      <td>${r.brand_name ?? ''}</td>
+      <td>${r.category_name ?? ''}</td>
+      <td>${r.uom_name ?? ''}</td>
+      <td>${r.product_type}</td>
+      <td>${badge(r.status)}</td>
+      <td>${fmtDate(r.updated_at)}</td>
+      <td class="text-end">
+        <div class="btn-group btn-group-sm">
+          <a class="btn btn-outline-secondary" href="/app/catalog/items/${r.id}">View</a>
+          <a class="btn btn-outline-primary" href="/app/catalog/items/${r.id}/edit">Edit</a>
+          <button class="btn btn-outline-secondary" onclick="openHistory(${r.id})">History</button>
+        </div>
+      </td>
+    </tr>`; }
+
+  function renderPagination(count){ const totalPages = Math.max(1, Math.ceil((count||0)/PAGE_SIZE)); document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages} — ${count||0} items`; document.getElementById('prevPage').disabled = currentPage<=1; document.getElementById('nextPage').disabled = currentPage>=totalPages; }
+
+  async function loadFilters(){
+    const [bres, cres] = await Promise.all([
+      apiFetch(`${API_BRANDS}/?page=1&search=`),
+      apiFetch(`${API_CATS}/?parent__isnull=false&active=true`)
+    ]);
+    const brands = (await bres.json()).results || [];
+    const cats = (await cres.json()).results || [];
+    document.getElementById('brand').innerHTML = '<option value="">Brand</option>' + brands.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+    document.getElementById('category').innerHTML = '<option value="">Category (child only)</option>' + cats.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  }
+
+  function buildParams(){ const p = new URLSearchParams(); p.set('page', String(currentPage)); if(currentSearch) p.set('search', currentSearch); const b = document.getElementById('brand').value; if(b) p.set('brand', b); const c = document.getElementById('category').value; if(c) p.set('category', c); const pt = document.getElementById('ptype').value; if(pt) p.set('product_type', pt); if(currentStatus) p.set('status', currentStatus); if(document.getElementById('f_sales').checked) p.set('for_sales','true'); if(document.getElementById('f_purchase').checked) p.set('for_purchase','true'); if(document.getElementById('f_mfg').checked) p.set('for_manufacture','true'); return p; }
+
+  async function load(){ const res = await apiFetch(`${API_ITEMS}/?${buildParams().toString()}`); const data = await res.json(); const list = data.results || data; const count = data.count ?? list.length; document.getElementById('rows').innerHTML = list.map(row).join(''); renderPagination(count); }
+
+  function selectStatus(v){ currentStatus = v; for(const el of document.querySelectorAll('[data-status]')){ el.classList.toggle('active', el.getAttribute('data-status')===v); } currentPage=1; load(); }
+
+  function debounce(fn, delay){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); }; }
+
+  async function openHistory(id){ const res = await apiFetch(`${API_ITEMS}/${id}/history/`); const data = await res.json(); const list = data.results || data; const historyList = document.getElementById('historyList'); function iconFor(type){ if(type==='+') return '<span class="timeline-icon tl-add">+</span>'; if(type==='-') return '<span class="timeline-icon tl-delete">-</span>'; return '<span class="timeline-icon tl-update">~</span>'; } historyList.innerHTML = list.map(h=>`<div class="list-group-item d-flex align-items-center">${iconFor(h.history_type)}<div><div class="fw-semibold">${h.name} <code>${h.sku}</code> <span class="text-muted">${h.history_user ? 'by '+h.history_user : ''}</span></div><div class="text-muted">${fmtDate(h.history_date)} — ${h.history_type==='+'?'Created': h.history_type==='-'?'Deleted':'Updated'}</div></div></div>`).join(''); document.getElementById('historyModal').style.display='flex'; }
+  function closeHistory(){ document.getElementById('historyModal').style.display='none'; }
+
+  function guard(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; return; } fetch('/api/auth/me/', { headers: { Authorization: `Bearer ${t}` }}).then(r=>{ if(r.status===401) window.location='/'; }); }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    guard();
+    loadFilters().then(load);
+    document.getElementById('prevPage').addEventListener('click', ()=>{ if(currentPage>1){ currentPage--; load(); }});
+    document.getElementById('nextPage').addEventListener('click', ()=>{ currentPage++; load(); });
+    document.getElementById('q').addEventListener('input', debounce(()=>{ currentSearch = document.getElementById('q').value.trim(); currentPage=1; load(); }, 300));
+    document.getElementById('brand').addEventListener('change', ()=>{ currentPage=1; load(); });
+    document.getElementById('category').addEventListener('change', ()=>{ currentPage=1; load(); });
+    document.getElementById('ptype').addEventListener('change', ()=>{ currentPage=1; load(); });
+    document.getElementById('f_sales').addEventListener('change', ()=>{ currentPage=1; load(); });
+    document.getElementById('f_purchase').addEventListener('change', ()=>{ currentPage=1; load(); });
+    document.getElementById('f_mfg').addEventListener('change', ()=>{ currentPage=1; load(); });
+    document.getElementById('st_all').addEventListener('click', ()=>selectStatus(''));
+    document.getElementById('st_active').addEventListener('click', ()=>selectStatus('ACTIVE'));
+    document.getElementById('st_draft').addEventListener('click', ()=>selectStatus('DRAFT'));
+    document.getElementById('st_archived').addEventListener('click', ()=>selectStatus('ARCHIVED'));
+    document.getElementById('clearFilters').addEventListener('click', ()=>{ document.getElementById('q').value=''; document.getElementById('brand').value=''; document.getElementById('category').value=''; document.getElementById('ptype').value=''; document.getElementById('f_sales').checked=false; document.getElementById('f_purchase').checked=false; document.getElementById('f_mfg').checked=false; currentSearch=''; currentStatus=''; currentPage=1; load(); });
+  });
+</script>

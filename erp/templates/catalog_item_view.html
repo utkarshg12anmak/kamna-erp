@@ -1,0 +1,81 @@
+<div class="container" style="max-width:920px;">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="h5 mb-1" id="name"></h2>
+      <div class="small text-muted">SKU: <code id="sku"></code> <button class="btn btn-link btn-sm p-0 align-baseline" onclick="copySku()">Copy</button></div>
+    </div>
+    <div class="d-flex gap-2">
+      <a id="editLink" href="#" class="btn btn-primary btn-sm">Edit</a>
+      <a href="/app/catalog/items" class="btn btn-outline-secondary btn-sm">Back</a>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div id="imgWrap" class="ratio ratio-1x1 bg-light rounded d-flex align-items-center justify-content-center">
+        <span class="text-muted">No Image</span>
+      </div>
+      <div class="mt-2 small text-muted">Status: <span id="status" class="badge"></span> • Type: <span id="ptype"></span></div>
+      <div class="mt-1 small text-muted">Flags: <span id="flags"></span></div>
+    </div>
+    <div class="col-md-8">
+      <div class="card-like">
+        <div class="row g-2">
+          <div class="col-md-6"><div class="small text-muted">Brand</div><div id="brand">—</div></div>
+          <div class="col-md-6"><div class="small text-muted">Category</div><div id="category">—</div></div>
+          <div class="col-md-6"><div class="small text-muted">UoM</div><div id="uom">—</div></div>
+          <div class="col-md-6"><div class="small text-muted">Tax Rate</div><div id="tax">—</div></div>
+        </div>
+        <div class="mt-3"><div class="small text-muted">Description</div><div id="desc">—</div></div>
+        <div class="mt-3 small text-muted">Updated <span id="updated"></span> by <span id="updated_by"></span> • Created <span id="created"></span> by <span id="created_by"></span></div>
+        <div class="mt-3">
+          <button class="btn btn-outline-secondary btn-sm" onclick="openHistory()">History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div id="historyModal" class="modal-backdrop-custom" style="display:none;">
+  <div class="modal-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Item History</h5>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeHistory()">✕</button>
+    </div>
+    <div id="historyList" class="list-group small" style="max-height:50vh; overflow:auto;"></div>
+  </div>
+</div>
+
+<style>
+  .modal-backdrop-custom { position: fixed; inset: 0; background: rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; z-index: 1050; }
+  .modal-card { width: 100%; max-width: 520px; background:#fff; border:1px solid var(--border); border-radius:12px; padding:16px; }
+  .timeline-icon { width: 24px; height:24px; display:inline-flex; align-items:center; justify-content:center; border-radius: 999px; margin-right:8px; font-weight:700; }
+  .tl-add { background:#E6F4FF; color:#1D4ED8; }
+  .tl-update { background:#FEF3C7; color:#92400E; }
+  .tl-delete { background:#FEE2E2; color:#991B1B; }
+</style>
+
+<script>
+  const API = '/api/catalog/items';
+  const ID = parseInt(window.location.pathname.split('/').filter(Boolean).pop());
+
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function apiFetch(url, options={}){ const headers = Object.assign({ 'Authorization': `Bearer ${token()}` }, options.headers||{}); const res = await fetch(url, { ...options, headers }); if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); } return res; }
+  function fmtDate(v){ if(!v) return ''; return new Date(v).toLocaleString(); }
+
+  function setBadge(el, v){ el.textContent = v; el.className = 'badge ' + (v==='ACTIVE'?'text-bg-success': v==='DRAFT'?'text-bg-secondary':'text-bg-dark'); }
+
+  function setImage(src){ const wrap = document.getElementById('imgWrap'); if(!src){ wrap.innerHTML = '<span class="text-muted">No Image</span>'; return; } const u = (typeof src === 'string') ? (src.startsWith('http') ? src : (src.startsWith('/') ? src : ('/media/' + src))) : (src && src.url ? src.url : null); if(!u){ wrap.innerHTML = '<span class="text-muted">No Image</span>'; return; } wrap.innerHTML = `<img src="${u}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`; }
+
+  async function load(){ const res = await apiFetch(`${API}/${ID}/`); const r = await res.json(); document.getElementById('name').textContent = r.name; document.getElementById('sku').textContent = r.sku; setBadge(document.getElementById('status'), r.status); document.getElementById('ptype').textContent = r.product_type; document.getElementById('flags').textContent = ['Sales: '+(r.for_sales?'Yes':'No'),'Purchase: '+(r.for_purchase?'Yes':'No'),'Manufacture: '+(r.for_manufacture?'Yes':'No')].join(' • '); document.getElementById('brand').textContent = r.brand_name || '—'; document.getElementById('category').textContent = r.category_name || '—'; document.getElementById('uom').textContent = r.uom_name || '—'; document.getElementById('tax').textContent = r.tax_rate_name || '—'; document.getElementById('desc').textContent = r.description || '—'; document.getElementById('updated').textContent = fmtDate(r.updated_at); document.getElementById('created').textContent = fmtDate(r.created_at); document.getElementById('updated_by').textContent = r.updated_by || '—'; document.getElementById('created_by').textContent = r.created_by || '—'; setImage(r.image); document.getElementById('editLink').href = `/app/catalog/items/${ID}/edit`; }
+
+  async function openHistory(){ const res = await apiFetch(`${API}/${ID}/history/`); const data = await res.json(); const list = data.results || data; const historyList = document.getElementById('historyList'); function iconFor(type){ if(type==='+') return '<span class="timeline-icon tl-add">+</span>'; if(type==='-') return '<span class="timeline-icon tl-delete">-</span>'; return '<span class="timeline-icon tl-update">~</span>'; } historyList.innerHTML = list.map(h=>`<div class=\"list-group-item d-flex align-items-center\">${iconFor(h.history_type)}<div><div class=\"fw-semibold\">${h.name} <code>${h.sku}</code> <span class=\"text-muted\">${h.history_user ? 'by '+h.history_user : ''}</span></div><div class=\"text-muted\">${fmtDate(h.history_date)} — ${h.history_type==='+'?'Created': h.history_type==='-'?'Deleted':'Updated'}</div></div></div>`).join(''); document.getElementById('historyModal').style.display='flex'; }
+  function closeHistory(){ document.getElementById('historyModal').style.display='none'; }
+
+  function copySku(){ const el = document.getElementById('sku'); navigator.clipboard.writeText(el.textContent||''); }
+
+  function guard(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; return; } fetch('/api/auth/me/', { headers: { Authorization: `Bearer ${t}` }}).then(r=>{ if(r.status===401) window.location='/'; }); }
+
+  document.addEventListener('DOMContentLoaded', ()=>{ guard(); load(); });
+</script>

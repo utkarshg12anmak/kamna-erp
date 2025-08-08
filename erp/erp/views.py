@@ -37,7 +37,19 @@ def module_catalog(request):
 
 
 def module_catalog_items(request):
-    return render_module(request, "Catalog", catalog_menu("/app/catalog/items"), "catalog_items.html")
+    return render_module(request, "Catalog", catalog_menu("/app/catalog/items"), "catalog_items_list.html")
+
+
+def module_catalog_items_new(request):
+    return render_module(request, "Catalog", catalog_menu("/app/catalog/items"), "catalog_items_create.html")
+
+
+def module_catalog_item_view(request, id: int):
+    return render_module(request, "Catalog", catalog_menu("/app/catalog/items"), "catalog_item_view.html")
+
+
+def module_catalog_item_edit(request, id: int):
+    return render_module(request, "Catalog", catalog_menu("/app/catalog/items"), "catalog_items_edit.html")
 
 
 def module_catalog_brands(request):

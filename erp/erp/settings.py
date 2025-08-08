@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
     "simple_history",
+    "django_filters",
     # Local apps
     "catalog",
 ]
@@ -107,9 +108,11 @@ REST_FRAMEWORK = {
     # Enable global page-number pagination (10 per page)
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
-    # Enable global search filter backend
+    # Enable global search, ordering, and django-filter backends
     "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
     ],
 }
 
@@ -128,6 +131,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 STATIC_URL = "static/"
 
+# Media (uploaded files)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

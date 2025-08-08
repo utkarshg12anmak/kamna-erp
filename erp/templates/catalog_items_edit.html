@@ -1,0 +1,170 @@
+<div class="container" style="max-width:860px;">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 mb-0">Edit Item</h2>
+    <div class="d-flex gap-2">
+      <a id="viewLink" href="#" class="btn btn-outline-secondary btn-sm">Back to View</a>
+      <a href="/app/catalog/items" class="btn btn-outline-secondary btn-sm">List</a>
+    </div>
+  </div>
+  <div class="card-like">
+    <div id="alert" class="alert alert-danger py-2 px-3" style="display:none;"></div>
+    <form id="itemForm">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <div class="mb-2">
+            <label class="form-label">Name</label>
+            <input id="name" class="form-control" required>
+          </div>
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label">Product Type</label>
+              <select id="ptype" class="form-select">
+                <option value="GOODS">GOODS</option>
+                <option value="SERVICE">SERVICE</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Status</label>
+              <select id="status" class="form-select">
+                <option value="DRAFT">DRAFT</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="ARCHIVED">ARCHIVED</option>
+              </select>
+            </div>
+          </div>
+          <div class="row g-2 mt-1">
+            <div class="col-md-4"><div class="form-check"><input id="for_sales" class="form-check-input" type="checkbox"><label class="form-check-label" for="for_sales">For Sales</label></div></div>
+            <div class="col-md-4"><div class="form-check"><input id="for_purchase" class="form-check-input" type="checkbox"><label class="form-check-label" for="for_purchase">For Purchase</label></div></div>
+            <div class="col-md-4"><div class="form-check"><input id="for_mfg" class="form-check-input" type="checkbox"><label class="form-check-label" for="for_mfg">For Manufacture</label></div></div>
+          </div>
+          <div class="row g-2 mt-1">
+            <div class="col-md-6"><label class="form-label">Brand</label><select id="brand" class="form-select"><option value="">— None —</option></select></div>
+            <div class="col-md-6"><label class="form-label">Category (child)</label><select id="category" class="form-select"><option value="">— None —</option></select></div>
+          </div>
+          <div class="row g-2 mt-1">
+            <div class="col-md-6"><label class="form-label">UoM</label><select id="uom" class="form-select"><option value="">— Select —</option></select></div>
+            <div class="col-md-6"><label class="form-label">Tax Rate</label><select id="tax" class="form-select"><option value="">— None —</option></select></div>
+          </div>
+          <div class="mt-2">
+            <label class="form-label">Description</label>
+            <textarea id="desc" rows="4" class="form-control"></textarea>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Image</label>
+          <div id="imgPreview" class="ratio ratio-1x1 bg-light rounded d-flex align-items-center justify-content-center" style="max-width:220px;">
+            <span class="text-muted">No Image</span>
+          </div>
+          <input id="image" type="file" accept="image/*" class="form-control mt-2">
+          <div class="form-text">Upload to replace current image.</div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <a id="cancelLink" href="#" class="btn btn-outline-secondary">Cancel</a>
+        <button class="btn btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const API = '/api/catalog/items';
+  const ID = parseInt(window.location.pathname.split('/').filter(Boolean).slice(-2)[0]);
+  const API_BRANDS = '/api/catalog/brands';
+  const API_CATS = '/api/catalog/categories';
+  const API_UOMS = '/api/catalog/uoms';
+  const API_TAX = '/api/catalog/tax-rates';
+
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function apiFetch(url, options={}){ const headers = Object.assign({ 'Authorization': `Bearer ${token()}` }, options.headers||{}); const res = await fetch(url, { ...options, headers }); if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); } return res; }
+
+  function setPreviewUrl(url){ if(!url){ document.getElementById('imgPreview').innerHTML='<span class="text-muted">No Image</span>'; return; } document.getElementById('imgPreview').innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">`; }
+  function setPreviewFile(file){ if(!file){ return; } const url = URL.createObjectURL(file); setPreviewUrl(url); }
+
+  async function loadLookups(){
+    const [bres, cres, ures, tres] = await Promise.all([
+      apiFetch(`${API_BRANDS}/`),
+      apiFetch(`${API_CATS}/?parent__isnull=false&active=true`),
+      apiFetch(`${API_UOMS}/`),
+      apiFetch(`${API_TAX}/`),
+    ]);
+    const brands = (await bres.json()).results || [];
+    const cats = (await cres.json()).results || [];
+    const uoms = (await ures.json()).results || [];
+    const taxes = (await tres.json()).results || [];
+    document.getElementById('brand').innerHTML = '<option value="">— None —</option>' + brands.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+    document.getElementById('category').innerHTML = '<option value="">— None —</option>' + cats.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    document.getElementById('uom').innerHTML = '<option value="">— Select —</option>' + uoms.map(u=>`<option value="${u.id}">${u.code} - ${u.name}</option>`).join('');
+    document.getElementById('tax').innerHTML = '<option value="">— None —</option>' + taxes.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  }
+
+  function applyDisabledState(){
+    const isArchived = document.getElementById('status').value === 'ARCHIVED';
+    const isGoods = document.getElementById('ptype').value === 'GOODS';
+    const toToggle = ['name','ptype','for_sales','for_purchase','for_mfg','brand','category','uom','tax','desc','image'];
+    for (const id of toToggle){ const el = document.getElementById(id); if(!el) continue; el.disabled = isArchived; }
+    // Always allow status to change
+    document.getElementById('status').disabled = false;
+    // If not archived, enforce UoM disabled for SERVICE
+    if(!isArchived){ document.getElementById('uom').disabled = !isGoods; }
+  }
+
+  function fillForm(r){
+    document.getElementById('name').value = r.name || '';
+    document.getElementById('ptype').value = r.product_type || 'GOODS';
+    document.getElementById('status').value = r.status || 'DRAFT';
+    document.getElementById('for_sales').checked = !!r.for_sales;
+    document.getElementById('for_purchase').checked = !!r.for_purchase;
+    document.getElementById('for_mfg').checked = !!r.for_manufacture;
+    document.getElementById('brand').value = r.brand || '';
+    document.getElementById('category').value = r.category || '';
+    document.getElementById('uom').value = r.uom || '';
+    document.getElementById('tax').value = r.tax_rate || '';
+    document.getElementById('desc').value = r.description || '';
+
+    const img = (typeof r.image === 'string') ? (r.image.startsWith('http') ? r.image : (r.image.startsWith('/') ? r.image : ('/media/' + r.image))) : (r.image && r.image.url ? r.image.url : null);
+    setPreviewUrl(img);
+
+    applyDisabledState();
+  }
+
+  function payloadFromForm(){
+    return {
+      name: document.getElementById('name').value.trim(),
+      product_type: document.getElementById('ptype').value,
+      status: document.getElementById('status').value,
+      for_sales: document.getElementById('for_sales').checked,
+      for_purchase: document.getElementById('for_purchase').checked,
+      for_manufacture: document.getElementById('for_mfg').checked,
+      brand: document.getElementById('brand').value || null,
+      category: document.getElementById('category').value || null,
+      uom: document.getElementById('uom').value || null,
+      tax_rate: document.getElementById('tax').value || null,
+      description: document.getElementById('desc').value,
+    };
+  }
+
+  async function load(){ const res = await apiFetch(`${API}/${ID}/`); const r = await res.json(); fillForm(r); document.getElementById('viewLink').href = `/app/catalog/items/${ID}`; document.getElementById('cancelLink').href = `/app/catalog/items/${ID}`; }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; return; }
+    Promise.all([loadLookups(), load()]).then(()=>{
+      document.getElementById('image').addEventListener('change', (e)=> setPreviewFile(e.target.files[0]||null));
+      document.getElementById('status').addEventListener('change', applyDisabledState);
+      document.getElementById('ptype').addEventListener('change', applyDisabledState);
+      document.getElementById('itemForm').addEventListener('submit', async (e)=>{
+        e.preventDefault(); const alert = document.getElementById('alert'); alert.style.display='none';
+        try{
+          const payload = payloadFromForm();
+          // First PATCH data
+          let res = await apiFetch(`${API}/${ID}/`, { method:'PATCH', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+          if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; }
+          // Then image upload if selected
+          const file = document.getElementById('image').files[0];
+          if(file){ const form = new FormData(); form.append('image', file); const up = await apiFetch(`${API}/${ID}/image/`, { method:'POST', body: form }); if(!up.ok){ const e = await up.json().catch(()=>({detail:'Image upload failed'})); alert.textContent = JSON.stringify(e); alert.style.display='block'; return; } }
+          window.location = `/app/catalog/items/${ID}`;
+        }catch(err){ alert.textContent = String(err); alert.style.display='block'; }
+      });
+    });
+  });
+</script>
