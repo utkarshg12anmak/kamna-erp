@@ -22,7 +22,8 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from .views import landing_page
+from .views import landing_page, module_hub, module_catalog, module_warehousing, module_manufacturing, module_sales, module_finance
+from .api_auth_views import AuthMeView
 
 router = DefaultRouter()
 router.register(r"api/catalog/brands", BrandViewSet, basename="brand")
@@ -33,4 +34,12 @@ urlpatterns = [
     path("", include(router.urls)),
     path("api/auth/jwt/create/", TokenObtainPairView.as_view(), name="jwt-create"),
     path("api/auth/jwt/refresh/", TokenRefreshView.as_view(), name="jwt-refresh"),
+    path("api/auth/me/", AuthMeView.as_view(), name="auth-me"),
+    path("app", module_hub, name="module_hub"),
+    path("app/", module_hub, name="module_hub_slash"),
+    path("app/catalog", module_catalog, name="module_catalog"),
+    path("app/warehousing", module_warehousing, name="module_warehousing"),
+    path("app/manufacturing", module_manufacturing, name="module_manufacturing"),
+    path("app/sales", module_sales, name="module_sales"),
+    path("app/finance", module_finance, name="module_finance"),
 ]

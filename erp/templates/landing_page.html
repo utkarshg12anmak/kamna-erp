@@ -16,15 +16,8 @@
       box-shadow: var(--card-shadow);
       padding: 32px;
     }
-    .btn-primary {
-      background-color: var(--primary);
-      border-color: var(--primary);
-    }
-    .btn-primary:hover {
-      filter: brightness(0.95);
-      background-color: var(--primary);
-      border-color: var(--primary);
-    }
+    .btn-primary { background-color: var(--primary); border-color: var(--primary); }
+    .btn-primary:hover { filter: brightness(0.95); background-color: var(--primary); border-color: var(--primary); }
     .form-label { font-weight: 500; }
   </style>
 </head>
@@ -32,16 +25,16 @@
   <div class="container d-flex align-items-center justify-content-center min-vh-100">
     <div class="login-card w-100">
       <h1 class="h4 text-center mb-4">Welcome to ERP</h1>
-      <form method="post" action="/api/auth/jwt/create/">
-        {% csrf_token %}
+      <form id="loginForm">
         <div class="mb-3">
           <label for="username" class="form-label">Username</label>
           <input id="username" name="username" type="text" class="form-control" placeholder="Enter username" required>
         </div>
-        <div class="mb-4">
+        <div class="mb-2">
           <label for="password" class="form-label">Password</label>
           <input id="password" name="password" type="password" class="form-control" placeholder="Enter password" required>
         </div>
+        <div id="loginError" class="text-danger small mb-2" style="display:none;">Invalid credentials. Please try again.</div>
         <button type="submit" class="btn btn-primary w-100">Login</button>
       </form>
       <div class="text-center mt-3">
@@ -49,5 +42,31 @@
       </div>
     </div>
   </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const err = document.getElementById('loginError');
+      err.style.display = 'none';
+      try {
+        const res = await fetch('/api/auth/jwt/create/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        if (!res.ok) {
+          throw new Error('Login failed');
+        }
+        const data = await res.json();
+        localStorage.setItem('accessToken', data.access);
+        localStorage.setItem('refreshToken', data.refresh);
+        window.location = '/app';
+      } catch (error) {
+        err.style.display = 'block';
+      }
+    });
+  </script>
 </body>
 </html>
