@@ -1,4 +1,243 @@
-<div>
-  <h2 class="h5">Brands</h2>
-  <p class="text-muted">Coming soon.</p>
+<div class="container-fluid">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card-like">
+        <h2 class="h5 mb-3">Create Brand</h2>
+        <form id="createBrandForm">
+          <div class="mb-3">
+            <label for="brandName" class="form-label">Name</label>
+            <input type="text" class="form-control" id="brandName" placeholder="e.g. Acme" required>
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="brandActive" checked>
+            <label class="form-check-label" for="brandActive">Active</label>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Create Brand</button>
+          </div>
+          <div id="createError" class="text-danger small mt-2" style="display:none;"></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card-like">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h5 mb-0">Brands</h2>
+          <button id="refreshBtn" class="btn btn-outline-secondary btn-sm">Refresh</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Active</th>
+                <th>Created By</th>
+                <th>Updated By</th>
+                <th>Updated At</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="brandsBody">
+              <!-- rows injected by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal-backdrop-custom" style="display:none;">
+  <div class="modal-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Edit Brand</h5>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeEdit()">✕</button>
+    </div>
+    <form id="editBrandForm">
+      <input type="hidden" id="editId">
+      <div class="mb-3">
+        <label for="editName" class="form-label">Name</label>
+        <input type="text" id="editName" class="form-control" required>
+      </div>
+      <div class="form-check mb-3">
+        <input type="checkbox" id="editActive" class="form-check-input">
+        <label class="form-check-label" for="editActive">Active</label>
+      </div>
+      <div class="d-flex gap-2 justify-content-end">
+        <button type="button" class="btn btn-outline-secondary" onclick="closeEdit()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+      <div id="editError" class="text-danger small mt-2" style="display:none;"></div>
+    </form>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div id="historyModal" class="modal-backdrop-custom" style="display:none;">
+  <div class="modal-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Brand History</h5>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeHistory()">✕</button>
+    </div>
+    <div id="historyList" class="list-group small" style="max-height:50vh; overflow:auto;"></div>
+  </div>
+</div>
+
+<style>
+  .modal-backdrop-custom { position: fixed; inset: 0; background: rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; z-index: 1050; }
+  .modal-card { width: 100%; max-width: 520px; background:#fff; border:1px solid var(--border); border-radius:12px; padding:16px; }
+  .timeline-icon { width: 24px; height:24px; display:inline-flex; align-items:center; justify-content:center; border-radius: 999px; margin-right:8px; font-weight:700; }
+  .tl-add { background:#E6F4FF; color:#1D4ED8; }
+  .tl-update { background:#FEF3C7; color:#92400E; }
+  .tl-delete { background:#FEE2E2; color:#991B1B; }
+</style>
+
+<script>
+  const API_BASE = '/api/catalog/brands';
+
+  function token() {
+    const t = localStorage.getItem('accessToken');
+    if (!t) { window.location = '/'; }
+    return t;
+  }
+
+  async function apiFetch(url, options={}) {
+    const headers = Object.assign({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${token()}` }, options.headers || {});
+    const res = await fetch(url, { ...options, headers });
+    if (res.status === 401) { window.location = '/'; return Promise.reject('Unauthorized'); }
+    return res;
+  }
+
+  function fmtDate(value) {
+    if (!value) return '';
+    const d = new Date(value);
+    return d.toLocaleString();
+  }
+
+  function rowHtml(b) {
+    return `
+      <tr>
+        <td>${b.name}</td>
+        <td>${b.active ? '<span class="badge text-bg-success">Yes</span>' : '<span class="badge text-bg-secondary">No</span>'}</td>
+        <td>${b.created_by ?? ''}</td>
+        <td>${b.updated_by ?? ''}</td>
+        <td>${fmtDate(b.updated_at)}</td>
+        <td class="text-end">
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-primary" onclick='openEdit(${JSON.stringify(b)})'>Edit</button>
+            <button class="btn btn-outline-secondary" onclick="viewHistory(${b.id})">History</button>
+            <button class="btn btn-outline-danger" onclick="deleteBrand(${b.id})">Delete</button>
+          </div>
+        </td>
+      </tr>`;
+  }
+
+  async function fetchBrands() {
+    try {
+      const res = await apiFetch(`${API_BASE}/`);
+      const data = await res.json();
+      const body = document.getElementById('brandsBody');
+      body.innerHTML = (Array.isArray(data) ? data : data.results || []).map(rowHtml).join('');
+    } catch (e) { console.error(e); }
+  }
+
+  async function createBrand(e) {
+    e.preventDefault();
+    const errorEl = document.getElementById('createError');
+    errorEl.style.display = 'none';
+    const payload = {
+      name: document.getElementById('brandName').value.trim(),
+      active: document.getElementById('brandActive').checked,
+    };
+    try {
+      const res = await apiFetch(`${API_BASE}/`, { method: 'POST', body: JSON.stringify(payload) });
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({detail:'Error'}));
+        errorEl.textContent = JSON.stringify(err);
+        errorEl.style.display = 'block';
+        return;
+      }
+      document.getElementById('createBrandForm').reset();
+      document.getElementById('brandActive').checked = true;
+      fetchBrands();
+    } catch (e) {
+      errorEl.textContent = String(e);
+      errorEl.style.display = 'block';
+    }
+  }
+
+  function openEdit(b) {
+    document.getElementById('editId').value = b.id;
+    document.getElementById('editName').value = b.name;
+    document.getElementById('editActive').checked = !!b.active;
+    document.getElementById('editModal').style.display = 'flex';
+  }
+  function closeEdit(){ document.getElementById('editModal').style.display = 'none'; }
+
+  async function saveEdit(e){
+    e.preventDefault();
+    const id = document.getElementById('editId').value;
+    const payload = {
+      name: document.getElementById('editName').value.trim(),
+      active: document.getElementById('editActive').checked,
+    };
+    const errEl = document.getElementById('editError');
+    errEl.style.display = 'none';
+    try {
+      const res = await apiFetch(`${API_BASE}/${id}/`, { method: 'PUT', body: JSON.stringify(payload) });
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({detail:'Error'}));
+        errEl.textContent = JSON.stringify(err);
+        errEl.style.display = 'block';
+        return;
+      }
+      closeEdit();
+      fetchBrands();
+    } catch (e) {
+      errEl.textContent = String(e);
+      errEl.style.display = 'block';
+    }
+  }
+
+  async function deleteBrand(id){
+    if (!confirm('Delete this brand?')) return;
+    try {
+      const res = await apiFetch(`${API_BASE}/${id}/`, { method: 'DELETE' });
+      if (!res.ok && res.status !== 204) { alert('Failed to delete'); return; }
+      fetchBrands();
+    } catch (e) { console.error(e); }
+  }
+
+  function iconFor(type){
+    if (type === '+') return '<span class="timeline-icon tl-add">+</span>';
+    if (type === '-') return '<span class="timeline-icon tl-delete">-</span>';
+    return '<span class="timeline-icon tl-update">~</span>';
+  }
+
+  async function viewHistory(id){
+    try {
+      const res = await apiFetch(`${API_BASE}/${id}/history/`);
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : data.results || [];
+      const listEl = document.getElementById('historyList');
+      listEl.innerHTML = list.map(h => `
+        <div class="list-group-item d-flex align-items-center">
+          ${iconFor(h.history_type)}
+          <div>
+            <div class="fw-semibold">${h.name} ${h.active ? '(Active)' : '(Inactive)'} <span class="text-muted">${h.history_user ? 'by ' + h.history_user : ''}</span></div>
+            <div class="text-muted">${fmtDate(h.history_date)} — ${h.history_type === '+' ? 'Created' : h.history_type === '-' ? 'Deleted' : 'Updated'}</div>
+          </div>
+        </div>`).join('');
+      document.getElementById('historyModal').style.display = 'flex';
+    } catch (e) { console.error(e); }
+  }
+  function closeHistory(){ document.getElementById('historyModal').style.display = 'none'; }
+
+  document.getElementById('createBrandForm').addEventListener('submit', createBrand);
+  document.getElementById('editBrandForm').addEventListener('submit', saveEdit);
+  document.getElementById('refreshBtn').addEventListener('click', fetchBrands);
+
+  document.addEventListener('DOMContentLoaded', fetchBrands);
+</script>
