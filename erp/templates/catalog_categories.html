@@ -97,6 +97,16 @@
   </div>
 </div>
 
+<style>
+  /* Match Brand page modal and timeline styles */
+  .modal-backdrop-custom { position: fixed; inset: 0; background: rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; z-index: 1050; }
+  .modal-card { width: 100%; max-width: 520px; background:#fff; border:1px solid var(--border); border-radius:12px; padding:16px; }
+  .timeline-icon { width: 24px; height:24px; display:inline-flex; align-items:center; justify-content:center; border-radius: 999px; margin-right:8px; font-weight:700; }
+  .tl-add { background:#E6F4FF; color:#1D4ED8; }
+  .tl-update { background:#FEF3C7; color:#92400E; }
+  .tl-delete { background:#FEE2E2; color:#991B1B; }
+</style>
+
 <script>
   const API = '/api/catalog/categories';
 
@@ -191,15 +201,23 @@
     }catch(e){ alert.textContent = String(e); alert.style.display='block'; }
   }
 
-  function iconFor(t){ if(t==='+') return '+'; if(t==='-') return '-'; return '~'; }
+  function iconFor(type){
+    if (type === '+') return '<span class="timeline-icon tl-add">+</span>';
+    if (type === '-') return '<span class="timeline-icon tl-delete">-</span>';
+    return '<span class="timeline-icon tl-update">~</span>';
+  }
+
   async function viewHistory(id){
     const res = await apiFetch(`${API}/${id}/history/`);
     const data = await res.json();
     const list = Array.isArray(data) ? data : (data.results || []);
     document.getElementById('historyList').innerHTML = list.map(h => `
-      <div class="list-group-item">
-        <div class="fw-semibold">${h.name} ${h.parent ? '(child)' : '(root)'} — ${h.history_type}</div>
-        <div class="text-muted">${new Date(h.history_date).toLocaleString()} ${h.history_user ? 'by '+h.history_user : ''}</div>
+      <div class="list-group-item d-flex align-items-center">
+        ${iconFor(h.history_type)}
+        <div>
+          <div class="fw-semibold">${h.name} ${h.parent ? '(Child)' : '(Root)'} <span class="text-muted">${h.history_user ? 'by ' + h.history_user : ''}</span></div>
+          <div class="text-muted">${fmtDate(h.history_date)} — ${h.history_type === '+' ? 'Created' : h.history_type === '-' ? 'Deleted' : 'Updated'}</div>
+        </div>
       </div>`).join('');
     document.getElementById('historyModal').style.display = 'flex';
   }
