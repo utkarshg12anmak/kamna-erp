@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ module }} | ERP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root { --primary:#3C83F6; --text:#111827; --muted:#6B7280; --border:#E5E7EB; --panel:#F9FAFB; }
+    body { background: var(--panel); color: var(--text); }
+    .topbar { position: sticky; top: 0; z-index: 10; background:#fff; border-bottom:1px solid var(--border); }
+    .sidebar { width:240px; border-right:1px solid var(--border); background:#fff; }
+    .content { flex: 1; padding: 24px; }
+    .nav-link { color: var(--text); border-left:3px solid transparent; border-radius: 0; }
+    .nav-link.active, .nav-link:focus, .nav-link:hover { border-left-color: var(--primary); background:#F3F4F6; }
+    .card-like { background:#fff; border:1px solid var(--border); border-radius:12px; padding: 20px; }
+    .btn-primary { background-color: var(--primary); border-color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="topbar py-2">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <a href="/app" class="text-decoration-none">← Back to Modules</a>
+        <span class="fw-semibold">{{ module }}</span>
+      </div>
+      <button id="logoutBtn" class="btn btn-outline-secondary btn-sm">Logout</button>
+    </div>
+  </div>
+
+  <div class="d-flex" style="min-height: calc(100vh - 48px);">
+    <aside class="sidebar p-3">
+      <nav class="nav flex-column" id="sideNav">
+        {% for item in menu %}
+          <a class="nav-link {% if item.active %}active{% endif %}" href="{{ item.href }}">{{ item.label }}</a>
+        {% endfor %}
+      </nav>
+    </aside>
+    <main class="content">
+      <div id="accessDenied" class="card-like text-center p-5" style="display:none;">
+        <h2 class="h5 mb-2">You do not have access to this module</h2>
+        <a class="btn btn-primary" href="/app">Back to Modules</a>
+      </div>
+      <div id="moduleContent" class="card-like">
+        {% include content_template %}
+      </div>
+    </main>
+  </div>
+
+  <script>
+    async function checkAccess(moduleName) {
+      const token = localStorage.getItem('accessToken');
+      if (!token) { window.location = '/'; return false; }
+      const res = await fetch('/api/auth/me/', { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.status === 401) { window.location = '/'; return false; }
+      const me = await res.json();
+      const allowed = (me.groups || []).includes(moduleName) || (moduleName === 'Admin' && (me.groups || []).includes('Admin'));
+      if (!allowed) {
+        document.getElementById('moduleContent').style.display = 'none';
+        document.getElementById('accessDenied').style.display = 'block';
+        return false;
+      }
+      return true;
+    }
+
+    (async function initShell(){
+      // Highlight active by path
+      const path = window.location.pathname;
+      document.querySelectorAll('#sideNav .nav-link').forEach(a => {
+        if (a.getAttribute('href') === path) a.classList.add('active');
+        else a.classList.remove('active');
+      });
+      await checkAccess('{{ module }}');
+    })();
+
+    document.getElementById('logoutBtn').addEventListener('click', function () {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      window.location = '/';
+    });
+  </script>
+</body>
+</html>

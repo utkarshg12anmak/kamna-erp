@@ -22,7 +22,20 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from .views import landing_page, module_hub, module_catalog, module_warehousing, module_manufacturing, module_sales, module_finance
+from .views import (
+    landing_page,
+    module_hub,
+    module_catalog,
+    module_warehousing,
+    module_manufacturing,
+    module_sales,
+    module_finance,
+    module_catalog_items,
+    module_catalog_brands,
+    module_catalog_categories,
+    module_catalog_uoms,
+    module_catalog_taxrates,
+)
 from .api_auth_views import AuthMeView
 
 router = DefaultRouter()
@@ -38,6 +51,11 @@ urlpatterns = [
     path("app", module_hub, name="module_hub"),
     path("app/", module_hub, name="module_hub_slash"),
     path("app/catalog", module_catalog, name="module_catalog"),
+    path("app/catalog/items", module_catalog_items, name="module_catalog_items"),
+    path("app/catalog/brands", module_catalog_brands, name="module_catalog_brands"),
+    path("app/catalog/categories", module_catalog_categories, name="module_catalog_categories"),
+    path("app/catalog/uoms", module_catalog_uoms, name="module_catalog_uoms"),
+    path("app/catalog/taxrates", module_catalog_taxrates, name="module_catalog_taxrates"),
     path("app/warehousing", module_warehousing, name="module_warehousing"),
     path("app/manufacturing", module_manufacturing, name="module_manufacturing"),
     path("app/sales", module_sales, name="module_sales"),
