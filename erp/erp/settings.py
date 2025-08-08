@@ -107,6 +107,10 @@ REST_FRAMEWORK = {
     # Enable global page-number pagination (10 per page)
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+    # Enable global search filter backend
+    "DEFAULT_FILTER_BACKENDS": [
+        "rest_framework.filters.SearchFilter",
+    ],
 }
 
 # Simple JWT

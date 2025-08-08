@@ -28,7 +28,11 @@
       <div class="card-like">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <h2 class="h5 mb-0">Tax Rates</h2>
-          <button id="refreshBtn" class="btn btn-outline-secondary btn-sm">Refresh</button>
+          <div class="d-flex gap-2 align-items-center">
+            <input id="searchInput" type="search" class="form-control form-control-sm" placeholder="Search tax rates..." style="width:220px;">
+            <button id="clearSearch" class="btn btn-outline-secondary btn-sm" type="button">Clear</button>
+            <button id="refreshBtn" class="btn btn-outline-secondary btn-sm">Refresh</button>
+          </div>
         </div>
         <div class="table-responsive">
           <table class="table align-middle">
@@ -43,6 +47,13 @@
             </tr></thead>
             <tbody id="rows"></tbody>
           </table>
+        </div>
+        <div id="pager" class="d-flex justify-content-between align-items-center mt-2">
+          <div id="pageInfo" class="small text-muted"></div>
+          <div class="btn-group btn-group-sm">
+            <button id="prevPage" class="btn btn-outline-secondary" type="button">Previous</button>
+            <button id="nextPage" class="btn btn-outline-secondary" type="button">Next</button>
+          </div>
         </div>
       </div>
     </div>
@@ -102,6 +113,8 @@
 
 <script>
   const API = '/api/catalog/tax-rates';
+  const PAGE_SIZE = 10;
+  let currentPage = 1; let currentSearch = '';
   function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
   async function apiFetch(url, options={}){ const headers = Object.assign({ 'Content-Type':'application/json', 'Authorization': `Bearer ${token()}` }, options.headers||{}); const res = await fetch(url, { ...options, headers }); if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); } return res; }
   function fmtDate(v){ if(!v) return ''; return new Date(v).toLocaleString(); }
@@ -122,16 +135,17 @@
       </td>
     </tr>`; }
 
-  async function load(){ const res = await apiFetch(`${API}/`); const data = await res.json(); const list = Array.isArray(data) ? data : (data.results||[]); document.getElementById('rows').innerHTML = list.map(row).join(''); }
+  function renderPagination(count){ const totalPages = Math.max(1, Math.ceil((count||0)/PAGE_SIZE)); document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages} — ${count||0} items`; document.getElementById('prevPage').disabled = currentPage<=1; document.getElementById('nextPage').disabled = currentPage>=totalPages; }
 
-  async function create(e){ e.preventDefault(); const alert = document.getElementById('createAlert'); alert.style.display='none'; const payload = { name: document.getElementById('txName').value.trim(), percent: parseFloat(document.getElementById('txPercent').value), active: document.getElementById('txActive').checked }; try{ const res = await apiFetch(`${API}/`, { method:'POST', body: JSON.stringify(payload) }); if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; } document.getElementById('createForm').reset(); document.getElementById('txActive').checked = true; load(); } catch(e){ alert.textContent = String(e); alert.style.display='block'; } }
+  async function load(){ const params = new URLSearchParams(); params.set('page', String(currentPage)); if(currentSearch) params.set('search', currentSearch); const res = await apiFetch(`${API}/?${params.toString()}`); const data = await res.json(); const list = Array.isArray(data) ? data : (data.results||[]); const count = Array.isArray(data) ? list.length : (data.count ?? list.length); document.getElementById('rows').innerHTML = list.map(row).join(''); renderPagination(count); }
+
+  async function create(e){ e.preventDefault(); const alert = document.getElementById('createAlert'); alert.style.display='none'; const payload = { name: document.getElementById('txName').value.trim(), percent: parseFloat(document.getElementById('txPercent').value), active: document.getElementById('txActive').checked }; try{ const res = await apiFetch(`${API}/`, { method:'POST', body: JSON.stringify(payload) }); if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; } document.getElementById('createForm').reset(); document.getElementById('txActive').checked = true; currentPage=1; load(); } catch(e){ alert.textContent = String(e); alert.style.display='block'; } }
 
   function openEdit(r){ document.getElementById('editId').value = r.id; document.getElementById('editName').value = r.name; document.getElementById('editPercent').value = r.percent; document.getElementById('editActive').checked = !!r.active; document.getElementById('editModal').style.display='flex'; }
   function closeEdit(){ document.getElementById('editModal').style.display='none'; }
   async function saveEdit(e){ e.preventDefault(); const id = document.getElementById('editId').value; const payload = { name: document.getElementById('editName').value.trim(), percent: parseFloat(document.getElementById('editPercent').value), active: document.getElementById('editActive').checked }; const alert = document.getElementById('editAlert'); alert.style.display='none'; try{ const res = await apiFetch(`${API}/${id}/`, { method:'PUT', body: JSON.stringify(payload) }); if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; } closeEdit(); load(); } catch(e){ alert.textContent = String(e); alert.style.display='block'; } }
 
   function iconFor(type){ if (type === '+') return '<span class="timeline-icon tl-add">+</span>'; if (type === '-') return '<span class="timeline-icon tl-delete">-</span>'; return '<span class="timeline-icon tl-update">~</span>'; }
-
   async function viewHistory(id){ const res = await apiFetch(`${API}/${id}/history/`); const data = await res.json(); const list = Array.isArray(data) ? data : (data.results||[]); document.getElementById('historyList').innerHTML = list.map(h => `
       <div class='list-group-item d-flex align-items-center'>
         ${iconFor(h.history_type)}
@@ -142,8 +156,16 @@
       </div>`).join(''); document.getElementById('historyModal').style.display='flex'; }
   function closeHistory(){ document.getElementById('historyModal').style.display='none'; }
 
+  function debounce(fn, delay){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); }; }
+
   document.getElementById('createForm').addEventListener('submit', create);
   document.getElementById('editForm').addEventListener('submit', saveEdit);
   document.getElementById('refreshBtn').addEventListener('click', load);
+  document.getElementById('prevPage').addEventListener('click', ()=>{ if(currentPage>1){ currentPage--; load(); } });
+  document.getElementById('nextPage').addEventListener('click', ()=>{ currentPage++; load(); });
+  const onSearchChange = debounce(()=>{ currentSearch = document.getElementById('searchInput').value.trim(); currentPage=1; load(); }, 300);
+  document.getElementById('searchInput').addEventListener('input', onSearchChange);
+  document.getElementById('clearSearch').addEventListener('click', ()=>{ document.getElementById('searchInput').value=''; currentSearch=''; currentPage=1; load(); });
+
   document.addEventListener('DOMContentLoaded', load);
 </script>

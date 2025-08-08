@@ -18,6 +18,7 @@ class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all().order_by("id")
     serializer_class = BrandSerializer
     permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]
+    search_fields = ["name"]
 
     def perform_create(self, serializer):
         user = self.request.user if self.request and self.request.user.is_authenticated else None
@@ -41,6 +42,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all().order_by("id")
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]
+    search_fields = ["name", "parent__name"]
 
     def get_queryset(self):
         qs = Category.objects.all().order_by("id")
@@ -78,6 +80,7 @@ class TaxRateViewSet(viewsets.ModelViewSet):
     queryset = TaxRate.objects.all().order_by("id")
     serializer_class = TaxRateSerializer
     permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]
+    search_fields = ["name"]
 
     def perform_create(self, serializer):
         user = self.request.user if self.request and self.request.user.is_authenticated else None
@@ -101,6 +104,7 @@ class UoMViewSet(viewsets.ModelViewSet):
     queryset = UoM.objects.all().order_by("id")
     serializer_class = UoMSerializer
     permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]
+    search_fields = ["code", "name"]
 
     def perform_create(self, serializer):
         user = self.request.user if self.request and self.request.user.is_authenticated else None

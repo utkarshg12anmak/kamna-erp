@@ -24,7 +24,11 @@
       <div class="card-like">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <h2 class="h5 mb-0">Brands</h2>
-          <button id="refreshBtn" class="btn btn-outline-secondary btn-sm">Refresh</button>
+          <div class="d-flex gap-2 align-items-center">
+            <input id="searchInput" type="search" class="form-control form-control-sm" placeholder="Search brands..." style="width:220px;">
+            <button id="clearSearch" class="btn btn-outline-secondary btn-sm" type="button">Clear</button>
+            <button id="refreshBtn" class="btn btn-outline-secondary btn-sm" type="button">Refresh</button>
+          </div>
         </div>
         <div class="table-responsive">
           <table class="table align-middle">
@@ -42,6 +46,13 @@
               <!-- rows injected by JS -->
             </tbody>
           </table>
+        </div>
+        <div id="pager" class="d-flex justify-content-between align-items-center mt-2">
+          <div id="pageInfo" class="small text-muted"></div>
+          <div class="btn-group btn-group-sm">
+            <button id="prevPage" class="btn btn-outline-secondary" type="button">Previous</button>
+            <button id="nextPage" class="btn btn-outline-secondary" type="button">Next</button>
+          </div>
         </div>
       </div>
     </div>
@@ -96,6 +107,9 @@
 
 <script>
   const API_BASE = '/api/catalog/brands';
+  const PAGE_SIZE = 10;
+  let currentPage = 1;
+  let currentSearch = '';
 
   function token() {
     const t = localStorage.getItem('accessToken');
@@ -134,12 +148,25 @@
       </tr>`;
   }
 
+  function renderPagination(count){
+    const totalPages = Math.max(1, Math.ceil((count || 0) / PAGE_SIZE));
+    document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages} — ${count || 0} items`;
+    document.getElementById('prevPage').disabled = currentPage <= 1;
+    document.getElementById('nextPage').disabled = currentPage >= totalPages;
+  }
+
   async function fetchBrands() {
     try {
-      const res = await apiFetch(`${API_BASE}/`);
+      const params = new URLSearchParams();
+      params.set('page', String(currentPage));
+      if (currentSearch) params.set('search', currentSearch);
+      const res = await apiFetch(`${API_BASE}/?${params.toString()}`);
       const data = await res.json();
+      const list = Array.isArray(data) ? data : (data.results || []);
+      const count = Array.isArray(data) ? list.length : (data.count ?? list.length);
       const body = document.getElementById('brandsBody');
-      body.innerHTML = (Array.isArray(data) ? data : data.results || []).map(rowHtml).join('');
+      body.innerHTML = list.map(rowHtml).join('');
+      renderPagination(count);
     } catch (e) { console.error(e); }
   }
 
@@ -161,6 +188,7 @@
       }
       document.getElementById('createBrandForm').reset();
       document.getElementById('brandActive').checked = true;
+      currentPage = 1; // go back to first page after create
       fetchBrands();
     } catch (e) {
       errorEl.textContent = String(e);
@@ -206,6 +234,9 @@
     try {
       const res = await apiFetch(`${API_BASE}/${id}/`, { method: 'DELETE' });
       if (!res.ok && res.status !== 204) { alert('Failed to delete'); return; }
+      // If we deleted the last item on the page, move back a page
+      const body = document.getElementById('brandsBody');
+      if (body.children.length === 1 && currentPage > 1) currentPage -= 1;
       fetchBrands();
     } catch (e) { console.error(e); }
   }
@@ -235,9 +266,16 @@
   }
   function closeHistory(){ document.getElementById('historyModal').style.display = 'none'; }
 
+  function debounce(fn, delay){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); }; }
+
   document.getElementById('createBrandForm').addEventListener('submit', createBrand);
   document.getElementById('editBrandForm').addEventListener('submit', saveEdit);
   document.getElementById('refreshBtn').addEventListener('click', fetchBrands);
+  document.getElementById('prevPage').addEventListener('click', ()=>{ if (currentPage>1){ currentPage--; fetchBrands(); } });
+  document.getElementById('nextPage').addEventListener('click', ()=>{ currentPage++; fetchBrands(); });
+  const onSearchChange = debounce(()=>{ currentSearch = document.getElementById('searchInput').value.trim(); currentPage = 1; fetchBrands(); }, 300);
+  document.getElementById('searchInput').addEventListener('input', onSearchChange);
+  document.getElementById('clearSearch').addEventListener('click', ()=>{ document.getElementById('searchInput').value=''; currentSearch=''; currentPage=1; fetchBrands(); });
 
   document.addEventListener('DOMContentLoaded', fetchBrands);
 </script>
