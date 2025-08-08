@@ -22,11 +22,13 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from .views import landing_page
 
 router = DefaultRouter()
 router.register(r"api/catalog/brands", BrandViewSet, basename="brand")
 
 urlpatterns = [
+    path("", landing_page, name="landing_page"),
     path("admin/", admin.site.urls),
     path("", include(router.urls)),
     path("api/auth/jwt/create/", TokenObtainPairView.as_view(), name="jwt-create"),
