@@ -1,4 +1,148 @@
-<div>
-  <h2 class="h5">Units of Measure</h2>
-  <p class="text-muted">Coming soon.</p>
+<div class="container-fluid">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card-like">
+        <h2 class="h5 mb-3">Create Unit of Measure</h2>
+        <div id="createAlert" class="alert alert-danger py-2 px-3" style="display:none;"></div>
+        <form id="createForm">
+          <div class="mb-3">
+            <label class="form-label" for="uomCode">Code</label>
+            <input id="uomCode" type="text" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="uomName">Name</label>
+            <input id="uomName" type="text" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="uomRatio">Ratio to Base</label>
+            <input id="uomRatio" type="number" min="0.0001" step="0.0001" class="form-control" value="1.0000" required>
+          </div>
+          <div class="form-check mb-1">
+            <input id="uomBase" type="checkbox" class="form-check-input">
+            <label class="form-check-label" for="uomBase">Base Unit</label>
+          </div>
+          <div class="form-check mb-3">
+            <input id="uomActive" type="checkbox" class="form-check-input" checked>
+            <label class="form-check-label" for="uomActive">Active</label>
+          </div>
+          <div class="d-grid"><button class="btn btn-primary" type="submit">Create</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card-like">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h5 mb-0">Units of Measure</h2>
+          <button id="refreshBtn" class="btn btn-outline-secondary btn-sm">Refresh</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead><tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Ratio</th>
+              <th>Base</th>
+              <th>Active</th>
+              <th>Created By</th>
+              <th>Updated By</th>
+              <th>Updated At</th>
+              <th class="text-end">Actions</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal-backdrop-custom" style="display:none;">
+  <div class="modal-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Edit UoM</h5>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeEdit()">✕</button>
+    </div>
+    <form id="editForm">
+      <input type="hidden" id="editId">
+      <div class="mb-3">
+        <label class="form-label" for="editCode">Code</label>
+        <input id="editCode" type="text" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="editName">Name</label>
+        <input id="editName" type="text" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="editRatio">Ratio to Base</label>
+        <input id="editRatio" type="number" min="0.0001" step="0.0001" class="form-control" required>
+      </div>
+      <div class="form-check mb-1">
+        <input id="editBase" type="checkbox" class="form-check-input">
+        <label class="form-check-label" for="editBase">Base Unit</label>
+      </div>
+      <div class="form-check mb-3">
+        <input id="editActive" type="checkbox" class="form-check-input">
+        <label class="form-check-label" for="editActive">Active</label>
+      </div>
+      <div id="editAlert" class="alert alert-danger py-2 px-3" style="display:none;"></div>
+      <div class="d-flex gap-2 justify-content-end">
+        <button type="button" class="btn btn-outline-secondary" onclick="closeEdit()">Cancel</button>
+        <button class="btn btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div id="historyModal" class="modal-backdrop-custom" style="display:none;">
+  <div class="modal-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">UoM History</h5>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeHistory()">✕</button>
+    </div>
+    <div id="historyList" class="list-group small" style="max-height:50vh; overflow:auto;"></div>
+  </div>
+</div>
+
+<script>
+  const API = '/api/catalog/uoms';
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function apiFetch(url, options={}){ const headers = Object.assign({ 'Content-Type':'application/json', 'Authorization': `Bearer ${token()}` }, options.headers||{}); const res = await fetch(url, { ...options, headers }); if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); } return res; }
+  function fmtDate(v){ if(!v) return ''; return new Date(v).toLocaleString(); }
+
+  function row(r){ return `
+    <tr>
+      <td>${r.code}</td>
+      <td>${r.name}</td>
+      <td>${r.ratio_to_base}</td>
+      <td>${r.base ? '<span class="badge text-bg-primary">Base</span>' : ''}</td>
+      <td>${r.active ? '<span class="badge text-bg-success">Yes</span>' : '<span class="badge text-bg-secondary">No</span>'}</td>
+      <td>${r.created_by ?? ''}</td>
+      <td>${r.updated_by ?? ''}</td>
+      <td>${fmtDate(r.updated_at)}</td>
+      <td class="text-end">
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-primary" onclick='openEdit(${JSON.stringify(r)})'>Edit</button>
+          <button class="btn btn-outline-secondary" onclick="viewHistory(${r.id})">History</button>
+        </div>
+      </td>
+    </tr>`; }
+
+  async function load(){ const res = await apiFetch(`${API}/`); const data = await res.json(); const list = Array.isArray(data) ? data : (data.results||[]); document.getElementById('rows').innerHTML = list.map(row).join(''); }
+
+  async function create(e){ e.preventDefault(); const alert = document.getElementById('createAlert'); alert.style.display='none'; const payload = { code: document.getElementById('uomCode').value.trim(), name: document.getElementById('uomName').value.trim(), ratio_to_base: parseFloat(document.getElementById('uomRatio').value), base: document.getElementById('uomBase').checked, active: document.getElementById('uomActive').checked }; try{ const res = await apiFetch(`${API}/`, { method:'POST', body: JSON.stringify(payload) }); if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; } document.getElementById('createForm').reset(); document.getElementById('uomActive').checked = true; document.getElementById('uomRatio').value = '1.0000'; load(); } catch(e){ alert.textContent = String(e); alert.style.display='block'; } }
+
+  function openEdit(r){ document.getElementById('editId').value = r.id; document.getElementById('editCode').value = r.code; document.getElementById('editName').value = r.name; document.getElementById('editRatio').value = r.ratio_to_base; document.getElementById('editBase').checked = !!r.base; document.getElementById('editActive').checked = !!r.active; document.getElementById('editModal').style.display='flex'; }
+  function closeEdit(){ document.getElementById('editModal').style.display='none'; }
+  async function saveEdit(e){ e.preventDefault(); const id = document.getElementById('editId').value; const payload = { code: document.getElementById('editCode').value.trim(), name: document.getElementById('editName').value.trim(), ratio_to_base: parseFloat(document.getElementById('editRatio').value), base: document.getElementById('editBase').checked, active: document.getElementById('editActive').checked }; const alert = document.getElementById('editAlert'); alert.style.display='none'; try{ const res = await apiFetch(`${API}/${id}/`, { method:'PUT', body: JSON.stringify(payload) }); if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; } closeEdit(); load(); } catch(e){ alert.textContent = String(e); alert.style.display='block'; } }
+
+  async function viewHistory(id){ const res = await apiFetch(`${API}/${id}/history/`); const data = await res.json(); const list = Array.isArray(data) ? data : (data.results||[]); document.getElementById('historyList').innerHTML = list.map(h => `<div class='list-group-item'><div class='fw-semibold'>${h.code} — ${h.name} — ratio ${h.ratio_to_base} ${h.base ? '(base)' : ''} — ${h.history_type}</div><div class='text-muted'>${new Date(h.history_date).toLocaleString()} ${h.history_user ? 'by '+h.history_user : ''}</div></div>`).join(''); document.getElementById('historyModal').style.display='flex'; }
+  function closeHistory(){ document.getElementById('historyModal').style.display='none'; }
+
+  document.getElementById('createForm').addEventListener('submit', create);
+  document.getElementById('editForm').addEventListener('submit', saveEdit);
+  document.getElementById('refreshBtn').addEventListener('click', load);
+  document.addEventListener('DOMContentLoaded', load);
+</script>

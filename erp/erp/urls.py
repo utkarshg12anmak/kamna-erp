@@ -45,6 +45,7 @@ urlpatterns = [
     path("", landing_page, name="landing_page"),
     path("admin/", admin.site.urls),
     path("", include(router.urls)),
+    path("", include("catalog.urls")),
     path("api/auth/jwt/create/", TokenObtainPairView.as_view(), name="jwt-create"),
     path("api/auth/jwt/refresh/", TokenRefreshView.as_view(), name="jwt-refresh"),
     path("api/auth/me/", AuthMeView.as_view(), name="auth-me"),
