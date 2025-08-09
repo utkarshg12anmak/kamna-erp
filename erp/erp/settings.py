@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django_filters",
     # Local apps
     "catalog",
+    "warehousing",
 ]
 
 MIDDLEWARE = [

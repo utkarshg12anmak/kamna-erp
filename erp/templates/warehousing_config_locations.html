@@ -2,3 +2,265 @@
   <h2 class="h5 mb-3">Locations</h2>
   <p class="text-muted">Placeholder for Locations configuration list and CRUD UI.</p>
 </div>
+
+<!-- Warehousing: Locations Configuration UI -->
+<div class="container-fluid">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card-like">
+        <h2 class="h5 mb-3">Create Location</h2>
+        <div id="createAlert" class="alert alert-danger py-2 px-3" style="display:none;"></div>
+        <form id="createForm">
+          <div class="mb-2">
+            <label class="form-label" for="whSelect">Warehouse</label>
+            <select id="whSelect" class="form-select" required></select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="locType">Type</label>
+            <select id="locType" class="form-select" required>
+              <option value="PHYSICAL">PHYSICAL</option>
+              <option value="VIRTUAL">VIRTUAL</option>
+            </select>
+          </div>
+          <div id="physicalFields">
+            <div class="mb-2">
+              <label class="form-label" for="locName">Display Name</label>
+              <input id="locName" type="text" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label" for="locCode">Code</label>
+              <input id="locCode" type="text" class="form-control">
+            </div>
+          </div>
+          <div id="virtualFields" style="display:none;">
+            <div class="mb-2">
+              <label class="form-label" for="locSubtype">Subtype</label>
+              <select id="locSubtype" class="form-select">
+                <option value="RECEIVE">RECEIVE</option>
+                <option value="DISPATCH">DISPATCH</option>
+                <option value="RETURN">RETURN</option>
+                <option value="QC">QC</option>
+                <option value="HOLD">HOLD</option>
+                <option value="DAMAGE">DAMAGE</option>
+                <option value="LOST">LOST</option>
+                <option value="EXCESS">EXCESS</option>
+                <option value="LOST_PENDING">LOST_PENDING</option>
+                <option value="EXCESS_PENDING">EXCESS_PENDING</option>
+                <option value="DAMAGE_PENDING">DAMAGE_PENDING</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="locStatus">Status</label>
+            <select id="locStatus" class="form-select">
+              <option value="ACTIVE" selected>ACTIVE</option>
+              <option value="INACTIVE">INACTIVE</option>
+            </select>
+          </div>
+          <div class="d-grid"><button class="btn btn-primary" type="submit">Create</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card-like">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h5 mb-0">Locations</h2>
+          <div class="d-flex gap-2 align-items-center">
+            <select id="filterWarehouse" class="form-select form-select-sm" style="width:220px;"></select>
+            <input id="searchInput" type="search" class="form-control form-control-sm" placeholder="Search locations..." style="width:220px;">
+            <button id="clearSearch" class="btn btn-outline-secondary btn-sm" type="button">Clear</button>
+            <button id="refreshBtn" class="btn btn-outline-secondary btn-sm" type="button">Refresh</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Warehouse</th>
+                <th>Type</th>
+                <th>Name / Code</th>
+                <th>Subtype</th>
+                <th>Status</th>
+                <th>Updated By</th>
+                <th>Updated At</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div id="pager" class="d-flex justify-content-between align-items-center mt-2">
+          <div id="pageInfo" class="small text-muted"></div>
+          <div class="btn-group btn-group-sm">
+            <button id="prevPage" class="btn btn-outline-secondary" type="button">Previous</button>
+            <button id="nextPage" class="btn btn-outline-secondary" type="button">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal-backdrop-custom" style="display:none;">
+  <div class="modal-card" style="max-width:720px;">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Edit Location</h5>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeEdit()">✕</button>
+    </div>
+    <form id="editForm">
+      <input type="hidden" id="editId">
+      <div class="row">
+        <div class="col-md-6 mb-2">
+          <label class="form-label" for="editWarehouse">Warehouse</label>
+          <select id="editWarehouse" class="form-select" required></select>
+        </div>
+        <div class="col-md-6 mb-2">
+          <label class="form-label" for="editType">Type</label>
+          <select id="editType" class="form-select" required>
+            <option value="PHYSICAL">PHYSICAL</option>
+            <option value="VIRTUAL">VIRTUAL</option>
+          </select>
+        </div>
+      </div>
+      <div id="editPhysical">
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            <label class="form-label" for="editName">Display Name</label>
+            <input id="editName" type="text" class="form-control">
+          </div>
+          <div class="col-md-6 mb-2">
+            <label class="form-label" for="editCode">Code</label>
+            <input id="editCode" type="text" class="form-control">
+          </div>
+        </div>
+      </div>
+      <div id="editVirtual" style="display:none;">
+        <div class="mb-2">
+          <label class="form-label" for="editSubtype">Subtype</label>
+          <select id="editSubtype" class="form-select">
+            <option value="RECEIVE">RECEIVE</option>
+            <option value="DISPATCH">DISPATCH</option>
+            <option value="RETURN">RETURN</option>
+            <option value="QC">QC</option>
+            <option value="HOLD">HOLD</option>
+            <option value="DAMAGE">DAMAGE</option>
+            <option value="LOST">LOST</option>
+            <option value="EXCESS">EXCESS</option>
+            <option value="LOST_PENDING">LOST_PENDING</option>
+            <option value="EXCESS_PENDING">EXCESS_PENDING</option>
+            <option value="DAMAGE_PENDING">DAMAGE_PENDING</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4 mb-2">
+          <label class="form-label" for="editStatus">Status</label>
+          <select id="editStatus" class="form-select">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+          </select>
+        </div>
+      </div>
+      <div id="editAlert" class="alert alert-danger py-2 px-3" style="display:none;"></div>
+      <div class="d-flex gap-2 justify-content-end mt-2">
+        <button type="button" class="btn btn-outline-secondary" onclick="closeEdit()">Cancel</button>
+        <button class="btn btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div id="historyModal" class="modal-backdrop-custom" style="display:none;">
+  <div class="modal-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Location History</h5>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeHistory()">✕</button>
+    </div>
+    <div id="historyList" class="list-group small" style="max-height:50vh; overflow:auto;"></div>
+  </div>
+</div>
+
+<style>
+  .modal-backdrop-custom { position: fixed; inset: 0; background: rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; z-index: 1050; }
+  .modal-card { width: 100%; max-width: 720px; background:#fff; border:1px solid var(--border); border-radius:12px; padding:16px; }
+  .timeline-icon { width: 24px; height:24px; display:inline-flex; align-items:center; justify-content:center; border-radius: 999px; margin-right:8px; font-weight:700; }
+  .tl-add { background:#E6F4FF; color:#1D4ED8; }
+  .tl-update { background:#FEF3C7; color:#92400E; }
+  .tl-delete { background:#FEE2E2; color:#991B1B; }
+</style>
+
+<script>
+  const API = '/api/warehousing/locations';
+  const WH_API = '/api/warehousing/warehouses';
+  const PAGE_SIZE = 10; let currentPage = 1; let currentSearch = ''; let currentWarehouse = '';
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function apiFetch(url, options={}){ const headers = Object.assign({ 'Content-Type':'application/json', 'Authorization': `Bearer ${token()}` }, options.headers||{}); const res = await fetch(url, { ...options, headers }); if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); } return res; }
+  function fmtDate(v){ if(!v) return ''; return new Date(v).toLocaleString(); }
+  function statusBadge(s){ return s === 'ACTIVE' ? '<span class="badge text-bg-success">Active</span>' : '<span class="badge text-bg-secondary">Inactive</span>'; }
+
+  function toggleCreateFields(){ const t = document.getElementById('locType').value; document.getElementById('physicalFields').style.display = (t==='PHYSICAL') ? '' : 'none'; document.getElementById('virtualFields').style.display = (t==='VIRTUAL') ? '' : 'none'; }
+  document.addEventListener('change', (e)=>{ if(e.target && e.target.id==='locType'){ toggleCreateFields(); }});
+
+  function row(r){ return `
+    <tr>
+      <td>${r.warehouse_display || r.warehouse}</td>
+      <td><span class='badge text-bg-info'>${r.type}</span></td>
+      <td>${r.display_name || ''} ${r.code ? '· ' + r.code : ''}</td>
+      <td>${r.subtype || ''}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td>${r.updated_by ?? ''}</td>
+      <td>${fmtDate(r.updated_at)}</td>
+      <td class="text-end">
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-primary" onclick='openEdit(${JSON.stringify(r)})'>Edit</button>
+          <button class="btn btn-outline-secondary" onclick="viewHistory(${r.id})">History</button>
+        </div>
+      </td>
+    </tr>`; }
+
+  function renderPagination(count){ const totalPages = Math.max(1, Math.ceil((count||0)/PAGE_SIZE)); document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages} — ${count||0} items`; document.getElementById('prevPage').disabled = currentPage<=1; document.getElementById('nextPage').disabled = currentPage>=totalPages; }
+
+  async function loadWarehouses(){ const res = await apiFetch(`${WH_API}/?page=1&page_size=1000`); const data = await res.json(); const list = Array.isArray(data) ? data : (data.results||[]); const opts = ['<option value="">All Warehouses</option>'].concat(list.map(w => `<option value='${w.id}'>${w.code} — ${w.name}</option>`)); document.getElementById('filterWarehouse').innerHTML = opts.join(''); document.getElementById('whSelect').innerHTML = list.map(w => `<option value='${w.id}'>${w.code} — ${w.name}</option>`).join(''); document.getElementById('editWarehouse').innerHTML = document.getElementById('whSelect').innerHTML; }
+
+  async function load(){ const params = new URLSearchParams(); params.set('page', String(currentPage)); if(currentSearch) params.set('search', currentSearch); if(currentWarehouse) params.set('warehouse', currentWarehouse); const res = await apiFetch(`${API}/?${params.toString()}`); const data = await res.json(); const list = Array.isArray(data) ? data : (data.results||[]); const count = Array.isArray(data) ? list.length : (data.count ?? list.length); document.getElementById('rows').innerHTML = list.map(row).join(''); renderPagination(count); }
+
+  async function create(e){ e.preventDefault(); const alert = document.getElementById('createAlert'); alert.style.display='none'; const payload = { warehouse: parseInt(document.getElementById('whSelect').value, 10), type: document.getElementById('locType').value, display_name: document.getElementById('locName').value.trim(), code: document.getElementById('locCode').value.trim(), subtype: document.getElementById('locSubtype').value, status: document.getElementById('locStatus').value }; try{ const res = await apiFetch(`${API}/`, { method:'POST', body: JSON.stringify(payload) }); if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; } document.getElementById('createForm').reset(); document.getElementById('locStatus').value='ACTIVE'; currentPage=1; load(); } catch(e){ alert.textContent = String(e); alert.style.display='block'; } }
+
+  function openEdit(r){ document.getElementById('editId').value = r.id; document.getElementById('editWarehouse').value = r.warehouse; document.getElementById('editType').value = r.type; document.getElementById('editStatus').value = r.status; if(r.type==='PHYSICAL'){ document.getElementById('editPhysical').style.display=''; document.getElementById('editVirtual').style.display='none'; document.getElementById('editName').value = r.display_name||''; document.getElementById('editCode').value = r.code||''; } else { document.getElementById('editPhysical').style.display='none'; document.getElementById('editVirtual').style.display=''; document.getElementById('editSubtype').value = r.subtype||'RECEIVE'; }
+    document.getElementById('editModal').style.display='flex'; }
+  function closeEdit(){ document.getElementById('editModal').style.display='none'; }
+
+  async function saveEdit(e){ e.preventDefault(); const id = document.getElementById('editId').value; const type = document.getElementById('editType').value; const payload = { warehouse: parseInt(document.getElementById('editWarehouse').value,10), type, status: document.getElementById('editStatus').value }; if(type==='PHYSICAL'){ payload.display_name = document.getElementById('editName').value.trim(); payload.code = document.getElementById('editCode').value.trim(); } else { payload.subtype = document.getElementById('editSubtype').value; }
+    const alert = document.getElementById('editAlert'); alert.style.display='none'; try{ const res = await apiFetch(`${API}/${id}/`, { method:'PUT', body: JSON.stringify(payload) }); if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; } closeEdit(); load(); } catch(e){ alert.textContent = String(e); alert.style.display='block'; } }
+
+  function iconFor(t){ if (t === '+') return '<span class="timeline-icon tl-add">+</span>'; if (t === '-') return '<span class="timeline-icon tl-delete">-</span>'; return '<span class="timeline-icon tl-update">~</span>'; }
+
+  async function viewHistory(id){ const res = await apiFetch(`${API}/${id}/history/`); const data = await res.json(); const list = Array.isArray(data) ? data : (data.results||[]); document.getElementById('historyList').innerHTML = list.map(h => `
+      <div class='list-group-item d-flex align-items-center'>
+        ${iconFor(h.history_type)}
+        <div>
+          <div class='fw-semibold'>${h.type} — ${h.display_name||''} ${h.code?('· '+h.code):''} <span class='text-muted'>${h.history_user ? 'by ' + h.history_user : ''}</span></div>
+          <div class='text-muted'>${h.subtype||''} — ${h.status} — ${fmtDate(h.history_date)} — ${h.history_type === '+' ? 'Created' : h.history_type === '-' ? 'Deleted' : 'Updated'}</div>
+        </div>
+      </div>`).join(''); document.getElementById('historyModal').style.display='flex'; }
+  function closeHistory(){ document.getElementById('historyModal').style.display='none'; }
+
+  function debounce(fn, delay){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); }; }
+
+  async function init(){ await loadWarehouses(); await load(); }
+
+  document.getElementById('createForm').addEventListener('submit', create);
+  document.getElementById('editForm').addEventListener('submit', saveEdit);
+  document.getElementById('refreshBtn').addEventListener('click', load);
+  document.getElementById('prevPage').addEventListener('click', ()=>{ if(currentPage>1){ currentPage--; load(); } });
+  document.getElementById('nextPage').addEventListener('click', ()=>{ currentPage++; load(); });
+  const onSearchChange = debounce(()=>{ currentSearch = document.getElementById('searchInput').value.trim(); currentPage=1; load(); }, 300);
+  document.getElementById('searchInput').addEventListener('input', onSearchChange);
+  document.getElementById('clearSearch').addEventListener('click', ()=>{ document.getElementById('searchInput').value=''; currentSearch=''; currentPage=1; load(); });
+  document.getElementById('filterWarehouse').addEventListener('change', ()=>{ currentWarehouse = document.getElementById('filterWarehouse').value; currentPage=1; load(); });
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>

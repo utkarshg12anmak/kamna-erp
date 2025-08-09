@@ -2,3 +2,290 @@
   <h2 class="h5 mb-3">Warehouses</h2>
   <p class="text-muted">Placeholder for Warehouses configuration list and CRUD UI.</p>
 </div>
+
+<!-- Warehousing: Warehouses Configuration UI -->
+<div class="container-fluid">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card-like">
+        <h2 class="h5 mb-3">Create Warehouse</h2>
+        <div id="createAlert" class="alert alert-danger py-2 px-3" style="display:none;"></div>
+        <form id="createForm">
+          <div class="mb-2">
+            <label class="form-label" for="whCode">Code</label>
+            <input id="whCode" type="text" class="form-control" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="whName">Name</label>
+            <input id="whName" type="text" class="form-control" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="whGSTIN">GSTIN</label>
+            <input id="whGSTIN" type="text" class="form-control" maxlength="15" placeholder="15-char GSTIN" required>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-2">
+              <label class="form-label" for="whCity">City</label>
+              <input id="whCity" type="text" class="form-control" required>
+            </div>
+            <div class="col-6 mb-2">
+              <label class="form-label" for="whState">State</label>
+              <input id="whState" type="text" class="form-control" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-2">
+              <label class="form-label" for="whPincode">Pincode</label>
+              <input id="whPincode" type="text" class="form-control" required>
+            </div>
+            <div class="col-6 mb-2">
+              <label class="form-label" for="whCountry">Country</label>
+              <input id="whCountry" type="text" class="form-control" value="India" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-2">
+              <label class="form-label" for="whLat">Latitude</label>
+              <input id="whLat" type="number" step="0.000001" class="form-control" placeholder="0.000000" required>
+            </div>
+            <div class="col-6 mb-2">
+              <label class="form-label" for="whLon">Longitude</label>
+              <input id="whLon" type="number" step="0.000001" class="form-control" placeholder="0.000000" required>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="whAddr1">Address Line 1</label>
+            <input id="whAddr1" type="text" class="form-control">
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="whAddr2">Address Line 2</label>
+            <input id="whAddr2" type="text" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="whStatus">Status</label>
+            <select id="whStatus" class="form-select">
+              <option value="ACTIVE" selected>ACTIVE</option>
+              <option value="INACTIVE">INACTIVE</option>
+            </select>
+          </div>
+          <div class="d-grid">
+            <button class="btn btn-primary" type="submit">Create</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card-like">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h5 mb-0">Warehouses</h2>
+          <div class="d-flex gap-2 align-items-center">
+            <input id="searchInput" type="search" class="form-control form-control-sm" placeholder="Search warehouses..." style="width:240px;">
+            <button id="clearSearch" class="btn btn-outline-secondary btn-sm" type="button">Clear</button>
+            <button id="refreshBtn" class="btn btn-outline-secondary btn-sm" type="button">Refresh</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Status</th>
+                <th>Updated By</th>
+                <th>Updated At</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div id="pager" class="d-flex justify-content-between align-items-center mt-2">
+          <div id="pageInfo" class="small text-muted"></div>
+          <div class="btn-group btn-group-sm">
+            <button id="prevPage" class="btn btn-outline-secondary" type="button">Previous</button>
+            <button id="nextPage" class="btn btn-outline-secondary" type="button">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal-backdrop-custom" style="display:none;">
+  <div class="modal-card" style="max-width:720px;">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Edit Warehouse</h5>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeEdit()">✕</button>
+    </div>
+    <form id="editForm">
+      <input type="hidden" id="editId">
+      <div class="row">
+        <div class="col-md-6 mb-2">
+          <label class="form-label" for="editCode">Code</label>
+          <input id="editCode" type="text" class="form-control" required>
+        </div>
+        <div class="col-md-6 mb-2">
+          <label class="form-label" for="editName">Name</label>
+          <input id="editName" type="text" class="form-control" required>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-2">
+          <label class="form-label" for="editGSTIN">GSTIN</label>
+          <input id="editGSTIN" type="text" class="form-control" maxlength="15" required>
+        </div>
+        <div class="col-md-3 mb-2">
+          <label class="form-label" for="editStatus">Status</label>
+          <select id="editStatus" class="form-select">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4 mb-2">
+          <label class="form-label" for="editCity">City</label>
+          <input id="editCity" type="text" class="form-control" required>
+        </div>
+        <div class="col-md-4 mb-2">
+          <label class="form-label" for="editState">State</label>
+          <input id="editState" type="text" class="form-control" required>
+        </div>
+        <div class="col-md-4 mb-2">
+          <label class="form-label" for="editPincode">Pincode</label>
+          <input id="editPincode" type="text" class="form-control" required>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-2">
+          <label class="form-label" for="editCountry">Country</label>
+          <input id="editCountry" type="text" class="form-control" required>
+        </div>
+        <div class="col-md-3 mb-2">
+          <label class="form-label" for="editLat">Latitude</label>
+          <input id="editLat" type="number" step="0.000001" class="form-control" required>
+        </div>
+        <div class="col-md-3 mb-2">
+          <label class="form-label" for="editLon">Longitude</label>
+          <input id="editLon" type="number" step="0.000001" class="form-control" required>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-2">
+          <label class="form-label" for="editAddr1">Address Line 1</label>
+          <input id="editAddr1" type="text" class="form-control">
+        </div>
+        <div class="col-md-6 mb-2">
+          <label class="form-label" for="editAddr2">Address Line 2</label>
+          <input id="editAddr2" type="text" class="form-control">
+        </div>
+      </div>
+      <div id="editAlert" class="alert alert-danger py-2 px-3" style="display:none;"></div>
+      <div class="d-flex gap-2 justify-content-end mt-2">
+        <button type="button" class="btn btn-outline-secondary" onclick="closeEdit()">Cancel</button>
+        <button class="btn btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div id="historyModal" class="modal-backdrop-custom" style="display:none;">
+  <div class="modal-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Warehouse History</h5>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeHistory()">✕</button>
+    </div>
+    <div id="historyList" class="list-group small" style="max-height:50vh; overflow:auto;"></div>
+  </div>
+</div>
+
+<!-- Virtual Bins Modal -->
+<div id="binsModal" class="modal-backdrop-custom" style="display:none;">
+  <div class="modal-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Virtual Bins</h5>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeBins()">✕</button>
+    </div>
+    <div id="binsList" class="list-group small" style="max-height:50vh; overflow:auto;"></div>
+  </div>
+</div>
+
+<style>
+  .modal-backdrop-custom { position: fixed; inset: 0; background: rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; z-index: 1050; }
+  .modal-card { width: 100%; max-width: 720px; background:#fff; border:1px solid var(--border); border-radius:12px; padding:16px; }
+  .timeline-icon { width: 24px; height:24px; display:inline-flex; align-items:center; justify-content:center; border-radius: 999px; margin-right:8px; font-weight:700; }
+  .tl-add { background:#E6F4FF; color:#1D4ED8; }
+  .tl-update { background:#FEF3C7; color:#92400E; }
+  .tl-delete { background:#FEE2E2; color:#991B1B; }
+</style>
+
+<script>
+  const API = '/api/warehousing/warehouses';
+  const PAGE_SIZE = 10; let currentPage = 1; let currentSearch = '';
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function apiFetch(url, options={}){ const headers = Object.assign({ 'Content-Type':'application/json', 'Authorization': `Bearer ${token()}` }, options.headers||{}); const res = await fetch(url, { ...options, headers }); if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); } return res; }
+  function fmtDate(v){ if(!v) return ''; return new Date(v).toLocaleString(); }
+
+  function statusBadge(s){ return s === 'ACTIVE' ? '<span class="badge text-bg-success">Active</span>' : '<span class="badge text-bg-secondary">Inactive</span>'; }
+
+  function row(r){ return `
+    <tr>
+      <td>${r.code}</td>
+      <td>${r.name}</td>
+      <td>${r.city||''}</td>
+      <td>${r.state||''}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td>${r.updated_by ?? ''}</td>
+      <td>${fmtDate(r.updated_at)}</td>
+      <td class="text-end">
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-primary" onclick='openEdit(${JSON.stringify(r)})'>Edit</button>
+          <button class="btn btn-outline-secondary" onclick="viewHistory(${r.id})">History</button>
+          <button class="btn btn-outline-secondary" onclick="viewBins(${r.id})">Bins</button>
+        </div>
+      </td>
+    </tr>`; }
+
+  function renderPagination(count){ const totalPages = Math.max(1, Math.ceil((count||0)/PAGE_SIZE)); document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages} — ${count||0} items`; document.getElementById('prevPage').disabled = currentPage<=1; document.getElementById('nextPage').disabled = currentPage>=totalPages; }
+
+  async function load(){ const params = new URLSearchParams(); params.set('page', String(currentPage)); if(currentSearch) params.set('search', currentSearch); const res = await apiFetch(`${API}/?${params.toString()}`); const data = await res.json(); const list = Array.isArray(data) ? data : (data.results||[]); const count = Array.isArray(data) ? list.length : (data.count ?? list.length); document.getElementById('rows').innerHTML = list.map(row).join(''); renderPagination(count); }
+
+  async function create(e){ e.preventDefault(); const alert = document.getElementById('createAlert'); alert.style.display='none'; const payload = { code: document.getElementById('whCode').value.trim(), name: document.getElementById('whName').value.trim(), gstin: document.getElementById('whGSTIN').value.trim(), city: document.getElementById('whCity').value.trim(), state: document.getElementById('whState').value.trim(), pincode: document.getElementById('whPincode').value.trim(), country: document.getElementById('whCountry').value.trim(), latitude: parseFloat(document.getElementById('whLat').value), longitude: parseFloat(document.getElementById('whLon').value), address_line1: document.getElementById('whAddr1').value.trim(), address_line2: document.getElementById('whAddr2').value.trim(), status: document.getElementById('whStatus').value }; try{ const res = await apiFetch(`${API}/`, { method:'POST', body: JSON.stringify(payload) }); if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; } document.getElementById('createForm').reset(); document.getElementById('whCountry').value='India'; document.getElementById('whStatus').value='ACTIVE'; currentPage=1; load(); } catch(e){ alert.textContent = String(e); alert.style.display='block'; } }
+
+  function openEdit(r){ document.getElementById('editId').value = r.id; document.getElementById('editCode').value = r.code; document.getElementById('editName').value = r.name; document.getElementById('editGSTIN').value = r.gstin; document.getElementById('editStatus').value = r.status; document.getElementById('editCity').value = r.city||''; document.getElementById('editState').value = r.state||''; document.getElementById('editPincode').value = r.pincode||''; document.getElementById('editCountry').value = r.country||''; document.getElementById('editLat').value = r.latitude; document.getElementById('editLon').value = r.longitude; document.getElementById('editAddr1').value = r.address_line1||''; document.getElementById('editAddr2').value = r.address_line2||''; document.getElementById('editModal').style.display='flex'; }
+  function closeEdit(){ document.getElementById('editModal').style.display='none'; }
+
+  async function saveEdit(e){ e.preventDefault(); const id = document.getElementById('editId').value; const payload = { code: document.getElementById('editCode').value.trim(), name: document.getElementById('editName').value.trim(), gstin: document.getElementById('editGSTIN').value.trim(), status: document.getElementById('editStatus').value, city: document.getElementById('editCity').value.trim(), state: document.getElementById('editState').value.trim(), pincode: document.getElementById('editPincode').value.trim(), country: document.getElementById('editCountry').value.trim(), latitude: parseFloat(document.getElementById('editLat').value), longitude: parseFloat(document.getElementById('editLon').value), address_line1: document.getElementById('editAddr1').value.trim(), address_line2: document.getElementById('editAddr2').value.trim() }; const alert = document.getElementById('editAlert'); alert.style.display='none'; try{ const res = await apiFetch(`${API}/${id}/`, { method:'PUT', body: JSON.stringify(payload) }); if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; } closeEdit(); load(); } catch(e){ alert.textContent = String(e); alert.style.display='block'; } }
+
+  function iconFor(t){ if (t === '+') return '<span class="timeline-icon tl-add">+</span>'; if (t === '-') return '<span class="timeline-icon tl-delete">-</span>'; return '<span class="timeline-icon tl-update">~</span>'; }
+
+  async function viewHistory(id){ const res = await apiFetch(`${API}/${id}/history/`); const data = await res.json(); const list = Array.isArray(data) ? data : (data.results||[]); document.getElementById('historyList').innerHTML = list.map(h => `
+      <div class='list-group-item d-flex align-items-center'>
+        ${iconFor(h.history_type)}
+        <div>
+          <div class='fw-semibold'>${h.code} — ${h.name} <span class='text-muted'>${h.history_user ? 'by ' + h.history_user : ''}</span></div>
+          <div class='text-muted'>${h.status} — ${fmtDate(h.history_date)} — ${h.history_type === '+' ? 'Created' : h.history_type === '-' ? 'Deleted' : 'Updated'}</div>
+        </div>
+      </div>`).join(''); document.getElementById('historyModal').style.display='flex'; }
+  function closeHistory(){ document.getElementById('historyModal').style.display='none'; }
+
+  async function viewBins(id){ const res = await apiFetch(`${API}/${id}/virtual_bins/`); const data = await res.json(); const list = Array.isArray(data) ? data : (data.results||[]); document.getElementById('binsList').innerHTML = list.map(b => `<div class='list-group-item d-flex justify-content-between'><div><span class='badge text-bg-info me-2'>${b.type}</span>${b.subtype||''} ${b.code?('· '+b.code):''} — ${b.display_name||''}</div><div>${statusBadge(b.status)}</div></div>`).join(''); document.getElementById('binsModal').style.display='flex'; }
+  function closeBins(){ document.getElementById('binsModal').style.display='none'; }
+
+  function debounce(fn, delay){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); }; }
+
+  document.getElementById('createForm').addEventListener('submit', create);
+  document.getElementById('editForm').addEventListener('submit', saveEdit);
+  document.getElementById('refreshBtn').addEventListener('click', load);
+  document.getElementById('prevPage').addEventListener('click', ()=>{ if(currentPage>1){ currentPage--; load(); } });
+  document.getElementById('nextPage').addEventListener('click', ()=>{ currentPage++; load(); });
+  const onSearchChange = debounce(()=>{ currentSearch = document.getElementById('searchInput').value.trim(); currentPage=1; load(); }, 300);
+  document.getElementById('searchInput').addEventListener('input', onSearchChange);
+  document.getElementById('clearSearch').addEventListener('click', ()=>{ document.getElementById('searchInput').value=''; currentSearch=''; currentPage=1; load(); });
+  document.addEventListener('DOMContentLoaded', load);
+</script>
