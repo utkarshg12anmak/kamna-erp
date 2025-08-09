@@ -38,6 +38,9 @@ from .views import (
     module_catalog_categories,
     module_catalog_uoms,
     module_catalog_taxrates,
+    warehousing_config,
+    warehousing_config_warehouses,
+    warehousing_config_locations,
 )
 from .api_auth_views import AuthMeView
 from django.conf import settings
@@ -66,6 +69,10 @@ urlpatterns = [
     path("app/catalog/uoms", module_catalog_uoms, name="module_catalog_uoms"),
     path("app/catalog/taxrates", module_catalog_taxrates, name="module_catalog_taxrates"),
     path("app/warehousing", module_warehousing, name="module_warehousing"),
+    # Warehousing configuration routes
+    path("app/warehousing/config", warehousing_config, name="warehousing_config"),
+    path("app/warehousing/config/warehouses", warehousing_config_warehouses, name="warehousing_config_warehouses"),
+    path("app/warehousing/config/locations", warehousing_config_locations, name="warehousing_config_locations"),
     path("app/manufacturing", module_manufacturing, name="module_manufacturing"),
     path("app/sales", module_sales, name="module_sales"),
     path("app/finance", module_finance, name="module_finance"),

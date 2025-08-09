@@ -68,12 +68,47 @@ def module_catalog_taxrates(request):
     return render_module(request, "Catalog", catalog_menu("/app/catalog/taxrates"), "catalog_taxrates.html")
 
 
-# Other modules (basic)
+# Warehousing module: separate Operational (Enter) vs Configuration menus
+
+def warehousing_operational_menu(active_href):
+    items = [
+        {"label": "Dashboard", "href": "/app/warehousing"},
+        # Future operational entries will be added here (Receiving, Putaway, Picking, etc.)
+    ]
+    for it in items:
+        it["active"] = (it["href"] == active_href)
+    return items
+
+
+def warehousing_config_menu(active_href):
+    items = [
+        {"label": "Configuration", "href": "/app/warehousing/config"},
+        {"label": "Warehouses", "href": "/app/warehousing/config/warehouses"},
+        {"label": "Locations", "href": "/app/warehousing/config/locations"},
+    ]
+    for it in items:
+        it["active"] = (it["href"] == active_href)
+    return items
+
 
 def module_warehousing(request):
-    menu = [{"label": "Dashboard", "href": "/app/warehousing", "active": True}]
-    return render_module(request, "Warehousing", menu, "warehousing_index.html")
+    # Operational experience (Enter)
+    return render_module(request, "Warehousing", warehousing_operational_menu("/app/warehousing"), "warehousing_index.html")
 
+
+def warehousing_config(request):
+    return render_module(request, "Warehousing", warehousing_config_menu("/app/warehousing/config"), "warehousing_config_index.html")
+
+
+def warehousing_config_warehouses(request):
+    return render_module(request, "Warehousing", warehousing_config_menu("/app/warehousing/config/warehouses"), "warehousing_config_warehouses.html")
+
+
+def warehousing_config_locations(request):
+    return render_module(request, "Warehousing", warehousing_config_menu("/app/warehousing/config/locations"), "warehousing_config_locations.html")
+
+
+# Other modules (basic)
 
 def module_manufacturing(request):
     menu = [{"label": "Dashboard", "href": "/app/manufacturing", "active": True}]
