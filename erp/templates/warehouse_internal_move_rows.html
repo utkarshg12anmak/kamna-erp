@@ -1,0 +1,211 @@
+<div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 m-0">Internal Movement</h2>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary btn-sm" href="/app/warehousing/w/{{ warehouse_code }}/movements">Movements</a>
+      <a class="btn btn-outline-secondary btn-sm" href="/app/warehousing/w/{{ warehouse_code }}">Back</a>
+    </div>
+  </div>
+
+  <div class="card-like mb-3">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <label class="form-label small">From Location</label>
+        <select class="form-select form-select-sm" id="fromLoc"></select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label small">To Location</label>
+        <select class="form-select form-select-sm" id="toLoc" disabled></select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label small">Memo</label>
+        <input class="form-control form-control-sm" id="memo" placeholder="optional" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card-like mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h3 class="h6 m-0">From Stock</h3>
+      <div class="d-flex gap-2">
+        <input class="form-control form-control-sm" style="width:240px" id="q" placeholder="Search SKU or name" />
+        <button class="btn btn-outline-secondary btn-sm" id="applyFilter">Search</button>
+        <button class="btn btn-outline-primary btn-sm" id="setFullAll">Set FULL for all</button>
+        <button class="btn btn-outline-secondary btn-sm" id="clearAll">Clear all</button>
+      </div>
+    </div>
+    <div class="table-responsive" style="max-height: 50vh; overflow:auto;">
+      <table class="table table-sm align-middle" id="fromStockTable">
+        <thead class="table-light sticky-top"><tr><th style="width:48px"></th><th>SKU</th><th>Name</th><th class="text-end">On-hand</th><th class="text-end" style="width:180px">Move Qty</th></tr></thead>
+        <tbody id="fromRows"><tr><td colspan="5" class="text-center text-muted">Pick a From location</td></tr></tbody>
+      </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mt-2">
+      <div class="small text-muted">Page <span id="page">1</span> · <span id="count">0</span> items</div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-secondary" id="prev">Prev</button>
+        <button class="btn btn-sm btn-outline-secondary" id="next">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end align-items-center gap-3">
+    <div class="text-muted">Lines: <span id="sumLines">0</span> · Qty: <span id="sumQty">0</span></div>
+    <button class="btn btn-primary btn-sm" id="confirm" disabled>Confirm Transfer</button>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Internal Movement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table table-sm"><thead><tr><th>SKU</th><th>Name</th><th class="text-end">Qty</th></tr></thead><tbody id="confirmBody"></tbody></table>
+        </div>
+        <div class="mt-2">Type <strong>MOVE</strong> to confirm: <input id="confirmWord" class="form-control form-control-sm" style="width:160px" /></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="confirmDo" disabled>Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="whCtx" data-wh-id="{{ warehouse_id }}" data-wh-code="{{ warehouse_code }}" style="display:none;"></div>
+
+<script>
+  function token(){ const t=localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function apiGet(url){ const r=await fetch(url,{headers:{'Authorization':`Bearer ${token()}`}}); if(r.status===401){ window.location='/'; throw new Error('Unauthorized'); } return r.json(); }
+  async function apiPost(url, body){ const r=await fetch(url,{method:'POST', headers:{'Authorization':`Bearer ${token()}`, 'Content-Type':'application/json'}, body: JSON.stringify(body)}); if(r.status===401){ window.location='/'; throw new Error('Unauthorized'); } const j=await r.json(); if(!r.ok) throw j; return j; }
+  const state = { locs: [], from: null, to: null, memo: '', page:1, pageSize:25, q:'', stock:[], count:0, qtyMap: new Map(), canConfirm:false };
+
+  async function loadPerm(){
+    try{
+      const me = await apiGet('/api/auth/me/');
+      // Server enforces perms; UI gate simple: users in any group named 'Warehousing' allowed to confirm
+      state.canConfirm = (me.groups||[]).includes('Warehousing');
+    }catch(e){ state.canConfirm=false; }
+    updateConfirmEnabled();
+  }
+
+  async function loadLocs(){
+    const whId = Number(document.getElementById('whCtx').dataset.whId||'0');
+    // Reuse locations endpoint via filtering
+    const res = await apiGet(`/api/warehousing/locations/?warehouse=${whId}&type=PHYSICAL&status=ACTIVE&ordering=code`);
+    state.locs = (res.results||res||[]);
+    const opts = state.locs.map(l=>`<option value="${l.id}">${l.code||''} ${l.display_name?('— '+l.display_name):''}</option>`).join('');
+    document.getElementById('fromLoc').innerHTML = `<option value="">Select…</option>` + opts;
+    document.getElementById('toLoc').innerHTML = `<option value="">Select…</option>` + opts;
+  }
+
+  function renderRows(){
+    const tbody = document.getElementById('fromRows');
+    if(!state.from){ tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Pick a From location</td></tr>`; return; }
+    if(!state.stock.length){ tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No stock</td></tr>`; return; }
+    tbody.innerHTML = state.stock.map(r=>{
+      const qty = Number(state.qtyMap.get(r.item_id)||0);
+      return `<tr>
+        <td>${r.img?`<img src="${r.img}" style="width:40px;height:40px;object-fit:cover;"/>`:''}</td>
+        <td>${r.sku}</td>
+        <td>${r.name}</td>
+        <td class="text-end">${r.on_hand}</td>
+        <td class="text-end">
+          <div class="input-group input-group-sm">
+            <input data-item="${r.item_id}" type="number" min="0" max="${r.on_hand}" step="0.001" class="form-control text-end qty-input" value="${qty||''}" />
+            <button class="btn btn-outline-primary btn-sm set-full" type="button" data-item="${r.item_id}">Full</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+    // bind events
+    tbody.querySelectorAll('.qty-input').forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        const item = Number(inp.dataset.item);
+        let v = Number(inp.value||0); const max = Number(inp.getAttribute('max')); if(v<0) v=0; if(v>max) v=max; inp.value = v? v.toFixed(3):''; state.qtyMap.set(item, v);
+        recompute();
+      });
+      inp.addEventListener('keypress', e=>{ if(e.key==='f'||e.key==='F'){ const btn = inp.parentElement.querySelector('.set-full'); if(btn) btn.click(); }});
+    });
+    tbody.querySelectorAll('.set-full').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const item = Number(btn.dataset.item);
+        const row = state.stock.find(x=>x.item_id===item);
+        const max = Number(row?.on_hand||0);
+        state.qtyMap.set(item, max);
+        const inp = tbody.querySelector(`input.qty-input[data-item="${item}"]`);
+        if(inp){ inp.value = max? max.toFixed(3):''; }
+        recompute();
+      });
+    });
+  }
+
+  function recompute(){
+    const entries = Array.from(state.qtyMap.entries()).filter(([k,v])=> Number(v)>0);
+    const lines = entries.length;
+    const qty = entries.reduce((s,[,v])=> s + Number(v||0), 0);
+    document.getElementById('sumLines').textContent = String(lines);
+    document.getElementById('sumQty').textContent = qty.toFixed(3);
+    updateConfirmEnabled();
+  }
+
+  function updateConfirmEnabled(){
+    const ok = state.canConfirm && state.from && state.to && state.from !== state.to && Array.from(state.qtyMap.values()).some(v=>Number(v)>0);
+    document.getElementById('confirm').disabled = !ok;
+  }
+
+  async function loadStock(){
+    const whId = Number(document.getElementById('whCtx').dataset.whId||'0');
+    if(!state.from){ state.stock=[]; state.count=0; renderRows(); return; }
+    const res = await apiGet(`/api/warehousing/warehouses/${whId}/internal_move/rows/stock/?location=${state.from}&page=${state.page}&page_size=${state.pageSize}&q=${encodeURIComponent(state.q||'')}`);
+    state.stock = res.results||[]; state.count = Number(res.count||0); document.getElementById('page').textContent = String(state.page); document.getElementById('count').textContent = String(state.count);
+    renderRows();
+  }
+
+  async function confirm(){
+    // build payload
+    const lines = Array.from(state.qtyMap.entries()).filter(([,v])=>Number(v)>0).map(([item,qty])=>({ item, qty }));
+    const whId = Number(document.getElementById('whCtx').dataset.whId||'0');
+    const payload = { from_location: Number(state.from), to_location: Number(state.to), memo: (document.getElementById('memo').value||''), lines };
+    // show modal
+    const tbody = document.getElementById('confirmBody');
+    const map = new Map(state.stock.map(r=>[r.item_id, r]));
+    tbody.innerHTML = lines.map(ln=>{ const r = map.get(Number(ln.item)); return `<tr><td>${r?.sku||ln.item}</td><td>${r?.name||''}</td><td class='text-end'>${Number(ln.qty).toFixed(3)}</td></tr>`; }).join('');
+    const el = document.getElementById('confirmModal'); const modal = window.bootstrap ? window.bootstrap.Modal.getOrCreateInstance(el) : null; if(modal){ modal.show(); } else { el.style.display='block'; el.classList.add('show'); }
+    const word = document.getElementById('confirmWord'); const btn = document.getElementById('confirmDo');
+    word.value = ''; btn.disabled = true; word.addEventListener('input', ()=>{ btn.disabled = (word.value.trim().toUpperCase() !== 'MOVE'); });
+    btn.onclick = async ()=>{
+      btn.disabled = true;
+      try{
+        const res = await apiPost(`/api/warehousing/warehouses/${whId}/internal_move/rows/confirm/`, payload);
+        alert(`Moved ${res.total_qty} over ${res.moved_lines} items`);
+        state.qtyMap.clear(); recompute(); await loadStock();
+      }catch(err){
+        // display errors under rows
+        if(err && err.errors){
+          const es = err.errors; let msg = 'Errors:\n'; Object.keys(es).forEach(k=>{ msg += `${k}: ${es[k]}\n`; }); alert(msg);
+        } else {
+          alert('Failed');
+        }
+      } finally {
+        if(modal){ modal.hide(); }
+      }
+    };
+  }
+
+  // bindings
+  document.getElementById('fromLoc').addEventListener('change', async (e)=>{ state.from = e.target.value || null; state.page=1; state.qtyMap.clear(); recompute(); document.getElementById('toLoc').disabled = !state.from; await loadStock(); updateConfirmEnabled(); });
+  document.getElementById('toLoc').addEventListener('change', (e)=>{ state.to = e.target.value || null; updateConfirmEnabled(); });
+  document.getElementById('applyFilter').addEventListener('click', ()=>{ state.q = document.getElementById('q').value||''; state.page=1; loadStock(); });
+  document.getElementById('setFullAll').addEventListener('click', ()=>{ state.stock.forEach(r=> state.qtyMap.set(r.item_id, Number(r.on_hand||0))); renderRows(); recompute(); });
+  document.getElementById('clearAll').addEventListener('click', ()=>{ state.qtyMap.clear(); renderRows(); recompute(); });
+  document.getElementById('prev').addEventListener('click', ()=>{ if(state.page>1){ state.page--; loadStock(); } });
+  document.getElementById('next').addEventListener('click', ()=>{ const pages = Math.ceil((state.count||0)/state.pageSize); if(state.page<pages){ state.page++; loadStock(); } });
+  document.getElementById('confirm').addEventListener('click', confirm);
+  document.addEventListener('DOMContentLoaded', ()=>{ loadPerm(); loadLocs(); });
+</script>

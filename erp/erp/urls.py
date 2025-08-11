@@ -48,6 +48,8 @@ from .views import (
     warehousing_approvals,
     warehouse_approvals,
     warehouse_putaway,
+    warehouse_internal_move,
+    warehouse_internal_move_rows,
 )
 from .api_auth_views import AuthMeView
 from django.conf import settings
@@ -90,6 +92,7 @@ urlpatterns = [
     path("app/manufacturing", module_manufacturing, name="module_manufacturing"),
     path("app/sales", module_sales, name="module_sales"),
     path("app/finance", module_finance, name="module_finance"),
+    path("app/warehousing/w/<str:code>/internal-move", warehouse_internal_move_rows, name="warehouse_internal_move_rows"),
 ]
 
 if settings.DEBUG:

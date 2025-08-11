@@ -1,0 +1,139 @@
+<div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 m-0">Internal Movement — {{ warehouse.code }} {{ warehouse.name }}</h2>
+    <a class="btn btn-outline-secondary btn-sm" href="/app/warehousing/w/{{ warehouse.code }}">Back to Overview</a>
+  </div>
+
+  <div class="card-like mb-3">
+    <div class="row g-2">
+      <div class="col-md-4">
+        <label class="form-label small">Search</label>
+        <input id="q" class="form-control form-control-sm" placeholder="SKU or name" />
+      </div>
+      <div class="col-md-2 align-self-end">
+        <button id="applyFilters" class="btn btn-primary btn-sm w-100">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-lg-6">
+      <div class="card-like">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h3 class="h6 m-0">From — On-hand by Location</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead><tr><th>SKU</th><th>Name</th><th>Location</th><th class="text-end">Qty</th><th></th></tr></thead>
+            <tbody id="fromRows"><tr><td colspan="5" class="text-center text-muted">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-6">
+      <div class="card-like">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h3 class="h6 m-0">Draft Lines</h3>
+          <div>
+            <button id="confirmBtn" class="btn btn-success btn-sm">Confirm</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead><tr><th>SKU</th><th>From</th><th>To</th><th class="text-end">Qty</th><th></th></tr></thead>
+            <tbody id="draftRows"><tr><td colspan="5" class="text-center text-muted">No lines</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="whCtx" data-wh-id="{{ warehouse.id }}" style="display:none;"></div>
+
+<script>
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function apiFetch(url, opts){ const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token()}`, 'Content-Type': 'application/json' }, ...(opts||{}) }); if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); } return res.json(); }
+  function uid(){ return 'IM-' + Date.now() + '-' + Math.random().toString(36).slice(2,8); }
+
+  let stock = [];
+  let lines = [];
+  let canConfirm = false;
+
+  async function loadPermissions(){
+    const whId = Number(document.getElementById('whCtx').dataset.whId||'0');
+    try{
+      const res = await apiFetch(`/api/warehousing/warehouses/${whId}/internal-move/permissions/`);
+      canConfirm = Boolean(res && res.can_confirm);
+    }catch(e){ canConfirm = false; }
+    document.getElementById('confirmBtn').disabled = !canConfirm;
+  }
+
+  function renderFrom(){
+    const tbody = document.getElementById('fromRows');
+    const q = document.getElementById('q').value.trim().toLowerCase();
+    const rows = stock.filter(r => !q || r.item_sku.toLowerCase().includes(q) || r.item_name.toLowerCase().includes(q));
+    tbody.innerHTML = rows.length ? rows.map(r => `
+      <tr>
+        <td>${r.item_sku}</td>
+        <td>${r.item_name||''}</td>
+        <td>${(r.location_code||'') + (r.location_name? (' — '+r.location_name):'')}</td>
+        <td class='text-end'>${r.qty}</td>
+        <td class='text-end'>
+          <button class='btn btn-sm btn-outline-primary' data-item='${r.item}' data-src='${r.location}'>Add</button>
+        </td>
+      </tr>`).join('') : `<tr><td colspan="5" class="text-center text-muted">No stock found</td></tr>`;
+    tbody.querySelectorAll('button').forEach(b => b.addEventListener('click', () => openAddModal(b.getAttribute('data-item'), b.getAttribute('data-src'))));
+  }
+
+  function openAddModal(item, src){
+    const qty = prompt('Quantity to move?');
+    if(!qty) return;
+    const dst = prompt('Target location ID?');
+    if(!dst) return;
+    const q = Number(qty);
+    if(!(q>0)) return alert('Invalid qty');
+    lines.push({ item: Number(item), source_location: Number(src), target_location: Number(dst), qty: q });
+    renderDraft();
+  }
+
+  function renderDraft(){
+    const tbody = document.getElementById('draftRows');
+    if(!lines.length){ tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No lines</td></tr>`; return; }
+    tbody.innerHTML = lines.map((l, idx) => `
+      <tr>
+        <td>${(stock.find(s=>s.item===l.item)||{}).item_sku||l.item}</td>
+        <td>${l.source_location}</td>
+        <td>${l.target_location}</td>
+        <td class='text-end'>${l.qty}</td>
+        <td class='text-end'><button class='btn btn-sm btn-outline-danger' data-i='${idx}'>Remove</button></td>
+      </tr>`).join('');
+    tbody.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { const i = Number(b.getAttribute('data-i')); lines.splice(i,1); renderDraft(); }));
+  }
+
+  async function load(){
+    const whId = Number(document.getElementById('whCtx').dataset.whId||'0');
+    const data = await apiFetch(`/api/warehousing/warehouses/${whId}/internal-move/from-stock/`);
+    stock = data.results || [];
+    renderFrom();
+  }
+
+  async function confirm(){
+    if(!canConfirm){ alert('You do not have permission to confirm internal movements.'); return; }
+    if(!lines.length) return;
+    const whId = Number(document.getElementById('whCtx').dataset.whId||'0');
+    const key = uid();
+    document.getElementById('confirmBtn').disabled = true;
+    try{
+      const res = await apiFetch(`/api/warehousing/warehouses/${whId}/internal-move/confirm/`, { method:'POST', body: JSON.stringify({ lines, idempotency_key: key }) });
+      alert('Posted: ' + (res.posted||0) + ' entries. Batch: ' + (res.batch_ref_id||''));
+      lines = [];
+      renderDraft();
+      await load();
+    }catch(e){ alert('Error: ' + (e?.message||e)); }
+    finally{ document.getElementById('confirmBtn').disabled = !canConfirm; }
+  }
+
+  document.getElementById('applyFilters').addEventListener('click', renderFrom);
+  document.getElementById('confirmBtn').addEventListener('click', confirm);
+  document.addEventListener('DOMContentLoaded', ()=>{ loadPermissions(); load(); });
+</script>

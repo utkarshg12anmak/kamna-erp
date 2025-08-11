@@ -122,9 +122,9 @@ def warehouse_shell_menu(code, active_href, wh_id: int):
         {"label": "Overview", "href": base},
         {"label": "Movements", "href": base + "/movements"},
         {"label": "Putaway", "href": base + "/putaway"},
+        {"label": "Internal Movement", "href": base + "/internal-move"},
         {"label": "Approvals", "href": base + "/approvals"},
         {"label": "Adjust", "href": base + "/adjust"},
-        # Locations tab removed; available under Configuration only
     ]
     for it in items:
         it["active"] = (it["href"] == active_href)
@@ -229,6 +229,36 @@ def warehouse_putaway(request, code: str):
         "module": "Warehousing",
         "menu": warehouse_shell_menu(code, f"/app/warehousing/w/{code}/putaway", wh.id),
         "content_template": "warehouse_putaway.html",
+        **ctx_extra,
+    })
+
+
+def warehouse_internal_move(request, code: str):
+    from warehousing.models import Warehouse
+    wh = get_object_or_404(Warehouse, code=code)
+    ctx_extra = {
+        "warehouse": {"id": wh.id, "code": wh.code, "name": wh.name}
+    }
+    return render(request, "base_module.html", {
+        "module": "Warehousing",
+        "menu": warehouse_shell_menu(code, f"/app/warehousing/w/{code}/internal-move", wh.id),
+        "content_template": "warehouse_internal_move.html",
+        **ctx_extra,
+    })
+
+
+def warehouse_internal_move_rows(request, code: str):
+    from warehousing.models import Warehouse
+    wh = get_object_or_404(Warehouse, code=code)
+    ctx_extra = {
+        "warehouse_id": wh.id,
+        "warehouse_code": wh.code,
+        "warehouse": {"id": wh.id, "code": wh.code, "name": wh.name},
+    }
+    return render(request, "base_module.html", {
+        "module": "Warehousing",
+        "menu": warehouse_shell_menu(code, f"/app/warehousing/w/{code}/internal-move", wh.id),
+        "content_template": "warehouse_internal_move_rows.html",
         **ctx_extra,
     })
 

@@ -181,6 +181,8 @@ class MovementType(models.TextChoices):
     TRANSFER = "TRANSFER", "Transfer"
     # New: Deletion of a REQUESTED adjustment (revert request postings)
     ADJ_DELETE_REQUEST = "ADJ_DELETE_REQUEST", "Adj Delete Request"
+    # New: Internal movement between physical locations
+    INTERNAL_TRANSFER = "INTERNAL_TRANSFER", "Internal Transfer"
 
 
 class StockLedger(models.Model):

@@ -13,6 +13,13 @@ from .views import (
     warehouse_physical_stock_summary,
 )
 from .views_putaway import putaway_kpis, putaway_list, putaway_confirm
+from .views_internal_move import (
+    internal_move_from_location_stock,
+    internal_move_confirm,
+    internal_move_permissions,
+    FromStockList,
+    ConfirmRowMove,
+)
 
 router = DefaultRouter()
 router.register(r"warehouses", WarehouseViewSet, basename="warehouse")
@@ -31,4 +38,11 @@ urlpatterns = router.urls + [
     path("warehouses/<int:pk>/putaway/kpis/", putaway_kpis, name="putaway_kpis"),
     path("warehouses/<int:pk>/putaway/list/", putaway_list, name="putaway_list"),
     path("warehouses/<int:pk>/putaway/confirm/", putaway_confirm, name="putaway_confirm"),
+    # Internal Move APIs
+    path("warehouses/<int:pk>/internal-move/from-stock/", internal_move_from_location_stock, name="internal_move_from_stock"),
+    path("warehouses/<int:pk>/internal-move/confirm/", internal_move_confirm, name="internal_move_confirm"),
+    path("warehouses/<int:pk>/internal-move/permissions/", internal_move_permissions, name="internal_move_permissions"),
+    # Row-form Internal Move APIs
+    path("warehouses/<int:pk>/internal_move/rows/stock/", FromStockList.as_view(), name="internal_move_rows_stock"),
+    path("warehouses/<int:pk>/internal_move/rows/confirm/", ConfirmRowMove.as_view(), name="internal_move_rows_confirm"),
 ]
