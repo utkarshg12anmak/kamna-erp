@@ -51,8 +51,19 @@
   async function api(url, opts={}){
     opts.headers = Object.assign({ 'Authorization': `Bearer ${token()}`, 'Content-Type': 'application/json' }, opts.headers||{});
     const res = await fetch(url, opts);
-    const body = await res.json().catch(()=>({}));
-    if(!res.ok){ notify(body.detail || 'Request failed', 'error'); throw new Error(body.detail || 'Request failed'); }
+    let body = null; try{ body = await res.json(); }catch(e){ body = null; }
+    if(!res.ok){
+      let msg = 'Request failed';
+      if(body){
+        if(typeof body === 'string') msg = body;
+        else if(body.detail) msg = body.detail;
+        else if(Array.isArray(body)) msg = body.join(', ');
+        else if(body.non_field_errors) msg = body.non_field_errors.join(', ');
+        else msg = JSON.stringify(body);
+      }
+      notify(msg, 'error');
+      throw new Error(msg);
+    }
     return body;
   }
   function fmtDate(v){ return v? new Date(v).toLocaleString() : ''; }

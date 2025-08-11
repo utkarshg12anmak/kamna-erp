@@ -11,6 +11,7 @@ from .models import (
     MovementType,
     AdjustmentRequest,
     AdjustmentStatus,
+    AdjustmentType,  # added
 )
 
 
@@ -34,7 +35,16 @@ def get_virtual(warehouse, subtype_slug: str) -> Location:
             warehouse=warehouse, type=LocationType.VIRTUAL, subtype=subtype_slug
         )
     except Location.DoesNotExist:
-        raise ValidationError(f"Virtual bin '{subtype_slug}' not found for warehouse {warehouse.code}")
+        # Attempt to auto-provision standard virtual bins, then retry
+        try:
+            create_standard_virtual_bins(warehouse)
+            return Location.objects.get(
+                warehouse=warehouse, type=LocationType.VIRTUAL, subtype=subtype_slug
+            )
+        except Exception:
+            raise ValidationError(
+                f"Virtual bin '{subtype_slug}' not found for warehouse {warehouse.code}"
+            )
 
 
 def on_hand_qty(warehouse_id: int, location_id: int, item_id: int) -> Decimal:
@@ -99,7 +109,10 @@ def request_post_moves(adjr: AdjustmentRequest, user):
     qty = adjr.qty
     ref = ("warehousing.AdjustmentRequest", adjr.id)
 
-    if adjr.type == adjr.AdjustmentType.DAMAGE:
+    if AdjustmentType is None:  # safeguard (no-op, keeps context concise)
+        pass
+    # Replace adjr.AdjustmentType.* with AdjustmentType.*
+    if adjr.type == AdjustmentType.DAMAGE:
         src = adjr.source_location
         if on_hand_qty(wh.id, src.id, item.id) < qty:
             raise ValidationError("Insufficient stock for DAMAGE request")
@@ -116,7 +129,7 @@ def request_post_moves(adjr: AdjustmentRequest, user):
             ref_id=str(ref[1]),
             memo=adjr.memo or "",
         )
-    elif adjr.type == adjr.AdjustmentType.LOST:
+    elif adjr.type == AdjustmentType.LOST:
         src = adjr.source_location
         if on_hand_qty(wh.id, src.id, item.id) < qty:
             raise ValidationError("Insufficient stock for LOST request")
@@ -133,7 +146,7 @@ def request_post_moves(adjr: AdjustmentRequest, user):
             ref_id=str(adjr.id),
             memo=adjr.memo or "",
         )
-    elif adjr.type == adjr.AdjustmentType.EXCESS:
+    elif adjr.type == AdjustmentType.EXCESS:
         dst = get_virtual(wh, VirtualSubtype.EXCESS_PENDING)
         post_ledger(
             warehouse=wh,
@@ -156,7 +169,7 @@ def approve_post_moves(adjr: AdjustmentRequest, user):
     wh = adjr.warehouse
     item = adjr.item
     qty = adjr.qty
-    if adjr.type == adjr.AdjustmentType.DAMAGE:
+    if adjr.type == AdjustmentType.DAMAGE:
         src = get_virtual(wh, VirtualSubtype.DAMAGE_PENDING)
         dst = get_virtual(wh, VirtualSubtype.DAMAGE)
         post_ledger(
@@ -171,7 +184,7 @@ def approve_post_moves(adjr: AdjustmentRequest, user):
             ref_id=str(adjr.id),
             memo=adjr.memo or "",
         )
-    elif adjr.type == adjr.AdjustmentType.LOST:
+    elif adjr.type == AdjustmentType.LOST:
         src = get_virtual(wh, VirtualSubtype.LOST_PENDING)
         dst = get_virtual(wh, VirtualSubtype.LOST)
         post_ledger(
@@ -186,7 +199,7 @@ def approve_post_moves(adjr: AdjustmentRequest, user):
             ref_id=str(adjr.id),
             memo=adjr.memo or "",
         )
-    elif adjr.type == adjr.AdjustmentType.EXCESS:
+    elif adjr.type == AdjustmentType.EXCESS:
         src = get_virtual(adjr.warehouse, VirtualSubtype.EXCESS_PENDING)
         dst = get_virtual(adjr.warehouse, VirtualSubtype.RETURN)
         post_ledger(
@@ -210,7 +223,7 @@ def decline_post_moves(adjr: AdjustmentRequest, user):
     wh = adjr.warehouse
     item = adjr.item
     qty = adjr.qty
-    if adjr.type == adjr.AdjustmentType.DAMAGE:
+    if adjr.type == AdjustmentType.DAMAGE:
         src = get_virtual(wh, VirtualSubtype.DAMAGE_PENDING)
         dst = get_virtual(wh, VirtualSubtype.RETURN)
         post_ledger(
@@ -225,7 +238,7 @@ def decline_post_moves(adjr: AdjustmentRequest, user):
             ref_id=str(adjr.id),
             memo=adjr.memo or "damage request declined",
         )
-    elif adjr.type == adjr.AdjustmentType.LOST:
+    elif adjr.type == AdjustmentType.LOST:
         src = get_virtual(wh, VirtualSubtype.LOST_PENDING)
         dst = get_virtual(wh, VirtualSubtype.RETURN)
         post_ledger(
@@ -240,7 +253,7 @@ def decline_post_moves(adjr: AdjustmentRequest, user):
             ref_id=str(adjr.id),
             memo=adjr.memo or "lost request declined",
         )
-    elif adjr.type == adjr.AdjustmentType.EXCESS:
+    elif adjr.type == AdjustmentType.EXCESS:
         # No movement on decline of EXCESS
         return
     else:

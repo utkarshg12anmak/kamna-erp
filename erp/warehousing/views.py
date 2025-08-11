@@ -15,6 +15,9 @@ from .serializers import (
     AdjustmentRequestSerializer,
 )
 from .services import ensure_location_empty, request_post_moves, approve_post_moves, decline_post_moves, on_hand_qty
+# Add explicit imports for error translation
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.exceptions import ValidationError as DRFValidationError
 
 # Create your views here.
 
@@ -172,7 +175,15 @@ class AdjustmentRequestViewSet(viewsets.ModelViewSet):
         obj = self.get_object()
         if obj.status != AdjustmentStatus.REQUESTED:
             return response.Response({"detail": "Not in REQUESTED status"}, status=status.HTTP_400_BAD_REQUEST)
-        approve_post_moves(obj, request.user)
+        try:
+            approve_post_moves(obj, request.user)
+        except (DjangoValidationError, DRFValidationError) as e:
+            # Normalize validation messages
+            detail = getattr(e, "message", None) or getattr(e, "detail", None) or str(e)
+            return response.Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # Surface unexpected errors to the UI (and keep 500 semantics)
+            return response.Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         obj.status = AdjustmentStatus.APPROVED
         obj.approved_by = request.user
         obj.approved_at = timezone.now()
@@ -184,7 +195,13 @@ class AdjustmentRequestViewSet(viewsets.ModelViewSet):
         obj = self.get_object()
         if obj.status != AdjustmentStatus.REQUESTED:
             return response.Response({"detail": "Not in REQUESTED status"}, status=status.HTTP_400_BAD_REQUEST)
-        decline_post_moves(obj, request.user)
+        try:
+            decline_post_moves(obj, request.user)
+        except (DjangoValidationError, DRFValidationError) as e:
+            detail = getattr(e, "message", None) or getattr(e, "detail", None) or str(e)
+            return response.Response({"detail": detail}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return response.Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         obj.status = AdjustmentStatus.DECLINED
         obj.declined_by = request.user
         obj.declined_at = timezone.now()
