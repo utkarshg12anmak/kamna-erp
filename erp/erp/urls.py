@@ -47,6 +47,7 @@ from .views import (
     warehouse_adjust,
     warehousing_approvals,
     warehouse_approvals,
+    warehouse_putaway,
 )
 from .api_auth_views import AuthMeView
 from django.conf import settings
@@ -78,6 +79,7 @@ urlpatterns = [
     path("app/warehousing", warehousing_enter, name="warehousing_enter"),
     path("app/warehousing/w/<str:code>", warehouse_shell, name="warehouse_shell"),
     path("app/warehousing/w/<str:code>/movements", warehouse_movements, name="warehouse_movements"),
+    path("app/warehousing/w/<str:code>/putaway", warehouse_putaway, name="warehouse_putaway"),
     path("app/warehousing/w/<str:code>/adjust", warehouse_adjust, name="warehouse_adjust"),
     path("app/warehousing/approvals", warehousing_approvals, name="warehousing_approvals"),
     path("app/warehousing/w/<str:code>/approvals", warehouse_approvals, name="warehouse_approvals"),

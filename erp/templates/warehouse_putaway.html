@@ -1,0 +1,280 @@
+<div id="putawayRoot" data-warehouse-id="{{ warehouse.id }}">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 mb-0">Putaway</h2>
+    <div class="d-flex gap-2">
+      <input id="searchInput" class="form-control form-control-sm" placeholder="Search SKU or name" style="width:220px;"/>
+      <select id="subtypeFilter" class="form-select form-select-sm" style="width:160px;">
+        <option value="">All Bins</option>
+        <option value="RETURN">Return Bin</option>
+        <option value="RECEIVE">Receive Bin</option>
+      </select>
+      <button id="reloadBtn" class="btn btn-outline-secondary btn-sm">Reload</button>
+    </div>
+  </div>
+
+  <div id="kpiRow" class="row g-3 mb-3">
+    <div class="col-md-3">
+      <div class="card-like">
+        <div class="small text-muted">Return Bin Qty</div>
+        <div id="kpiReturnQty" class="h4 mb-0">0</div>
+        <div class="small text-muted" id="kpiReturnItems">0 items</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card-like">
+        <div class="small text-muted">Receive Bin Qty</div>
+        <div id="kpiReceiveQty" class="h4 mb-0">0</div>
+        <div class="small text-muted" id="kpiReceiveItems">0 items</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card-like">
+        <div class="small text-muted">Total Qty</div>
+        <div id="kpiTotalQty" class="h4 mb-0">0</div>
+        <div class="small text-muted" id="kpiTotalItems">0 items</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card-like">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="fw-semibold">Available to Putaway</div>
+          <div class="small text-muted">Select rows and add to cart</div>
+        </div>
+        <div class="table-responsive" style="max-height: 52vh; overflow:auto;">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr class="text-nowrap">
+                <th>SKU</th>
+                <th>Name</th>
+                <th>Bin</th>
+                <th class="text-end">Qty</th>
+                <th style="width:360px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="rowsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card-like">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="fw-semibold">Cart</div>
+          <div>
+            <button id="clearCartBtn" class="btn btn-link btn-sm">Clear</button>
+          </div>
+        </div>
+        <div id="cartList" class="d-flex flex-column gap-2" style="max-height: 52vh; overflow:auto;"></div>
+        <div class="mt-3 d-grid gap-2">
+          <button id="confirmBtn" class="btn btn-primary btn-sm">Confirm Putaway</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const root = document.getElementById('putawayRoot');
+  const whId = parseInt(root?.dataset.warehouseId || '0', 10);
+  const token = localStorage.getItem('accessToken');
+  const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+  let cart = []; // {type, item, source_bin, qty, target_location?}
+  let physicalBins = []; // cached list of ACTIVE PHYSICAL bins for this warehouse
+
+  function formatQty(q){ return Number(q).toLocaleString(undefined,{maximumFractionDigits:3}); }
+
+  async function loadBins(){
+    if(physicalBins.length) return;
+    const url = `/api/warehousing/locations/?warehouse=${whId}&type=PHYSICAL&status=ACTIVE&ordering=code&page_size=1000`;
+    const res = await fetch(url, { headers });
+    if(!res.ok){ notify('Failed to load bins','error'); return; }
+    const data = await res.json();
+    physicalBins = (data.results || data || []).map(b => ({
+      id: b.id,
+      code: b.code,
+      name: b.name || '',
+      display_name: b.display_name || null,
+    }));
+  }
+
+  function binLabel(b){
+    if(b.display_name) return b.display_name;
+    return b.name ? `${b.code} — ${b.name}` : b.code;
+  }
+
+  function populateBinSelect(sel){
+    sel.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Select a bin…';
+    sel.appendChild(placeholder);
+    physicalBins.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = String(b.id);
+      opt.textContent = binLabel(b);
+      sel.appendChild(opt);
+    });
+  }
+
+  async function loadKpis(){
+    const res = await fetch(`/api/warehousing/warehouses/${whId}/putaway/kpis/`, { headers });
+    if(!res.ok){ notify('Failed to load KPIs','error'); return; }
+    const data = await res.json();
+    document.getElementById('kpiReturnQty').innerText = formatQty(data.return.qty||0);
+    document.getElementById('kpiReturnItems').innerText = `${data.return.items||0} items`;
+    document.getElementById('kpiReceiveQty').innerText = formatQty(data.receive.qty||0);
+    document.getElementById('kpiReceiveItems').innerText = `${data.receive.items||0} items`;
+    document.getElementById('kpiTotalQty').innerText = formatQty(data.total_qty||0);
+    document.getElementById('kpiTotalItems').innerText = `${data.total_items||0} items`;
+  }
+
+  async function loadList(){
+    // ensure bins are loaded so we can populate target dropdowns
+    await loadBins();
+
+    const q = encodeURIComponent(document.getElementById('searchInput').value||'');
+    const subtype = document.getElementById('subtypeFilter').value;
+    const url = `/api/warehousing/warehouses/${whId}/putaway/list/?q=${q}&subtype=${encodeURIComponent(subtype)}`;
+    const res = await fetch(url, { headers });
+    if(!res.ok){ notify('Failed to load list','error'); return; }
+    const data = await res.json();
+    const tbody = document.getElementById('rowsBody');
+    tbody.innerHTML = '';
+    (data.results||[]).forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="text-nowrap">${row.sku}</td>
+        <td>${row.name}</td>
+        <td>${row.bin}</td>
+        <td class="text-end">${formatQty(row.qty)}</td>
+        <td>
+          <div class="input-group input-group-sm">
+            <input type="number" class="form-control" min="1" step="1" value="1"/>
+            <select class="form-select">
+              <option value="PUTAWAY">Putaway</option>
+              <option value="LOST">Lost</option>
+            </select>
+            <button class="btn btn-outline-primary">Add</button>
+          </div>
+          <div class="mt-1 d-none target-picker">
+            <select class="form-select form-select-sm bin-select" style="min-width: 320px;"></select>
+          </div>
+        </td>
+      `;
+      const qtyInput = tr.querySelector('input[type=number]');
+      const typeSel = tr.querySelector('select');
+      const addBtn = tr.querySelector('button');
+      const targetDiv = tr.querySelector('.target-picker');
+      const targetSelect = targetDiv.querySelector('select.bin-select');
+
+      // populate bin dropdown
+      populateBinSelect(targetSelect);
+
+      typeSel.addEventListener('change', ()=>{
+        const isPutaway = typeSel.value === 'PUTAWAY';
+        targetDiv.classList.toggle('d-none', !isPutaway);
+      });
+      typeSel.dispatchEvent(new Event('change'));
+
+      let chosenTargetId = null;
+      targetSelect.addEventListener('change', ()=>{
+        chosenTargetId = targetSelect.value ? parseInt(targetSelect.value, 10) : null;
+      });
+
+      addBtn.addEventListener('click', ()=>{
+        const qty = parseInt(qtyInput.value,10) || 0;
+        if(qty <= 0){ notify('Qty must be a positive integer','warning'); return; }
+        const type = typeSel.value;
+        if(type === 'PUTAWAY'){
+          // ensure selection captured
+          if(!chosenTargetId){
+            // try to read current select value directly
+            chosenTargetId = targetSelect.value ? parseInt(targetSelect.value, 10) : null;
+          }
+          if(!chosenTargetId){ notify('Pick a target location','warning'); return; }
+        }
+        const action = {
+          type,
+          item: row.item_id,
+          source_bin: row.bin_location_id,
+          qty,
+        };
+        if(type === 'PUTAWAY') action.target_location = chosenTargetId;
+        addToCart(action);
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function addToCart(action){
+    // merge by type,item,source_bin,target_location
+    const key = `${action.type}|${action.item}|${action.source_bin}|${action.target_location||''}`;
+    const existing = cart.find(x=>`${x.type}|${x.item}|${x.source_bin}|${x.target_location||''}`===key);
+    if(existing){ existing.qty += action.qty; }
+    else { cart.push({...action}); }
+    renderCart();
+  }
+
+  function removeAt(i){ cart.splice(i,1); renderCart(); }
+  function clearCart(){ cart = []; renderCart(); }
+
+  function renderCart(){
+    const list = document.getElementById('cartList');
+    list.innerHTML = '';
+    if(cart.length===0){ list.innerHTML = '<div class="text-muted small">No actions</div>'; return; }
+    cart.forEach((a, idx)=>{
+      const div = document.createElement('div');
+      div.className = 'border rounded p-2';
+      div.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center gap-2">
+          <div class="small">
+            <div><span class="badge bg-secondary">${a.type}</span> SKU #${a.item} from ${a.source_bin}${a.target_location?(' → '+a.target_location):''}</div>
+            <div class="text-muted">Qty: ${a.qty}</div>
+          </div>
+          <button class="btn btn-sm btn-outline-danger">Remove</button>
+        </div>
+      `;
+      div.querySelector('button').addEventListener('click', ()=> removeAt(idx));
+      list.appendChild(div);
+    });
+  }
+
+  async function confirm(){
+    if(cart.length===0){ notify('Cart is empty','warning'); return; }
+    // Double-confirm if any LOST
+    if(cart.some(a=>a.type==='LOST')){
+      if(!confirm('You have LOST actions. This will move stock to LOST bin. Continue?')) return;
+    }
+    const res = await fetch(`/api/warehousing/warehouses/${whId}/putaway/confirm/`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ actions: cart })
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({detail:'Unknown error'}));
+      notify(err.detail || 'Failed to confirm','error');
+      return;
+    }
+    const data = await res.json();
+    notify(`Posted ${data.posted_count} action group(s)`, 'success');
+    clearCart();
+    await loadKpis();
+    await loadList();
+  }
+
+  document.getElementById('confirmBtn').addEventListener('click', confirm);
+  document.getElementById('reloadBtn').addEventListener('click', ()=>{ loadKpis(); loadList(); });
+  document.getElementById('searchInput').addEventListener('input', ()=>{ clearTimeout(window.__t); window.__t=setTimeout(loadList, 300); });
+  document.getElementById('subtypeFilter').addEventListener('change', loadList);
+  document.getElementById('clearCartBtn').addEventListener('click', clearCart);
+
+  loadKpis();
+  loadList();
+})();
+</script>

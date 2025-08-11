@@ -175,6 +175,9 @@ class MovementType(models.TextChoices):
     ADJ_APPROVE_EXCESS = "ADJ_APPROVE_EXCESS", "Adj Approve Excess"
     # New: decline of EXCESS should post out from EXCESS_PENDING to null
     ADJ_DECLINE_EXCESS = "ADJ_DECLINE_EXCESS", "Adj Decline Excess"
+    # New: Putaway movements (from Return/Receive to Physical or to Lost)
+    PUTAWAY = "PUTAWAY", "Putaway"
+    PUTAWAY_LOST = "PUTAWAY_LOST", "Putaway Lost"
     TRANSFER = "TRANSFER", "Transfer"
 
 

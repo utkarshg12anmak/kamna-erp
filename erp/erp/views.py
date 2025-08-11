@@ -121,6 +121,7 @@ def warehouse_shell_menu(code, active_href, wh_id: int):
     items = [
         {"label": "Overview", "href": base},
         {"label": "Movements", "href": base + "/movements"},
+        {"label": "Putaway", "href": base + "/putaway"},
         {"label": "Approvals", "href": base + "/approvals"},
         {"label": "Adjust", "href": base + "/adjust"},
         # Locations tab removed; available under Configuration only
@@ -210,6 +211,24 @@ def warehouse_approvals(request, code: str):
         "module": "Warehousing",
         "menu": warehouse_shell_menu(code, f"/app/warehousing/w/{code}/approvals", wh.id),
         "content_template": "warehouse_approvals.html",
+        **ctx_extra,
+    })
+
+
+def warehouse_putaway(request, code: str):
+    from warehousing.models import Warehouse
+    wh = get_object_or_404(Warehouse, code=code)
+    ctx_extra = {
+        "warehouse": {
+            "id": wh.id,
+            "code": wh.code,
+            "name": wh.name,
+        }
+    }
+    return render(request, "base_module.html", {
+        "module": "Warehousing",
+        "menu": warehouse_shell_menu(code, f"/app/warehousing/w/{code}/putaway", wh.id),
+        "content_template": "warehouse_putaway.html",
         **ctx_extra,
     })
 
