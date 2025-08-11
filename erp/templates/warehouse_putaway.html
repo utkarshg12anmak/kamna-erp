@@ -203,8 +203,16 @@
           item: row.item_id,
           source_bin: row.bin_location_id,
           qty,
+          // metadata for better cart rendering
+          sku: row.sku,
+          item_name: row.name,
+          source_bin_label: row.bin,
         };
-        if(type === 'PUTAWAY') action.target_location = chosenTargetId;
+        if(type === 'PUTAWAY') {
+          action.target_location = chosenTargetId;
+          const tgt = physicalBins.find(b => b.id === chosenTargetId);
+          action.target_bin_label = tgt ? binLabel(tgt) : undefined;
+        }
         addToCart(action);
       });
 
@@ -234,7 +242,7 @@
       div.innerHTML = `
         <div class="d-flex justify-content-between align-items-center gap-2">
           <div class="small">
-            <div><span class="badge bg-secondary">${a.type}</span> SKU #${a.item} from ${a.source_bin}${a.target_location?(' → '+a.target_location):''}</div>
+            <div><span class="badge bg-secondary">${a.type}</span> SKU #${a.item} ${a.item_name||''} from ${a.source_bin_label || a.source_bin}${a.target_location?(' → '+(a.target_bin_label || a.target_location)) : ''}</div>
             <div class="text-muted">Qty: ${a.qty}</div>
           </div>
           <button class="btn btn-sm btn-outline-danger">Remove</button>
