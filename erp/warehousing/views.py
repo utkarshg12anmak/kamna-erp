@@ -114,6 +114,7 @@ class WarehouseLedgerView(generics.ListAPIView):
     pagination_class = MovementsPagination
 
     def get_queryset(self):
+        from django.db.models import Window, F, Sum as ORM_Sum
         wh_id = self.kwargs.get("pk")
         qs = StockLedger.objects.select_related("item", "location").filter(warehouse_id=wh_id).order_by("-ts")
         # Additional filters via query params
@@ -135,6 +136,16 @@ class WarehouseLedgerView(generics.ListAPIView):
         if to_loc:
             # Entries that increase stock at a specific location (e.g., transfers in, adjustments in)
             qs = qs.filter(location_id=to_loc, qty_delta__gt=0)
+        # Annotate per-location running total to compute before/after quantities
+        running_total = Window(
+            expression=ORM_Sum("qty_delta"),
+            partition_by=[F("warehouse_id"), F("location_id"), F("item_id")],
+            order_by=[F("ts").asc(), F("id").asc()],
+        )
+        qs = qs.annotate(
+            location_qty_after=running_total,
+            location_qty_before=running_total - F("qty_delta"),
+        )
         return qs
 
 

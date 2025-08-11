@@ -149,6 +149,9 @@ class StockLedgerListSerializer(serializers.ModelSerializer):
     location_name = serializers.CharField(source="location.display_name", read_only=True)
     location_code = serializers.CharField(source="location.code", read_only=True)
     location_subtype = serializers.CharField(source="location.subtype", read_only=True)
+    # New: before/after quantities at the movement's location
+    location_qty_before = serializers.DecimalField(max_digits=12, decimal_places=3, read_only=True)
+    location_qty_after = serializers.DecimalField(max_digits=12, decimal_places=3, read_only=True)
 
     class Meta:
         model = StockLedger
@@ -169,6 +172,8 @@ class StockLedgerListSerializer(serializers.ModelSerializer):
             "ref_id",
             "memo",
             "user",
+            "location_qty_before",
+            "location_qty_after",
         ]
         read_only_fields = fields
 

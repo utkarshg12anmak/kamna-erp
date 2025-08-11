@@ -42,13 +42,17 @@
 
   <div class="card-like">
     <div class="table-responsive">
-      <table class="table table-sm align-middle">
+      <table class="table table-sm align-middle table-striped">
         <thead>
           <tr>
             <th>When</th>
             <th>Item</th>
             <th>From</th>
+            <th class="text-end">From Before</th>
+            <th class="text-end">From After</th>
             <th>To</th>
+            <th class="text-end">To Before</th>
+            <th class="text-end">To After</th>
             <th class="text-end">Qty</th>
             <th>Type</th>
             <th>Initiator</th>
@@ -83,6 +87,8 @@
   function fromLoc(x){ return (Number(x.qty_delta) < 0) ? fmtLoc(x) : ''; }
   function toLoc(x){ return (Number(x.qty_delta) > 0) ? fmtLoc(x) : ''; }
 
+  function num(v){ if(v===null||v===undefined||v==='') return ''; const n = Number(v); if(Number.isNaN(n)) return ''; return n.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:3}); }
+
   let page = 1; const pageSize = 25; let hasNext = false; let hasPrev = false; let totalCount = null;
   async function load(){
     const whId = Number(document.getElementById('whCtx').dataset.whId || '0');
@@ -101,21 +107,82 @@
 
     const url = `/api/warehousing/warehouses/${whId}/movements/?` + params.toString();
     const data = await apiFetch(url);
-    const results = data && (data.results || Array.isArray(data) && data) || [];
+    const raw = data && (data.results || Array.isArray(data) && data) || [];
     hasNext = Boolean(data.next);
     hasPrev = Boolean(data.previous);
     totalCount = data.count ?? null;
 
-    document.getElementById('rows').innerHTML = results.length ? results.map(x => `
+    // Group transfers: attempt to pair rows with same ref_model/ref_id/opposite qty and same ts/item
+    const paired = [];
+    const used = new Set();
+    const keyOf = (r) => `${r.ref_model||''}|${r.ref_id||''}|${r.item}|${r.ts}`;
+    const indexByKey = {};
+    raw.forEach((r, idx)=>{ const k = keyOf(r); (indexByKey[k] ||= []).push({r, idx}); });
+
+    raw.forEach((r, idx)=>{
+      if(used.has(idx)){ return; }
+      if(r.movement_type === 'TRANSFER'){
+        const k = keyOf(r);
+        const bucket = (indexByKey[k]||[]).map(x=>x.idx).filter(i=>!used.has(i));
+        if(bucket.length>=2){
+          // pick current and a counterpart with opposite sign
+          const a = r; let bIdx = bucket.find(i => i!==idx && Math.sign(Number(raw[i].qty_delta)) !== Math.sign(Number(a.qty_delta)));
+          if(bIdx!==undefined){
+            const b = raw[bIdx];
+            used.add(idx); used.add(bIdx);
+            const fromRow = Number(a.qty_delta)<0 ? a : b;
+            const toRow = Number(a.qty_delta)>0 ? a : b;
+            paired.push({
+              ts: fromRow.ts,
+              item_sku: fromRow.item_sku,
+              item_name: fromRow.item_name,
+              from_loc: fmtLoc(fromRow),
+              from_before: fromRow.location_qty_before,
+              from_after: fromRow.location_qty_after,
+              to_loc: fmtLoc(toRow),
+              to_before: toRow.location_qty_before,
+              to_after: toRow.location_qty_after,
+              qty: Math.abs(Number(fromRow.qty_delta)),
+              movement_type: 'TRANSFER',
+              user: fromRow.user || toRow.user || 'System'
+            });
+            return;
+          }
+        }
+      }
+      // Fallback: single-sided row
+      used.add(idx);
+      const isOut = Number(r.qty_delta) < 0;
+      paired.push({
+        ts: r.ts,
+        item_sku: r.item_sku,
+        item_name: r.item_name,
+        from_loc: isOut ? fmtLoc(r) : '',
+        from_before: isOut ? r.location_qty_before : '',
+        from_after: isOut ? r.location_qty_after : '',
+        to_loc: !isOut ? fmtLoc(r) : '',
+        to_before: !isOut ? r.location_qty_before : '',
+        to_after: !isOut ? r.location_qty_after : '',
+        qty: Math.abs(Number(r.qty_delta)),
+        movement_type: r.movement_type,
+        user: r.user || 'System'
+      });
+    });
+
+    document.getElementById('rows').innerHTML = paired.length ? paired.map(x => `
       <tr>
         <td>${fmtDate(x.ts)}</td>
         <td>${x.item_sku} — ${x.item_name}</td>
-        <td>${fromLoc(x)}</td>
-        <td>${toLoc(x)}</td>
-        <td class='text-end'>${x.qty_delta}</td>
+        <td>${x.from_loc||''}</td>
+        <td class='text-end'>${num(x.from_before)}</td>
+        <td class='text-end'>${num(x.from_after)}</td>
+        <td>${x.to_loc||''}</td>
+        <td class='text-end'>${num(x.to_before)}</td>
+        <td class='text-end'>${num(x.to_after)}</td>
+        <td class='text-end'>${num(x.qty)}</td>
         <td>${x.movement_type}</td>
         <td>${x.user || 'System'}</td>
-      </tr>`).join('') : `<tr><td colspan="7" class="text-center text-muted">No movements</td></tr>`;
+      </tr>`).join('') : `<tr><td colspan="11" class="text-center text-muted">No movements</td></tr>`;
 
     const info = totalCount!=null ? `Page ${page}` + (totalCount? ` • ${totalCount} records` : '') : `Page ${page}`;
     document.getElementById('pageInfo').textContent = info;
