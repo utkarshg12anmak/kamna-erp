@@ -21,11 +21,17 @@
 </head>
 <body>
   <div class="topbar py-2">
-    <div class="container-fluid d-flex justify-content-between align-items-center">
+    <div class="container-fluid d-flex justify-content-between align-items-center position-relative">
       <div class="d-flex align-items-center gap-2">
         <a href="/app" class="text-decoration-none">← Back to Modules</a>
         <span class="fw-semibold">{{ module }}</span>
       </div>
+      {% if warehouse %}
+      <div class="position-absolute top-50 start-50 translate-middle text-center" style="pointer-events:none;">
+        <div class="small text-muted lh-1">Warehouse</div>
+        <div class="fw-semibold lh-1">{{ warehouse.code }} — {{ warehouse.name }}</div>
+      </div>
+      {% endif %}
       <button id="logoutBtn" class="btn btn-outline-secondary btn-sm">Logout</button>
     </div>
   </div>
