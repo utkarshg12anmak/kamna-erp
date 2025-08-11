@@ -2,41 +2,81 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="h5 m-0">Warehouse Overview</h2>
     <div class="d-flex gap-2">
-      <a class="btn btn-outline-primary btn-sm" href="/app/warehousing/config/locations?warehouse={{ warehouse.id }}">View Locations</a>
-      <a class="btn btn-outline-primary btn-sm" href="/app/warehousing/config">Configuration</a>
+      <a class="btn btn-primary btn-sm" href="/app/warehousing/w/{{ warehouse.code }}/adjust">Adjust Inventory</a>
+      <a class="btn btn-outline-primary btn-sm" href="/app/warehousing/w/{{ warehouse.code }}/movements">Movements</a>
+      <a class="btn btn-outline-secondary btn-sm" href="/app/warehousing/w/{{ warehouse.code }}/approvals">Approvals</a>
+      <a class="btn btn-outline-secondary btn-sm" href="/app/warehousing/approvals">All Approvals</a>
+      <a class="btn btn-outline-secondary btn-sm" href="/app/warehousing/config/locations?warehouse={{ warehouse.id }}">View Locations</a>
+      <a class="btn btn-outline-secondary btn-sm" href="/app/warehousing/config">Configuration</a>
     </div>
   </div>
-  <div class="card-like">
-    <div class="row g-3">
-      <div class="col-md-6">
-        <div class="small text-muted">Code</div>
-        <div class="fw-semibold">{{ warehouse.code }}</div>
+  <div class="row g-3">
+    <div class="col-sm-6 col-lg-3">
+      <div class="card-like text-center">
+        <div class="small text-muted">Total Qty</div>
+        <div class="display-6" id="kpiTotalQty">-</div>
       </div>
-      <div class="col-md-6">
-        <div class="small text-muted">Name</div>
-        <div>{{ warehouse.name }}</div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card-like text-center">
+        <div class="small text-muted">Items</div>
+        <div class="display-6" id="kpiItems">-</div>
       </div>
-      <div class="col-md-4">
-        <div class="small text-muted">Status</div>
-        <div><span class="badge {{ 'text-bg-success' if warehouse.status=='ACTIVE' else 'text-bg-secondary' }}">{{ warehouse.status }}</span></div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card-like text-center">
+        <div class="small text-muted">Locations With Stock</div>
+        <div class="display-6" id="kpiLocs">-</div>
       </div>
-      <div class="col-md-4">
-        <div class="small text-muted">City</div>
-        <div>{{ warehouse.city }}</div>
-      </div>
-      <div class="col-md-4">
-        <div class="small text-muted">State</div>
-        <div>{{ warehouse.state }}</div>
-      </div>
-      <div class="col-md-6">
-        <div class="small text-muted">GSTIN</div>
-        <div>{{ warehouse.gstin }}</div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card-like text-center">
+        <div class="small text-muted">Movements Today</div>
+        <div class="display-6" id="kpiMoves">-</div>
       </div>
     </div>
   </div>
   <div class="mt-3">
     <div class="card-like">
-      <div class="text-muted">Stock and Transfers tabs will appear here.</div>
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h3 class="h6 m-0">Recent Activity</h3>
+        <a class="btn btn-sm btn-outline-secondary" href="/app/warehousing/w/{{ warehouse.code }}/movements">View All</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead><tr><th>When</th><th>Item</th><th>Location</th><th class="text-end">Qty</th><th>Type</th></tr></thead>
+          <tbody id="recentRows"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Context carrier to avoid inline template expressions in JS -->
+<div id="whCtx" data-wh-id="{{ warehouse.id }}" style="display:none;"></div>
+
+<script>
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function apiFetch(url){ const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token()}` }}); if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); } return res.json(); }
+  function fmtDate(v){ if(!v) return ''; return new Date(v).toLocaleString(); }
+  function fmtLoc(x){
+    if(!x) return '';
+    const name = x.location_name || '';
+    const code = x.location_code || '';
+    const subtype = x.location_subtype || '';
+    // Prefer display name/code; fallback to subtype slug
+    return name || code || subtype || (x.location || '');
+  }
+  async function init(){
+    const whId = Number(document.getElementById('whCtx').dataset.whId || '0');
+    const k = await apiFetch(`/api/warehousing/warehouses/${whId}/kpis/`);
+    document.getElementById('kpiTotalQty').textContent = (k.total_qty ?? 0);
+    document.getElementById('kpiItems').textContent = (k.total_items ?? 0);
+    document.getElementById('kpiLocs').textContent = (k.locations_with_stock ?? 0);
+    document.getElementById('kpiMoves').textContent = (k.movements_today ?? 0);
+    const r = await apiFetch(`/api/warehousing/warehouses/${whId}/recent_activity/`);
+    const list = Array.isArray(r) ? r : (r.results || []);
+    document.getElementById('recentRows').innerHTML = list.map(x => `<tr><td>${fmtDate(x.ts)}</td><td>${x.item_sku} — ${x.item_name}</td><td>${fmtLoc(x)}</td><td class='text-end'>${x.qty_delta}</td><td>${x.movement_type}</td></tr>`).join('');
+  }
+  document.addEventListener('DOMContentLoaded', init);
+</script>

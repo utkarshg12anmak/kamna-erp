@@ -73,6 +73,7 @@ def module_catalog_taxrates(request):
 def warehousing_operational_menu(active_href):
     items = [
         {"label": "Dashboard", "href": "/app/warehousing"},
+        {"label": "Approvals", "href": "/app/warehousing/approvals"},
     ]
     for it in items:
         it["active"] = (it["href"] == active_href)
@@ -119,8 +120,9 @@ def warehouse_shell_menu(code, active_href, wh_id: int):
     base = f"/app/warehousing/w/{code}"
     items = [
         {"label": "Overview", "href": base},
-        {"label": "Stock", "href": base + "#stock"},
-        {"label": "Transfers", "href": base + "#transfers"},
+        {"label": "Movements", "href": base + "/movements"},
+        {"label": "Approvals", "href": base + "/approvals"},
+        {"label": "Adjust", "href": base + "/adjust"},
         {"label": "Locations", "href": f"/app/warehousing/config/locations?warehouse={wh_id}"},
     ]
     for it in items:
@@ -149,6 +151,67 @@ def warehouse_shell(request, code: str):
         **ctx_extra,
     })
     return resp
+
+
+def warehouse_movements(request, code: str):
+    from warehousing.models import Warehouse
+    wh = get_object_or_404(Warehouse, code=code)
+    ctx_extra = {
+        "warehouse": {
+            "id": wh.id,
+            "code": wh.code,
+            "name": wh.name,
+        }
+    }
+    return render(request, "base_module.html", {
+        "module": "Warehousing",
+        "menu": warehouse_shell_menu(code, f"/app/warehousing/w/{code}/movements", wh.id),
+        "content_template": "warehouse_movements.html",
+        **ctx_extra,
+    })
+
+
+def warehouse_adjust(request, code: str):
+    from warehousing.models import Warehouse
+    wh = get_object_or_404(Warehouse, code=code)
+    ctx_extra = {
+        "warehouse": {
+            "id": wh.id,
+            "code": wh.code,
+            "name": wh.name,
+        }
+    }
+    return render(request, "base_module.html", {
+        "module": "Warehousing",
+        "menu": warehouse_shell_menu(code, f"/app/warehousing/w/{code}/adjust", wh.id),
+        "content_template": "warehouse_adjust.html",
+        **ctx_extra,
+    })
+
+
+# New: Approvals pages (global and per-warehouse)
+
+def warehousing_approvals(request):
+    # Global approvals list
+    return render_module(request, "Warehousing", warehousing_operational_menu("/app/warehousing/approvals"), "warehousing_approvals.html")
+
+
+def warehouse_approvals(request, code: str):
+    from warehousing.models import Warehouse
+    wh = get_object_or_404(Warehouse, code=code)
+    ctx_extra = {
+        "warehouse": {
+            "id": wh.id,
+            "code": wh.code,
+            "name": wh.name,
+        }
+    }
+    return render(request, "base_module.html", {
+        "module": "Warehousing",
+        "menu": warehouse_shell_menu(code, f"/app/warehousing/w/{code}/approvals", wh.id),
+        "content_template": "warehouse_approvals.html",
+        **ctx_extra,
+    })
 
 
 # Other modules (basic)

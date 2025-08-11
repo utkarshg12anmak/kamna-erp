@@ -1,0 +1,121 @@
+<div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 m-0">Movements — {{ warehouse.code }} {{ warehouse.name }}</h2>
+    <a class="btn btn-outline-secondary btn-sm" href="/app/warehousing/w/{{ warehouse.code }}">Back to Overview</a>
+  </div>
+
+  <div class="card-like mb-3">
+    <form id="filters" class="row g-2 align-items-end">
+      <div class="col-sm-6 col-md-3">
+        <label class="form-label small">Search</label>
+        <input class="form-control form-control-sm" type="text" id="q" placeholder="SKU, item name, memo, ref" />
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <label class="form-label small">Type</label>
+        <select class="form-select form-select-sm" id="type">
+          <option value="">Any</option>
+          <option value="ADJ_REQ_DAMAGE">Adj Req Damage</option>
+          <option value="ADJ_REQ_LOST">Adj Req Lost</option>
+          <option value="ADJ_REQ_EXCESS">Adj Req Excess</option>
+          <option value="ADJ_APPROVE_DAMAGE">Adj Approve Damage</option>
+          <option value="ADJ_DECLINE_DAMAGE">Adj Decline Damage</option>
+          <option value="ADJ_APPROVE_LOST">Adj Approve Lost</option>
+          <option value="ADJ_DECLINE_LOST">Adj Decline Lost</option>
+          <option value="ADJ_APPROVE_EXCESS">Adj Approve Excess</option>
+          <option value="TRANSFER">Transfer</option>
+        </select>
+      </div>
+      <div class="col-sm-6 col-md-2">
+        <label class="form-label small">From</label>
+        <input class="form-control form-control-sm" type="date" id="date_from" />
+      </div>
+      <div class="col-sm-6 col-md-2">
+        <label class="form-label small">To</label>
+        <input class="form-control form-control-sm" type="date" id="date_to" />
+      </div>
+      <div class="col-sm-6 col-md-2">
+        <button class="btn btn-primary btn-sm w-100" type="submit">Apply</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card-like">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Item</th>
+            <th>From</th>
+            <th>To</th>
+            <th class="text-end">Qty</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center px-2 py-2">
+      <div class="small" id="pageInfo"></div>
+      <div class="d-flex gap-1">
+        <button class="btn btn-outline-secondary btn-sm" id="prevBtn">Prev</button>
+        <button class="btn btn-outline-secondary btn-sm" id="nextBtn">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="whCtx" data-wh-id="{{ warehouse.id }}" style="display:none;"></div>
+
+<script>
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function apiFetch(url){ const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token()}` }}); if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); } return res.json(); }
+  function fmtDate(v){ if(!v) return ''; return new Date(v).toLocaleString(); }
+  function fmtLoc(x){ if(!x) return ''; return x.location_name || x.location_code || x.location_subtype || x.location; }
+  function fromLoc(x){ return (Number(x.qty_delta) < 0) ? fmtLoc(x) : ''; }
+  function toLoc(x){ return (Number(x.qty_delta) > 0) ? fmtLoc(x) : ''; }
+
+  let page = 1; const pageSize = 25; let hasNext = false; let hasPrev = false; let totalCount = null;
+  async function load(){
+    const whId = Number(document.getElementById('whCtx').dataset.whId || '0');
+    const params = new URLSearchParams();
+    const q = document.getElementById('q').value.trim();
+    const type = document.getElementById('type').value;
+    const d1 = document.getElementById('date_from').value;
+    const d2 = document.getElementById('date_to').value;
+    if(q) params.set('search', q);
+    if(type) params.set('type', type);
+    if(d1) params.set('date_from', d1);
+    if(d2) params.set('date_to', d2);
+    params.set('ordering', '-ts');
+    params.set('page', page);
+    params.set('page_size', pageSize);
+
+    const url = `/api/warehousing/warehouses/${whId}/movements/?` + params.toString();
+    const data = await apiFetch(url);
+    const results = data.results || data;
+    hasNext = Boolean(data.next);
+    hasPrev = Boolean(data.previous);
+    totalCount = data.count ?? null;
+
+    document.getElementById('rows').innerHTML = results.map(x => `
+      <tr>
+        <td>${fmtDate(x.ts)}</td>
+        <td>${x.item_sku} — ${x.item_name}</td>
+        <td>${fromLoc(x)}</td>
+        <td>${toLoc(x)}</td>
+        <td class='text-end'>${x.qty_delta}</td>
+        <td>${x.movement_type}</td>
+      </tr>`).join('');
+
+    const info = totalCount!=null ? `Page ${page}` + (totalCount? ` • ${totalCount} records` : '') : `Page ${page}`;
+    document.getElementById('pageInfo').textContent = info;
+    document.getElementById('prevBtn').disabled = !hasPrev && page<=1;
+    document.getElementById('nextBtn').disabled = !hasNext;
+  }
+
+  document.getElementById('filters').addEventListener('submit', e => { e.preventDefault(); page = 1; load(); });
+  document.getElementById('prevBtn').addEventListener('click', () => { if(page>1){ page--; load(); } });
+  document.getElementById('nextBtn').addEventListener('click', () => { if(hasNext){ page++; load(); } });
+  document.addEventListener('DOMContentLoaded', load);
+</script>

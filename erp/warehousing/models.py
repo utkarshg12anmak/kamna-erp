@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 from simple_history.models import HistoricalRecords
 
 
@@ -160,3 +161,108 @@ class Location(models.Model):
 
     def __str__(self):
         return self.display_name or f"{self.type}:{self.subtype or self.code}"
+
+
+# New: MovementType and StockLedger (append-only)
+class MovementType(models.TextChoices):
+    ADJ_REQ_DAMAGE = "ADJ_REQ_DAMAGE", "Adj Req Damage"
+    ADJ_REQ_LOST = "ADJ_REQ_LOST", "Adj Req Lost"
+    ADJ_REQ_EXCESS = "ADJ_REQ_EXCESS", "Adj Req Excess"
+    ADJ_APPROVE_DAMAGE = "ADJ_APPROVE_DAMAGE", "Adj Approve Damage"
+    ADJ_DECLINE_DAMAGE = "ADJ_DECLINE_DAMAGE", "Adj Decline Damage"
+    ADJ_APPROVE_LOST = "ADJ_APPROVE_LOST", "Adj Approve Lost"
+    ADJ_DECLINE_LOST = "ADJ_DECLINE_LOST", "Adj Decline Lost"
+    ADJ_APPROVE_EXCESS = "ADJ_APPROVE_EXCESS", "Adj Approve Excess"
+    TRANSFER = "TRANSFER", "Transfer"
+
+
+class StockLedger(models.Model):
+    ts = models.DateTimeField(auto_now_add=True, db_index=True)
+    warehouse = models.ForeignKey("Warehouse", on_delete=models.PROTECT, related_name="+")
+    location = models.ForeignKey("Location", on_delete=models.PROTECT, related_name="+")
+    item = models.ForeignKey("catalog.Item", on_delete=models.PROTECT, related_name="+")
+    qty_delta = models.DecimalField(max_digits=12, decimal_places=3)  # +in, -out
+    movement_type = models.CharField(max_length=32, choices=MovementType.choices)
+    ref_model = models.CharField(max_length=50, blank=True)
+    ref_id = models.CharField(max_length=50, blank=True)
+    memo = models.TextField(blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    history = HistoricalRecords()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["warehouse", "item"]),
+            models.Index(fields=["warehouse", "location"]),
+            models.Index(fields=["movement_type", "ts"]),
+        ]
+        verbose_name = "Stock Ledger Entry"
+        verbose_name_plural = "Stock Ledger"
+
+    def __str__(self):
+        return f"{self.ts} {self.item_id} @ {self.location_id} {self.qty_delta}"
+
+
+# New: Adjustment workflow
+class AdjustmentType(models.TextChoices):
+    DAMAGE = "DAMAGE", "DAMAGE"
+    LOST = "LOST", "LOST"
+    EXCESS = "EXCESS", "EXCESS"
+
+
+class AdjustmentStatus(models.TextChoices):
+    REQUESTED = "REQUESTED", "REQUESTED"
+    APPROVED = "APPROVED", "APPROVED"
+    DECLINED = "DECLINED", "DECLINED"
+
+
+class AdjustmentRequest(models.Model):
+    number = models.CharField(max_length=20, unique=True, editable=False)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT, related_name="adjustment_requests")
+    type = models.CharField(max_length=10, choices=AdjustmentType.choices)
+    item = models.ForeignKey("catalog.Item", on_delete=models.PROTECT, related_name="+")
+    source_location = models.ForeignKey(Location, null=True, blank=True, on_delete=models.PROTECT, related_name="+")
+    qty = models.DecimalField(max_digits=12, decimal_places=3)
+    status = models.CharField(max_length=10, choices=AdjustmentStatus.choices, default=AdjustmentStatus.REQUESTED)
+    memo = models.TextField(blank=True)
+    requested_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="adj_requested")
+    requested_at = models.DateTimeField(auto_now_add=True)
+    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="adj_approved")
+    approved_at = models.DateTimeField(null=True, blank=True)
+    declined_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="adj_declined")
+    declined_at = models.DateTimeField(null=True, blank=True)
+    history = HistoricalRecords()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["warehouse", "status"]),
+            models.Index(fields=["requested_at"]),
+        ]
+
+    def clean(self):
+        if self.qty is None or self.qty <= 0:
+            raise ValidationError({"qty": "Quantity must be > 0"})
+        if self.type in (AdjustmentType.DAMAGE, AdjustmentType.LOST):
+            if not self.source_location or self.source_location.type != LocationType.PHYSICAL:
+                raise ValidationError({"source_location": "Physical source location required"})
+        if self.type == AdjustmentType.EXCESS and self.source_location is not None:
+            raise ValidationError({"source_location": "Must be empty for EXCESS"})
+
+    def save(self, *args, **kwargs):
+        if not self.number:
+            prefix = f"AR-{timezone.now().year}-"
+            last = (
+                AdjustmentRequest.objects.filter(number__startswith=prefix)
+                .order_by("-id")
+                .first()
+            )
+            seq = 1
+            if last:
+                try:
+                    seq = int((last.number or "").split("-")[-1]) + 1
+                except Exception:
+                    seq = 1
+            self.number = f"{prefix}{seq:04d}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.number or f"AR? ({self.type})"

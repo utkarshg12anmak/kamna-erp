@@ -1,0 +1,96 @@
+<div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 m-0">Adjustment Approvals — All Warehouses</h2>
+    <a class="btn btn-outline-secondary btn-sm" href="/app/warehousing">Back</a>
+  </div>
+  <div class="card-like mb-3">
+    <form id="filters" class="row g-2 align-items-end">
+      <div class="col-sm-6 col-md-3">
+        <label class="form-label small">Search</label>
+        <input class="form-control form-control-sm" id="q" placeholder="Number, SKU, item name" />
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <label class="form-label small">Warehouse</label>
+        <input class="form-control form-control-sm" id="warehouse" placeholder="Warehouse ID (optional)" />
+      </div>
+      <div class="col-sm-6 col-md-2">
+        <button class="btn btn-primary btn-sm w-100" type="submit">Apply</button>
+      </div>
+    </form>
+  </div>
+  <div class="card-like">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Warehouse</th>
+            <th>Item</th>
+            <th class="text-end">Qty</th>
+            <th>Type</th>
+            <th>Requested By</th>
+            <th>When</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center px-2 py-2">
+      <div class="small" id="pageInfo"></div>
+      <div class="d-flex gap-1">
+        <button class="btn btn-outline-secondary btn-sm" id="prevBtn">Prev</button>
+        <button class="btn btn-outline-secondary btn-sm" id="nextBtn">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function api(url, opts={}){
+    opts.headers = Object.assign({ 'Authorization': `Bearer ${token()}`, 'Content-Type': 'application/json' }, opts.headers||{});
+    const res = await fetch(url, opts);
+    const body = await res.json().catch(()=>({}));
+    if(!res.ok){ notify(body.detail || 'Request failed', 'error'); throw new Error(body.detail || 'Request failed'); }
+    return body;
+  }
+  function fmtDate(v){ return v? new Date(v).toLocaleString() : ''; }
+
+  let page = 1; const pageSize = 25; let lastCount = 0; let canChange = false;
+  async function load(){
+    const p = new URLSearchParams({ status: 'REQUESTED', ordering: '-requested_at', page: String(page), page_size: String(pageSize) });
+    const q = document.getElementById('q').value.trim(); if(q) p.set('search', q);
+    const wh = document.getElementById('warehouse').value.trim(); if(wh) p.set('warehouse', wh);
+    const data = await api('/api/warehousing/adjustment-requests/?' + p.toString());
+    const results = data.results || data;
+    lastCount = results.length;
+    document.getElementById('rows').innerHTML = results.map(r => `
+      <tr>
+        <td>${r.number}</td>
+        <td>${r.warehouse_code || r.warehouse}</td>
+        <td>${r.item_sku || r.item} — ${r.item_name||''}</td>
+        <td class='text-end'>${r.qty}</td>
+        <td>${r.type}</td>
+        <td>${r.requested_by||''}</td>
+        <td>${fmtDate(r.requested_at)}</td>
+        <td>
+          ${canChange ? `<button class="btn btn-success btn-sm" onclick="approve(${r.id})">Approve</button>
+          <button class="btn btn-outline-danger btn-sm" onclick="decline(${r.id})">Decline</button>` : '<span class="text-muted small">No permission</span>'}
+        </td>
+      </tr>`).join('');
+    document.getElementById('pageInfo').textContent = `Page ${page}`;
+    document.getElementById('prevBtn').disabled = (page<=1);
+    document.getElementById('nextBtn').disabled = (lastCount < pageSize);
+  }
+
+  async function approve(id){ try{ await api(`/api/warehousing/adjustment-requests/${id}/approve/`, { method:'POST' }); notify('Approved', 'success'); load(); }catch(e){} }
+  async function decline(id){ try{ await api(`/api/warehousing/adjustment-requests/${id}/decline/`, { method:'POST' }); notify('Declined', 'info'); load(); }catch(e){} }
+
+  async function loadPerm(){ try{ const r = await api('/api/warehousing/adjustment-permissions/'); canChange = !!r.can_change; }catch(e){ canChange=false; } }
+
+  document.getElementById('filters').addEventListener('submit', (e)=>{ e.preventDefault(); page=1; load(); });
+  document.getElementById('prevBtn').addEventListener('click', ()=>{ if(page>1){ page--; load(); }});
+  document.getElementById('nextBtn').addEventListener('click', ()=>{ if(lastCount===pageSize){ page++; load(); }});
+  document.addEventListener('DOMContentLoaded', async ()=>{ await loadPerm(); await load(); });
+</script>

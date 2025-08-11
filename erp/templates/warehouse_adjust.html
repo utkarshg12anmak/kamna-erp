@@ -1,0 +1,181 @@
+<div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 m-0">Adjust Inventory — {{ warehouse.code }} {{ warehouse.name }}</h2>
+    <a class="btn btn-outline-secondary btn-sm" href="/app/warehousing/w/{{ warehouse.code }}">Back to Overview</a>
+  </div>
+
+  <div class="card-like">
+    <form id="adjForm" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label small">Type</label>
+        <select class="form-select form-select-sm" id="type" required>
+          <option value="DAMAGE">Damage</option>
+          <option value="LOST">Lost</option>
+          <option value="EXCESS">Excess</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small">Item</label>
+        <div class="d-flex gap-2">
+          <input class="form-control form-control-sm" type="text" id="itemSearch" placeholder="Search item by SKU or Name" autocomplete="off" />
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="itemSearchBtn">Search</button>
+        </div>
+        <select class="form-select form-select-sm mt-1" id="itemSelect" size="6" aria-label="Item results"></select>
+        <input type="hidden" id="item" />
+        <div class="form-text">Pick an item (SKU — Name). Type to search.</div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small">Qty</label>
+        <input class="form-control form-control-sm" type="number" id="qty" step="1" min="1" required />
+        <div class="form-text">Quantity must be a positive integer.</div>
+      </div>
+      <div class="col-md-6" id="srcLocWrap">
+        <label class="form-label small">Source Location</label>
+        <div class="d-flex gap-2">
+          <input class="form-control form-control-sm" type="text" id="locSearch" placeholder="Search location by Code or Name" autocomplete="off" />
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="locSearchBtn">Search</button>
+        </div>
+        <select class="form-select form-select-sm mt-1" id="locSelect" size="6" aria-label="Location results"></select>
+        <input type="hidden" id="source_location" />
+        <div class="form-text">Required for Damage/Lost; leave blank for Excess. Only PHYSICAL locations are shown.</div>
+      </div>
+      <div class="col-12">
+        <label class="form-label small">Memo</label>
+        <textarea class="form-control form-control-sm" id="memo" rows="2" placeholder="Optional notes"></textarea>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary btn-sm" type="submit">Submit Request</button>
+        <button class="btn btn-outline-secondary btn-sm" type="button" id="checkBtn">Check SOH</button>
+      </div>
+      <div class="col-12 small" id="soh"></div>
+    </form>
+  </div>
+</div>
+
+<div id="whCtx" data-wh-id="{{ warehouse.id }}" style="display:none;"></div>
+
+<script>
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function api(url, opts={}){
+    opts.headers = Object.assign({ 'Authorization': `Bearer ${token()}`, 'Content-Type': 'application/json' }, opts.headers||{});
+    const res = await fetch(url, opts);
+    if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); }
+    const ct = res.headers.get('content-type')||'';
+    const body = ct.includes('application/json') ? await res.json() : await res.text();
+    if(!res.ok){
+      const msg = typeof body === 'string' ? body : (body.detail || JSON.stringify(body));
+      notify(msg, 'error');
+      throw new Error(msg);
+    }
+    return body;
+  }
+
+  function toggleSrc(){ const t = document.getElementById('type').value; const wrap = document.getElementById('srcLocWrap'); wrap.style.display = (t==='EXCESS') ? 'none' : 'block'; if(t==='EXCESS'){ document.getElementById('source_location').value=''; document.getElementById('locSelect').selectedIndex=-1; } }
+  document.getElementById('type').addEventListener('change', toggleSrc);
+  document.addEventListener('DOMContentLoaded', toggleSrc);
+
+  // Debounce helper
+  function debounce(fn, delay){ let h; return (...args)=>{ clearTimeout(h); h=setTimeout(()=>fn(...args), delay); }; }
+
+  // Item search/select
+  const itemSelect = document.getElementById('itemSelect');
+  const itemHidden = document.getElementById('item');
+  const itemSearch = document.getElementById('itemSearch');
+  async function loadItems(q){
+    try{
+      const url = new URL(window.location.origin + '/api/catalog/items/');
+      if(q){ url.searchParams.set('search', q); }
+      url.searchParams.set('ordering', 'name');
+      url.searchParams.set('page_size', '25');
+      const data = await api(url.toString());
+      const results = data.results || data; // supports paginated or not
+      itemSelect.innerHTML = '';
+      results.forEach(it => {
+        const opt = document.createElement('option');
+        opt.value = it.id;
+        opt.textContent = `${it.sku} — ${it.name}`;
+        itemSelect.appendChild(opt);
+      });
+    }catch(e){ /* handled by api */ }
+  }
+  const doItemSearch = debounce(()=> loadItems(itemSearch.value.trim()), 250);
+  itemSearch.addEventListener('input', doItemSearch);
+  document.getElementById('itemSearchBtn').addEventListener('click', ()=> loadItems(itemSearch.value.trim()));
+  itemSelect.addEventListener('change', ()=>{
+    const sel = itemSelect.value;
+    itemHidden.value = sel || '';
+  });
+
+  // Location search/select (PHYSICAL only, current warehouse)
+  const locSelect = document.getElementById('locSelect');
+  const locHidden = document.getElementById('source_location');
+  const locSearch = document.getElementById('locSearch');
+  async function loadLocations(q){
+    try{
+      const whId = Number(document.getElementById('whCtx').dataset.whId||'0');
+      const url = new URL(window.location.origin + '/api/warehousing/locations/');
+      url.searchParams.set('warehouse', String(whId));
+      url.searchParams.set('type', 'PHYSICAL');
+      if(q){ url.searchParams.set('search', q); }
+      url.searchParams.set('ordering', 'code');
+      url.searchParams.set('page_size', '25');
+      const data = await api(url.toString());
+      const results = data.results || data;
+      locSelect.innerHTML = '';
+      results.forEach(loc => {
+        const opt = document.createElement('option');
+        opt.value = loc.id;
+        const code = loc.code || '';
+        const name = loc.display_name || '';
+        opt.textContent = `${code}${code && name ? ' — ' : ''}${name}`;
+        locSelect.appendChild(opt);
+      });
+    }catch(e){ /* handled */ }
+  }
+  const doLocSearch = debounce(()=> loadLocations(locSearch.value.trim()), 250);
+  locSearch.addEventListener('input', doLocSearch);
+  document.getElementById('locSearchBtn').addEventListener('click', ()=> loadLocations(locSearch.value.trim()));
+  locSelect.addEventListener('change', ()=>{
+    const sel = locSelect.value;
+    locHidden.value = sel || '';
+  });
+
+  // Initial loads
+  document.addEventListener('DOMContentLoaded', ()=>{ loadItems(''); loadLocations(''); });
+
+  document.getElementById('checkBtn').addEventListener('click', async () => {
+    try{
+      const whId = Number(document.getElementById('whCtx').dataset.whId||'0');
+      const item = Number(document.getElementById('item').value||'');
+      const type = document.getElementById('type').value;
+      const locVal = document.getElementById('source_location').value||'';
+      const loc = locVal ? Number(locVal) : 0;
+      if(!item){ notify('Select an item first', 'warning'); return; }
+      if(type!== 'EXCESS' && !loc){ notify('Select a source location', 'warning'); return; }
+      if(type=== 'EXCESS' && !loc){ notify('SOH not applicable for EXCESS without a source location', 'info'); return; }
+      const data = await api(`/api/warehousing/stock_on_hand/?warehouse=${whId}&location=${loc}&item=${item}`);
+      notify(`On hand: ${data.qty ?? 0}`, 'info');
+      document.getElementById('soh').textContent = `On hand: ${data.qty ?? 0}`;
+    }catch(e){ /* handled */ }
+  });
+
+  document.getElementById('adjForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try{
+      const whId = Number(document.getElementById('whCtx').dataset.whId||'0');
+      const type = document.getElementById('type').value;
+      const item = Number(document.getElementById('item').value||'');
+      const qtyRaw = document.getElementById('qty').value;
+      const qty = Number(qtyRaw);
+      const srcVal = document.getElementById('source_location').value||'';
+      const src = type==='EXCESS' ? null : (srcVal ? Number(srcVal) : 0);
+      if(!item){ notify('Please select an item', 'warning'); return; }
+      if(!Number.isInteger(qty) || qty <= 0){ notify('Quantity must be a positive integer', 'warning'); return; }
+      if(type!=='EXCESS' && !src){ notify('Please select a source location for Damage/Lost', 'warning'); return; }
+      const payload = { warehouse: whId, type, item, source_location: src, qty, memo: document.getElementById('memo').value||'' };
+      const data = await api('/api/warehousing/adjustment-requests/', { method: 'POST', body: JSON.stringify(payload) });
+      notify(`Adjustment submitted: ${data.number}`, 'success');
+      setTimeout(()=> { window.location = `/app/warehousing/w/${encodeURIComponent('{{ warehouse.code }}')}`; }, 800);
+    }catch(e){ /* handled */ }
+  });
+</script>
