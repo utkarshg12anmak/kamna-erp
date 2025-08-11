@@ -123,7 +123,7 @@ def warehouse_shell_menu(code, active_href, wh_id: int):
         {"label": "Movements", "href": base + "/movements"},
         {"label": "Approvals", "href": base + "/approvals"},
         {"label": "Adjust", "href": base + "/adjust"},
-        {"label": "Locations", "href": f"/app/warehousing/config/locations?warehouse={wh_id}"},
+        # Locations tab removed; available under Configuration only
     ]
     for it in items:
         it["active"] = (it["href"] == active_href)
