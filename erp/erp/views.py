@@ -73,8 +73,6 @@ def module_catalog_taxrates(request):
 def warehousing_operational_menu(active_href):
     items = [
         {"label": "Dashboard", "href": "/app/warehousing"},
-        {"label": "Configuration", "href": "/app/warehousing/config"},
-        {"label": "Warehouses", "href": "/app/warehousing/config/warehouses"},
     ]
     for it in items:
         it["active"] = (it["href"] == active_href)
