@@ -218,11 +218,16 @@ class AdjustmentRequestViewSet(viewsets.ModelViewSet):
 @permission_classes([permissions.IsAuthenticated])
 def warehouse_kpis(request, pk: int):
     # Total on-hand across all items/locations (net qty)
+    # Exclude LOST and EXCESS_PENDING for displayed total
+    from .models import VirtualSubtype  # local import to avoid circulars at top edits
+    base = StockLedger.objects.filter(warehouse_id=pk)
+    excluded_subtypes = [VirtualSubtype.EXCESS_PENDING, VirtualSubtype.LOST]
     total_qty = (
-        StockLedger.objects.filter(warehouse_id=pk).aggregate(total=DjangoSum("qty_delta")).get("total")
+        base.exclude(location__subtype__in=excluded_subtypes)
+        .aggregate(total=DjangoSum("qty_delta")).get("total")
         or 0
     )
-    # Distinct items with non-zero on hand
+    # Distinct items with non-zero on hand (unchanged semantics)
     per_item = (
         StockLedger.objects.filter(warehouse_id=pk)
         .values("item_id")
@@ -239,11 +244,18 @@ def warehouse_kpis(request, pk: int):
     # Movements today
     today = timezone.now().date()
     movements_today = StockLedger.objects.filter(warehouse_id=pk, ts__date=today).count()
+    # LOST bin qty as a separate KPI
+    lost_qty = (
+        base.filter(location__subtype=VirtualSubtype.LOST)
+        .aggregate(total=DjangoSum("qty_delta")).get("total")
+        or 0
+    )
     return response.Response({
         "total_qty": float(total_qty),
         "total_items": int(total_items),
         "locations_with_stock": int(locations_with_stock),
         "movements_today": int(movements_today),
+        "lost_qty": float(lost_qty),
     })
 
 

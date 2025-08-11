@@ -9,32 +9,38 @@
       
     </div>
   </div>
-  <div class="row g-3">
-    <div class="col-sm-6 col-lg-3">
-      <div class="card-like text-center">
-        <div class="small text-muted">Total Qty</div>
-        <div class="display-6" id="kpiTotalQty">-</div>
-      </div>
+
+  <!-- KPI row: keep single line with scroll -->
+  <div class="kpi-strip mb-3" id="kpiRow">
+    <div class="kpi-card card-like text-center">
+      <div class="small text-muted">Total Qty</div>
+      <div class="display-6" id="kpiTotalQty">-</div>
     </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="card-like text-center">
-        <div class="small text-muted">Items</div>
-        <div class="display-6" id="kpiItems">-</div>
-      </div>
+    <div class="kpi-card card-like text-center">
+      <div class="small text-muted">Items</div>
+      <div class="display-6" id="kpiItems">-</div>
     </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="card-like text-center">
-        <div class="small text-muted">Locations With Stock</div>
-        <div class="display-6" id="kpiLocs">-</div>
-      </div>
+    <div class="kpi-card card-like text-center">
+      <div class="small text-muted">Locations With Stock</div>
+      <div class="display-6" id="kpiLocs">-</div>
     </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="card-like text-center">
+    <div class="col-auto">
+      <div class="card-like text-center" style="min-width: 200px;">
         <div class="small text-muted">Movements Today</div>
         <div class="display-6" id="kpiMoves">-</div>
       </div>
     </div>
-    <!-- Change: make Active Locations card half-width on lg+ screens, full-width on smaller -->
+    <!-- New KPI: Lost Qty -->
+    <div class="col-auto">
+      <div class="card-like text-center" style="min-width: 200px;">
+        <div class="small text-muted">Lost Qty</div>
+        <div class="display-6" id="kpiLostQty">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active locations and other panels -->
+  <div class="row g-3">
     <div class="col-12 col-lg-6">
       <div class="card-like">
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -149,6 +155,7 @@
     document.getElementById('kpiItems').textContent = (k.total_items ?? 0);
     document.getElementById('kpiLocs').textContent = (k.locations_with_stock ?? 0);
     document.getElementById('kpiMoves').textContent = (k.movements_today ?? 0);
+    document.getElementById('kpiLostQty').textContent = (k.lost_qty ?? 0);
     // Load recent activity
     const r = await apiFetch(`/api/warehousing/warehouses/${whId}/recent_activity/`);
     const list = Array.isArray(r) ? r : (r.results || []);
