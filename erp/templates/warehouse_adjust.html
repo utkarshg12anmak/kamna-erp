@@ -31,13 +31,28 @@
       </div>
       <div class="col-md-6" id="srcLocWrap">
         <label class="form-label small">Source Location</label>
-        <div class="d-flex gap-2">
+        <!-- LOST-only toggle between Physical and Lost bin as source -->
+        <div class="mt-2" id="lostSourceToggle" style="display:none;">
+          <label class="form-label small mb-1">For Lost: Source</label>
+          <div class="d-flex align-items-center gap-3">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="lostSourceMode" id="lostSourcePhysical" value="PHYSICAL" checked>
+              <label class="form-check-label" for="lostSourcePhysical">Physical bin</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="lostSourceMode" id="lostSourceLostBin" value="LOST_BIN">
+              <label class="form-check-label" for="lostSourceLostBin">Lost bin</label>
+            </div>
+            <span class="small text-muted" id="lostBinNote" style="display:none;">Lost bin not available</span>
+          </div>
+        </div>
+        <div class="d-flex gap-2 mt-2">
           <input class="form-control form-control-sm" type="text" id="locSearch" placeholder="Search location by Code or Name" autocomplete="off" />
           <button class="btn btn-outline-secondary btn-sm" type="button" id="locSearchBtn">Search</button>
         </div>
         <select class="form-select form-select-sm mt-1" id="locSelect" size="6" aria-label="Location results"></select>
         <input type="hidden" id="source_location" />
-        <div class="form-text">Required for Damage/Lost; leave blank for Excess. Only PHYSICAL locations are shown.</div>
+        <div class="form-text">Required for Damage/Lost; leave blank for Excess. Only PHYSICAL locations are shown for searches. For Lost, you may choose the Lost bin as the source.</div>
       </div>
       <div class="col-12">
         <label class="form-label small">Memo</label>
@@ -70,7 +85,69 @@
     return body;
   }
 
-  function toggleSrc(){ const t = document.getElementById('type').value; const wrap = document.getElementById('srcLocWrap'); wrap.style.display = (t==='EXCESS') ? 'none' : 'block'; if(t==='EXCESS'){ document.getElementById('source_location').value=''; document.getElementById('locSelect').selectedIndex=-1; } }
+  // Track Lost virtual bin id for current warehouse
+  let lostBinId = null;
+  async function loadVirtualBins(){
+    try{
+      const whId = Number(document.getElementById('whCtx').dataset.whId||'0');
+      const data = await api(`/api/warehousing/warehouses/${whId}/virtual_bins/`);
+      const list = data.results || data || [];
+      const lost = Array.isArray(list) ? list.find(b => (b.subtype||'').toUpperCase() === 'LOST') : null;
+      lostBinId = lost ? Number(lost.id) : null;
+      document.getElementById('lostBinNote').style.display = lostBinId ? 'none' : 'inline';
+    }catch(e){ lostBinId = null; document.getElementById('lostBinNote').style.display = 'inline'; }
+  }
+
+  function applyLostSourceMode(){
+    const type = document.getElementById('type').value;
+    const isLost = type === 'LOST';
+    const lostToggle = document.getElementById('lostSourceToggle');
+    const locSearch = document.getElementById('locSearch');
+    const locSearchBtn = document.getElementById('locSearchBtn');
+    const locSelect = document.getElementById('locSelect');
+    const srcHidden = document.getElementById('source_location');
+
+    if(!isLost){
+      lostToggle.style.display = 'none';
+      // default to physical selection mode
+      document.getElementById('lostSourcePhysical').checked = true;
+      locSearch.disabled = false; locSearchBtn.disabled = false; locSelect.disabled = false;
+      if(!locSelect.value){ srcHidden.value = ''; }
+      return;
+    }
+
+    // Lost type: show toggle
+    lostToggle.style.display = 'block';
+    const useLost = document.getElementById('lostSourceLostBin').checked;
+    if(useLost){
+      // If no Lost bin available, revert to physical
+      if(!lostBinId){
+        document.getElementById('lostSourcePhysical').checked = true;
+        locSearch.disabled = false; locSearchBtn.disabled = false; locSelect.disabled = false;
+        return;
+      }
+      // Lock to Lost bin
+      locSearch.disabled = true; locSearchBtn.disabled = true; locSelect.disabled = true;
+      srcHidden.value = String(lostBinId);
+    }else{
+      // Physical mode
+      locSearch.disabled = false; locSearchBtn.disabled = false; locSelect.disabled = false;
+      // keep user's physical selection; if none, clear hidden
+      srcHidden.value = locSelect.value || '';
+    }
+  }
+
+  function toggleSrc(){
+    const t = document.getElementById('type').value;
+    const wrap = document.getElementById('srcLocWrap');
+    wrap.style.display = (t==='EXCESS') ? 'none' : 'block';
+    if(t==='EXCESS'){
+      document.getElementById('source_location').value='';
+      document.getElementById('locSelect').selectedIndex=-1;
+    }
+    // Apply Lost source mode handling
+    applyLostSourceMode();
+  }
   document.getElementById('type').addEventListener('change', toggleSrc);
   document.addEventListener('DOMContentLoaded', toggleSrc);
 
@@ -143,8 +220,17 @@
     locHidden.value = sel || '';
   });
 
+  // Bind lost source radios
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const radios = document.querySelectorAll('input[name="lostSourceMode"]');
+    radios.forEach(r => r.addEventListener('change', applyLostSourceMode));
+  });
+
+  // Update hidden when selecting physical location
+  locSelect.addEventListener('change', ()=>{ const sel = locSelect.value; if(document.getElementById('lostSourcePhysical').checked){ locHidden.value = sel || ''; }});
+
   // Initial loads
-  document.addEventListener('DOMContentLoaded', ()=>{ loadItems(''); loadLocations(''); });
+  document.addEventListener('DOMContentLoaded', ()=>{ loadItems(''); loadLocations(''); loadVirtualBins().then(applyLostSourceMode); });
 
   document.getElementById('checkBtn').addEventListener('click', async () => {
     try{
