@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 
 def landing_page(request):
@@ -73,7 +73,8 @@ def module_catalog_taxrates(request):
 def warehousing_operational_menu(active_href):
     items = [
         {"label": "Dashboard", "href": "/app/warehousing"},
-        # Future operational entries will be added here (Receiving, Putaway, Picking, etc.)
+        {"label": "Configuration", "href": "/app/warehousing/config"},
+        {"label": "Warehouses", "href": "/app/warehousing/config/warehouses"},
     ]
     for it in items:
         it["active"] = (it["href"] == active_href)
@@ -106,6 +107,50 @@ def warehousing_config_warehouses(request):
 
 def warehousing_config_locations(request):
     return render_module(request, "Warehousing", warehousing_config_menu("/app/warehousing/config/locations"), "warehousing_config_locations.html")
+
+
+# New: Operational landing page rendering state-grouped warehouses
+
+def warehousing_enter(request):
+    return render_module(request, "Warehousing", warehousing_operational_menu("/app/warehousing"), "warehousing_enter.html")
+
+
+# Warehouse shell per-code
+
+def warehouse_shell_menu(code, active_href, wh_id: int):
+    base = f"/app/warehousing/w/{code}"
+    items = [
+        {"label": "Overview", "href": base},
+        {"label": "Stock", "href": base + "#stock"},
+        {"label": "Transfers", "href": base + "#transfers"},
+        {"label": "Locations", "href": f"/app/warehousing/config/locations?warehouse={wh_id}"},
+    ]
+    for it in items:
+        it["active"] = (it["href"] == active_href)
+    return items
+
+
+def warehouse_shell(request, code: str):
+    from warehousing.models import Warehouse
+    wh = get_object_or_404(Warehouse, code=code)
+    ctx_extra = {
+        "warehouse": {
+            "id": wh.id,
+            "code": wh.code,
+            "name": wh.name,
+            "status": wh.status,
+            "city": wh.city,
+            "state": wh.state,
+            "gstin": wh.gstin,
+        }
+    }
+    resp = render(request, "base_module.html", {
+        "module": "Warehousing",
+        "menu": warehouse_shell_menu(code, f"/app/warehousing/w/{code}", wh.id),
+        "content_template": "warehouse_overview.html",
+        **ctx_extra,
+    })
+    return resp
 
 
 # Other modules (basic)

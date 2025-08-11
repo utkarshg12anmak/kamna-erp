@@ -1,0 +1,101 @@
+{% comment %} Warehousing operational landing. Extends the module shell via render_module in views. {% endcomment %}
+<div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 m-0">Warehousing</h2>
+    <div class="d-flex gap-2 align-items-center">
+      <a class="btn btn-outline-primary btn-sm" href="/app/warehousing/config">Configuration</a>
+      <a class="btn btn-outline-primary btn-sm" href="/app/warehousing/config/warehouses">Warehouses</a>
+    </div>
+  </div>
+
+  <div class="card-like mb-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-4">
+        <label class="form-label" for="fSearch">Search</label>
+        <input id="fSearch" type="search" class="form-control" placeholder="Search code, name, city..." />
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label" for="fStatus">Status</label>
+        <select id="fStatus" class="form-select">
+          <option value="">All</option>
+          <option value="ACTIVE">ACTIVE</option>
+          <option value="INACTIVE">INACTIVE</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label" for="fCity">City</label>
+        <select id="fCity" class="form-select">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-2 d-grid">
+        <button id="btnRefresh" class="btn btn-primary">Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="groups"></div>
+</div>
+
+<style>
+  .state-header { display:flex; align-items:center; justify-content:space-between; margin: 16px 0 8px; }
+  .badge-count { background:#EFF6FF; color:#1D4ED8; border:1px solid #DBEAFE; padding:2px 8px; border-radius:999px; font-size:.8rem; }
+  .wh-card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px; height:100%; }
+  .wh-chip { padding:2px 8px; border-radius:999px; font-size:.75rem; }
+  .chip-active { background:#DCFCE7; color:#166534; border:1px solid #BBF7D0; }
+  .chip-inactive { background:#E5E7EB; color:#374151; border:1px solid #D1D5DB; }
+  .wh-card .title { font-weight:600; }
+</style>
+
+<script>
+  const API = '/api/warehousing/warehouses';
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function apiFetch(url){ const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token()}` }}); if(res.status===401){ window.location='/'; return null; } return res.json(); }
+  function by(arr, key){ return arr.reduce((acc, it) => { const k = (it[key] || 'Unassigned'); (acc[k] ||= []).push(it); return acc; }, {}); }
+  function statusChip(s){ return s==='ACTIVE' ? '<span class="wh-chip chip-active">ACTIVE</span>' : '<span class="wh-chip chip-inactive">INACTIVE</span>'; }
+  function card(w){ return `
+    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+      <div class="wh-card">
+        <div class="d-flex justify-content-between mb-1"><div class="title">${w.code}</div>${statusChip(w.status)}</div>
+        <div class="text-muted small">${w.name}</div>
+        <div class="small">${w.city || ''}${w.state ? ', ' + w.state : ''}</div>
+        <div class="d-grid mt-2"><a class="btn btn-outline-primary btn-sm" href="/app/warehousing/w/${encodeURIComponent(w.code)}">Open</a></div>
+      </div>
+    </div>`; }
+  function render(list){
+    const G = document.getElementById('groups'); G.innerHTML = '';
+    const cities = [...new Set(list.map(w => w.city).filter(Boolean))].sort();
+    document.getElementById('fCity').innerHTML = ['<option value="">All</option>'].concat(cities.map(c => `<option>${c}</option>`)).join('');
+    const grouped = by(list, 'state');
+    const states = Object.keys(grouped).sort((a,b)=> (a||'').localeCompare(b||''));
+    states.forEach(state => {
+      const items = grouped[state];
+      const section = document.createElement('section');
+      section.innerHTML = `<div class="state-header"><h3 class="h6 m-0">${state || 'Unassigned'}</h3><span class="badge-count">${items.length}</span></div><div class="row g-3">${items.map(card).join('')}</div>`;
+      G.appendChild(section);
+    });
+  }
+  function applyFilters(all){
+    const q = document.getElementById('fSearch').value.trim().toLowerCase();
+    const st = document.getElementById('fStatus').value;
+    const city = document.getElementById('fCity').value;
+    const filtered = all.filter(w => {
+      const okQ = !q || [w.code, w.name, w.city].some(v => (v||'').toLowerCase().includes(q));
+      const okS = !st || w.status === st;
+      const okC = !city || w.city === city;
+      return okQ && okS && okC;
+    });
+    render(filtered);
+  }
+  async function init(){
+    const data = await apiFetch(`${API}/?ordering=state,code&page_size=1000`);
+    const list = Array.isArray(data) ? data : (data.results || []);
+    window.__ALL_WH__ = list;
+    applyFilters(list);
+    document.getElementById('btnRefresh').addEventListener('click', ()=> applyFilters(window.__ALL_WH__||[]));
+    document.getElementById('fSearch').addEventListener('input', ()=> applyFilters(window.__ALL_WH__||[]));
+    document.getElementById('fStatus').addEventListener('change', ()=> applyFilters(window.__ALL_WH__||[]));
+    document.getElementById('fCity').addEventListener('change', ()=> applyFilters(window.__ALL_WH__||[]));
+  }
+  document.addEventListener('DOMContentLoaded', init);
+</script>

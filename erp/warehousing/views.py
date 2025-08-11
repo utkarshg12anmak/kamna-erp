@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, decorators, response
 from rest_framework.exceptions import ValidationError
+from django.db.models import Count
 from .models import Warehouse, Location, LocationType
 from .serializers import (
     WarehouseSerializer,
@@ -39,6 +40,16 @@ class WarehouseViewSet(viewsets.ModelViewSet):
         wh = self.get_object()
         bins = wh.locations.filter(type=LocationType.VIRTUAL).order_by("subtype")
         data = LocationSerializer(bins, many=True).data
+        return response.Response({"results": data})
+
+    @decorators.action(detail=False, methods=["get"], url_path="summary_by_state")
+    def summary_by_state(self, request):
+        qs = (
+            Warehouse.objects.values("state")
+            .annotate(count=Count("id"))
+            .order_by("state")
+        )
+        data = [{"state": row["state"], "count": row["count"]} for row in qs]
         return response.Response({"results": data})
 
 
