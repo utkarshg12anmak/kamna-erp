@@ -117,10 +117,10 @@
     hasPrev = Boolean(data.previous);
     totalCount = data.count ?? null;
 
-    // Pair complementary rows (opposite qty signs) sharing same ref and item
+    // Pair complementary rows (opposite qty signs) sharing same ref, item, and movement type
     const paired = [];
     const used = new Set();
-    const keyOf = (r) => `${r.ref_model||''}|${r.ref_id||''}|${r.item}`;
+    const keyOf = (r) => `${r.ref_model||''}|${r.ref_id||''}|${r.item}|${r.movement_type||''}`;
     const buckets = new Map();
     raw.forEach((r, idx)=>{
       const k = keyOf(r);
