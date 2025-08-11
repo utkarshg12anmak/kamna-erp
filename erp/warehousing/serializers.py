@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Warehouse, Location, LocationType, VirtualSubtype, WarehouseStatus
+from .models import Warehouse, Location, LocationType, VirtualSubtype, PhysicalSubtype, WarehouseStatus
 
 User = get_user_model()
 
@@ -114,15 +114,22 @@ class LocationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"display_name": "Display name is required for PHYSICAL locations"})
             if not code:
                 raise serializers.ValidationError({"code": "Code is required for PHYSICAL locations"})
+            # Default to STORAGE and enforce
+            if not subtype:
+                attrs["subtype"] = PhysicalSubtype.STORAGE
+            elif subtype != PhysicalSubtype.STORAGE:
+                raise serializers.ValidationError({"subtype": "PHYSICAL locations must have subtype STORAGE"})
         elif loc_type == LocationType.VIRTUAL:
             if not subtype:
                 raise serializers.ValidationError({"subtype": "Subtype is required for VIRTUAL locations"})
+            if subtype == PhysicalSubtype.STORAGE:
+                raise serializers.ValidationError({"subtype": "VIRTUAL locations cannot use STORAGE subtype"})
         else:
             raise serializers.ValidationError({"type": "Invalid location type"})
 
         if self.instance and system_managed:
             orig = self.instance
-            if (orig.code != code) or (orig.display_name != display_name) or (orig.subtype != subtype):
+            if (orig.code != code) or (orig.display_name != display_name) or (orig.subtype != attrs.get("subtype", subtype)):
                 raise serializers.ValidationError("System-managed locations cannot be renamed")
 
         # Unique code per warehouse for PHYSICAL

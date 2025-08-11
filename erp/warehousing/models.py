@@ -30,6 +30,10 @@ class VirtualSubtype(models.TextChoices):
     DAMAGE_PENDING = "DAMAGE_PENDING", "DAMAGE_PENDING"
 
 
+class PhysicalSubtype(models.TextChoices):
+    STORAGE = "STORAGE", "STORAGE"
+
+
 class Warehouse(models.Model):
     # Natural id, default set by DB sequence via migration
     warehouse_id = models.PositiveIntegerField(unique=True, editable=False, db_index=True, null=True)
@@ -84,7 +88,13 @@ class Warehouse(models.Model):
 class Location(models.Model):
     warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name="locations")
     type = models.CharField(max_length=8, choices=LocationType.choices)
-    subtype = models.CharField(max_length=20, choices=VirtualSubtype.choices, null=True, blank=True)
+    # Include STORAGE as default subtype for PHYSICAL; virtual bins remain as before
+    subtype = models.CharField(
+        max_length=20,
+        choices=PhysicalSubtype.choices + VirtualSubtype.choices,
+        null=True,
+        blank=True,
+    )
     display_name = models.CharField(max_length=120, blank=True)
     code = models.CharField(max_length=32, blank=True)
     system_managed = models.BooleanField(default=False)
@@ -118,9 +128,16 @@ class Location(models.Model):
                 raise ValidationError({"display_name": "Display name is required for PHYSICAL locations"})
             if not self.code:
                 raise ValidationError({"code": "Code is required for PHYSICAL locations"})
+            # Default subtype to STORAGE for PHYSICAL
+            if not self.subtype:
+                self.subtype = PhysicalSubtype.STORAGE
+            elif self.subtype != PhysicalSubtype.STORAGE:
+                raise ValidationError({"subtype": "PHYSICAL locations must have subtype STORAGE"})
         elif self.type == LocationType.VIRTUAL:
             if not self.subtype:
                 raise ValidationError({"subtype": "Subtype is required for VIRTUAL locations"})
+            if self.subtype == PhysicalSubtype.STORAGE:
+                raise ValidationError({"subtype": "VIRTUAL locations cannot use STORAGE subtype"})
         else:
             raise ValidationError({"type": "Invalid location type"})
 
@@ -134,6 +151,12 @@ class Location(models.Model):
             )
             if immutable_fields_changed:
                 raise ValidationError("System-managed locations cannot be renamed")
+
+    def save(self, *args, **kwargs):
+        # Enforce default subtype for PHYSICAL at the model level
+        if self.type == LocationType.PHYSICAL and not self.subtype:
+            self.subtype = PhysicalSubtype.STORAGE
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.display_name or f"{self.type}:{self.subtype or self.code}"

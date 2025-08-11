@@ -227,7 +227,27 @@
 
   async function load(){ const params = new URLSearchParams(); params.set('page', String(currentPage)); if(currentSearch) params.set('search', currentSearch); if(currentWarehouse) params.set('warehouse', currentWarehouse); const res = await apiFetch(`${API}/?${params.toString()}`); const data = await res.json(); const list = Array.isArray(data) ? data : (data.results||[]); const count = Array.isArray(data) ? list.length : (data.count ?? list.length); document.getElementById('rows').innerHTML = list.map(row).join(''); renderPagination(count); }
 
-  async function create(e){ e.preventDefault(); const alert = document.getElementById('createAlert'); alert.style.display='none'; const payload = { warehouse: parseInt(document.getElementById('whSelect').value, 10), type: document.getElementById('locType').value, display_name: document.getElementById('locName').value.trim(), code: document.getElementById('locCode').value.trim(), subtype: document.getElementById('locSubtype').value, status: document.getElementById('locStatus').value }; try{ const res = await apiFetch(`${API}/`, { method:'POST', body: JSON.stringify(payload) }); if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; } document.getElementById('createForm').reset(); document.getElementById('locStatus').value='ACTIVE'; currentPage=1; load(); } catch(e){ alert.textContent = String(e); alert.style.display='block'; } }
+  async function create(e){
+    e.preventDefault();
+    const alert = document.getElementById('createAlert');
+    alert.style.display='none';
+    const type = document.getElementById('locType').value;
+    const payload = {
+      warehouse: parseInt(document.getElementById('whSelect').value, 10),
+      type,
+      display_name: document.getElementById('locName').value.trim(),
+      code: document.getElementById('locCode').value.trim(),
+      status: document.getElementById('locStatus').value
+    };
+    if(type === 'VIRTUAL'){
+      payload.subtype = document.getElementById('locSubtype').value;
+    }
+    try{
+      const res = await apiFetch(`${API}/`, { method:'POST', body: JSON.stringify(payload) });
+      if(!res.ok){ const err = await res.json().catch(()=>({detail:'Error'})); alert.textContent = JSON.stringify(err); alert.style.display='block'; return; }
+      document.getElementById('createForm').reset(); document.getElementById('locStatus').value='ACTIVE'; currentPage=1; load();
+    } catch(e){ alert.textContent = String(e); alert.style.display='block'; }
+  }
 
   function openEdit(r){ document.getElementById('editId').value = r.id; document.getElementById('editWarehouse').value = r.warehouse; document.getElementById('editType').value = r.type; document.getElementById('editStatus').value = r.status; if(r.type==='PHYSICAL'){ document.getElementById('editPhysical').style.display=''; document.getElementById('editVirtual').style.display='none'; document.getElementById('editName').value = r.display_name||''; document.getElementById('editCode').value = r.code||''; } else { document.getElementById('editPhysical').style.display='none'; document.getElementById('editVirtual').style.display=''; document.getElementById('editSubtype').value = r.subtype||'RECEIVE'; }
     document.getElementById('editModal').style.display='flex'; }
