@@ -47,6 +47,7 @@
           <table class="table table-sm align-middle">
             <thead>
               <tr class="text-nowrap">
+                <th style="width:44px;"></th>
                 <th>SKU</th>
                 <th>Name</th>
                 <th>Bin</th>
@@ -147,7 +148,11 @@
     tbody.innerHTML = '';
     (data.results||[]).forEach(row => {
       const tr = document.createElement('tr');
+      const thumb = row.img
+        ? `<img src="${row.img}" alt="${row.sku}" class="rounded" style="width:36px;height:36px;object-fit:cover;"/>`
+        : `<div class="bg-light border rounded" style="width:36px;height:36px;"></div>`;
       tr.innerHTML = `
+        <td class="text-center align-middle">${thumb}</td>
         <td class="text-nowrap">${row.sku}</td>
         <td>${row.name}</td>
         <td>${row.bin}</td>
