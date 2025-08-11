@@ -50,6 +50,9 @@ from .views import (
     warehouse_putaway,
     warehouse_internal_move,
     warehouse_internal_move_rows,
+    partners_list,
+    partners_form,
+    partner_view,
 )
 from .api_auth_views import AuthMeView
 from django.conf import settings
@@ -64,6 +67,7 @@ urlpatterns = [
     path("", include(router.urls)),
     path("", include("catalog.urls")),
     path("api/warehousing/", include("warehousing.urls")),
+    path("api/partners/", include("customer_vendor_hub.urls")),
     path("api/auth/jwt/create/", TokenObtainPairView.as_view(), name="jwt-create"),
     path("api/auth/jwt/refresh/", TokenRefreshView.as_view(), name="jwt-refresh"),
     path("api/auth/me/", AuthMeView.as_view(), name="auth-me"),
@@ -93,6 +97,9 @@ urlpatterns = [
     path("app/sales", module_sales, name="module_sales"),
     path("app/finance", module_finance, name="module_finance"),
     path("app/warehousing/w/<str:code>/internal-move", warehouse_internal_move_rows, name="warehouse_internal_move_rows"),
+    path("app/partners", partners_list, name="partners_list"),
+    path("app/partners/new", partners_form, name="partners_form"),
+    path("app/partners/<int:id>", partner_view, name="partner_view"),
 ]
 
 if settings.DEBUG:

@@ -11,7 +11,11 @@ class AuthMeView(APIView):
     def get(self, request):
         user = request.user
         groups = list(user.groups.values_list("name", flat=True).order_by("name"))
+        perms = {
+            "partners_view": user.has_perm("customer_vendor_hub.view_partner"),
+        }
         return Response({
             "username": user.username,
             "groups": groups,
+            "perms": perms,
         })

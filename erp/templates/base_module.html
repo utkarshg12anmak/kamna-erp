@@ -84,7 +84,16 @@
       const res = await fetch('/api/auth/me/', { headers: { 'Authorization': `Bearer ${token}` } });
       if (res.status === 401) { window.location = '/'; return false; }
       const me = await res.json();
-      const allowed = (me.groups || []).includes(moduleName) || (moduleName === 'Admin' && (me.groups || []).includes('Admin'));
+      const groups = me.groups || [];
+      const perms = me.perms || {};
+      let allowed = false;
+      if (moduleName === 'Admin') {
+        allowed = groups.includes('Admin');
+      } else if (moduleName === 'Partners') {
+        allowed = groups.includes('Partners') || !!perms.partners_view;
+      } else {
+        allowed = groups.includes(moduleName);
+      }
       if (!allowed) {
         document.getElementById('moduleContent').style.display = 'none';
         document.getElementById('accessDenied').style.display = 'block';
