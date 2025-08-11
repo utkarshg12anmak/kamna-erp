@@ -186,11 +186,11 @@ def approve_post_moves(adjr: AdjustmentRequest, user):
         )
     elif adjr.type == AdjustmentType.LOST:
         src = get_virtual(wh, VirtualSubtype.LOST_PENDING)
-        dst = get_virtual(wh, VirtualSubtype.LOST)
+        # New behavior: write-off pending LOST by posting out to null
         post_ledger(
             warehouse=wh,
             from_location=src,
-            to_location=dst,
+            to_location=None,
             item=item,
             qty=qty,
             movement_type=MovementType.ADJ_APPROVE_LOST,

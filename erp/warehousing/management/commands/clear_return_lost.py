@@ -10,7 +10,14 @@ class Command(BaseCommand):
     help = "Zero out RETURN and LOST virtual bins by posting balancing entries (data fix)."
 
     def add_arguments(self, parser):
-        parser.add_argument("--warehouse", required=True, help="Warehouse code or ID")
+        # Create a mutually exclusive group so either --warehouse or --bdvwh-lost-only must be provided
+        mx = parser.add_mutually_exclusive_group(required=True)
+        mx.add_argument("--warehouse", help="Warehouse code or ID")
+        mx.add_argument(
+            "--bdvwh-lost-only",
+            action="store_true",
+            help="Shortcut: sets --warehouse=BDVWH and --bins=LOST (overrides other args)",
+        )
         parser.add_argument("--dry-run", action="store_true", help="Do not post, just show what would change")
         parser.add_argument(
             "--bins",
@@ -21,9 +28,16 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        wh_arg = options["warehouse"]
-        dry = options["dry_run"]
-        bin_list = options["bins"]
+        # Shortcut handling
+        if options.get("bdvwh_lost_only"):
+            wh_arg = "BDVWH"
+            bin_list = [VirtualSubtype.LOST]
+        else:
+            wh_arg = options.get("warehouse")
+            if not wh_arg:
+                raise CommandError("--warehouse is required unless using --bdvwh-lost-only")
+            bin_list = options["bins"]
+        dry = options.get("dry_run", False)
 
         # Resolve warehouse
         try:
