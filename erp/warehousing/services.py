@@ -272,6 +272,65 @@ def decline_post_moves(adjr: AdjustmentRequest, user):
         raise ValidationError("Unknown adjustment type")
 
 
+@transaction.atomic
+def delete_request_revert_moves(adjr: AdjustmentRequest, user):
+    """Revert inventory effects of a REQUESTED adjustment upon deletion.
+    - DAMAGE/LOST: move from *_PENDING back to original physical source location.
+    - EXCESS: post out from EXCESS_PENDING to null (removes pending stock).
+    """
+    if adjr.status != AdjustmentStatus.REQUESTED:
+        raise ValidationError("Only REQUESTED adjustments can be reverted on delete")
+    wh = adjr.warehouse
+    item = adjr.item
+    qty = adjr.qty
+    if adjr.type == AdjustmentType.DAMAGE:
+        src = get_virtual(wh, VirtualSubtype.DAMAGE_PENDING)
+        dst = adjr.source_location
+        post_ledger(
+            warehouse=wh,
+            from_location=src,
+            to_location=dst,
+            item=item,
+            qty=qty,
+            movement_type=MovementType.ADJ_DELETE_REQUEST,
+            user=user,
+            ref_model="warehousing.AdjustmentRequest",
+            ref_id=str(adjr.id),
+            memo=adjr.memo or "delete request",
+        )
+    elif adjr.type == AdjustmentType.LOST:
+        src = get_virtual(wh, VirtualSubtype.LOST_PENDING)
+        dst = adjr.source_location
+        post_ledger(
+            warehouse=wh,
+            from_location=src,
+            to_location=dst,
+            item=item,
+            qty=qty,
+            movement_type=MovementType.ADJ_DELETE_REQUEST,
+            user=user,
+            ref_model="warehousing.AdjustmentRequest",
+            ref_id=str(adjr.id),
+            memo=adjr.memo or "delete request",
+        )
+    elif adjr.type == AdjustmentType.EXCESS:
+        src = get_virtual(wh, VirtualSubtype.EXCESS_PENDING)
+        post_ledger(
+            warehouse=wh,
+            from_location=src,
+            to_location=None,
+            item=item,
+            qty=qty,
+            movement_type=MovementType.ADJ_DELETE_REQUEST,
+            user=user,
+            ref_model="warehousing.AdjustmentRequest",
+            ref_id=str(adjr.id),
+            memo=adjr.memo or "delete request",
+        )
+    else:
+        raise ValidationError("Unknown adjustment type")
+
+
 def create_standard_virtual_bins(warehouse):
     subtypes = [
         VirtualSubtype.RECEIVE,

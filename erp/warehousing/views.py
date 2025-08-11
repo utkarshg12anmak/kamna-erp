@@ -15,6 +15,7 @@ from .serializers import (
     AdjustmentRequestSerializer,
 )
 from .services import ensure_location_empty, request_post_moves, approve_post_moves, decline_post_moves, on_hand_qty
+from .services import delete_request_revert_moves
 # Add explicit imports for error translation
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import ValidationError as DRFValidationError
@@ -211,6 +212,8 @@ class AdjustmentRequestViewSet(viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         if instance.status != AdjustmentStatus.REQUESTED:
             raise ValidationError("Only REQUESTED adjustments can be deleted")
+        # Revert the request's inventory effects before deletion
+        delete_request_revert_moves(instance, self.request.user)
         return super().perform_destroy(instance)
 
 
@@ -290,7 +293,8 @@ def adjustment_permissions(request):
     app_label = AdjustmentRequest._meta.app_label
     model_name = AdjustmentRequest._meta.model_name
     can_change = request.user.has_perm(f"{app_label}.change_{model_name}")
-    return response.Response({"can_change": bool(can_change)})
+    can_delete = request.user.has_perm(f"{app_label}.delete_{model_name}")
+    return response.Response({"can_change": bool(can_change), "can_delete": bool(can_delete)})
 
 
 @api_view(["GET"])  # Active locations stock summary and SKU breakdown

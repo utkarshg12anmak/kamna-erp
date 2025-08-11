@@ -23,6 +23,7 @@
             <th>Item</th>
             <th class="text-end">Qty</th>
             <th>Type</th>
+            <th>Status</th>
             <th>Requested By</th>
             <th>When</th>
             <th>Actions</th>
@@ -65,10 +66,10 @@
   }
   function fmtDate(v){ return v? new Date(v).toLocaleString() : ''; }
 
-  let page = 1; const pageSize = 25; let lastCount = 0; let canChange = false;
+  let page = 1; const pageSize = 25; let lastCount = 0; let canDelete = false;
   async function load(){
     const whId = Number(document.getElementById('whCtx').dataset.whId||'0');
-    const p = new URLSearchParams({ status: 'REQUESTED', warehouse: String(whId), ordering: '-requested_at', page: String(page), page_size: String(pageSize) });
+    const p = new URLSearchParams({ warehouse: String(whId), ordering: '-requested_at', page: String(page), page_size: String(pageSize) });
     const q = document.getElementById('q').value.trim(); if(q) p.set('search', q);
     const data = await api('/api/warehousing/adjustment-requests/?' + p.toString());
     const results = data.results || data;
@@ -79,11 +80,11 @@
         <td>${r.item_sku || r.item} — ${r.item_name||''}</td>
         <td class='text-end'>${r.qty}</td>
         <td>${r.type}</td>
+        <td>${r.status}</td>
         <td>${r.requested_by||''}</td>
         <td>${fmtDate(r.requested_at)}</td>
         <td>
-          ${canChange ? `<button class="btn btn-success btn-sm" onclick="approve(${r.id})">Approve</button>
-          <button class="btn btn-outline-danger btn-sm" onclick="decline(${r.id})">Decline</button>` : '<span class="text-muted small">No permission</span>'}
+          ${canDelete && r.status==='REQUESTED' ? `<button class="btn btn-outline-danger btn-sm" onclick="delReq(${r.id}, '${r.number.replace(/'/g, "\'")}')">Delete</button>` : '<span class="text-muted small">—</span>'}
         </td>
       </tr>`).join('');
     document.getElementById('pageInfo').textContent = `Page ${page}`;
@@ -91,10 +92,22 @@
     document.getElementById('nextBtn').disabled = (lastCount < pageSize);
   }
 
-  async function approve(id){ try{ await api(`/api/warehousing/adjustment-requests/${id}/approve/`, { method:'POST' }); notify('Approved', 'success'); load(); }catch(e){} }
-  async function decline(id){ try{ await api(`/api/warehousing/adjustment-requests/${id}/decline/`, { method:'POST' }); notify('Declined', 'info'); load(); }catch(e){} }
+  async function delReq(id, number){
+    const c1 = confirm(`Delete adjustment ${number}? This will revert inventory.`);
+    if(!c1) return;
+    const c2 = confirm('Are you sure? This cannot be undone.');
+    if(!c2) return;
+    try{
+      await api(`/api/warehousing/adjustment-requests/${id}/`, { method:'DELETE' });
+      notify('Deleted and reverted', 'success');
+      await load();
+    }catch(e){ /* errors already surfaced */ }
+  }
 
-  async function loadPerm(){ try{ const r = await api('/api/warehousing/adjustment-permissions/'); canChange = !!r.can_change; }catch(e){ canChange=false; } }
+  async function loadPerm(){
+    try{ const r = await api('/api/warehousing/adjustment-permissions/'); canDelete = !!r.can_delete; }
+    catch(e){ canDelete=false; }
+  }
 
   document.getElementById('filters').addEventListener('submit', (e)=>{ e.preventDefault(); page=1; load(); });
   document.getElementById('prevBtn').addEventListener('click', ()=>{ if(page>1){ page--; load(); }});

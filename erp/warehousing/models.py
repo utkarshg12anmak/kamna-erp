@@ -179,6 +179,8 @@ class MovementType(models.TextChoices):
     PUTAWAY = "PUTAWAY", "Putaway"
     PUTAWAY_LOST = "PUTAWAY_LOST", "Putaway Lost"
     TRANSFER = "TRANSFER", "Transfer"
+    # New: Deletion of a REQUESTED adjustment (revert request postings)
+    ADJ_DELETE_REQUEST = "ADJ_DELETE_REQUEST", "Adj Delete Request"
 
 
 class StockLedger(models.Model):
