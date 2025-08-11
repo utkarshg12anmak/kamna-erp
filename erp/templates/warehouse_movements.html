@@ -50,6 +50,7 @@
             <th>To</th>
             <th class="text-end">Qty</th>
             <th>Type</th>
+            <th>Initiator</th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
@@ -112,7 +113,8 @@
         <td>${toLoc(x)}</td>
         <td class='text-end'>${x.qty_delta}</td>
         <td>${x.movement_type}</td>
-      </tr>`).join('') : `<tr><td colspan="6" class="text-center text-muted">No movements</td></tr>`;
+        <td>${x.user || 'System'}</td>
+      </tr>`).join('') : `<tr><td colspan="7" class="text-center text-muted">No movements</td></tr>`;
 
     const info = totalCount!=null ? `Page ${page}` + (totalCount? ` • ${totalCount} records` : '') : `Page ${page}`;
     document.getElementById('pageInfo').textContent = info;
