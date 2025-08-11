@@ -76,15 +76,14 @@ class LocationSerializer(serializers.ModelSerializer):
             "display_name",
             "type",
             "subtype",
-            "is_active",
-            "allow_receipt",
-            "allow_issue",
+            "system_managed",
+            "status",
             "created_at",
             "updated_at",
             "created_by",
             "updated_by",
         ]
-        read_only_fields = ["created_at", "updated_at", "created_by", "updated_by"]
+        read_only_fields = ["system_managed", "created_at", "updated_at", "created_by", "updated_by"]
 
 
 class LocationHistorySerializer(serializers.ModelSerializer):
@@ -99,9 +98,8 @@ class LocationHistorySerializer(serializers.ModelSerializer):
             "display_name",
             "type",
             "subtype",
-            "is_active",
-            "allow_receipt",
-            "allow_issue",
+            "system_managed",
+            "status",
             "history_id",
             "history_date",
             "history_type",
@@ -136,11 +134,6 @@ class WarehouseHistorySerializer(serializers.ModelSerializer):
             "history_date",
             "history_type",
             "history_user",
-            "type",
-            "subtype",
-            "display_name",
-            "code",
-            "status",
         ]
 
     def get_history_user(self, obj):
