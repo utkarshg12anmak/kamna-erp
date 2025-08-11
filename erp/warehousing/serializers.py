@@ -152,6 +152,21 @@ class StockLedgerListSerializer(serializers.ModelSerializer):
     # New: before/after quantities at the movement's location
     location_qty_before = serializers.DecimalField(max_digits=12, decimal_places=3, read_only=True)
     location_qty_after = serializers.DecimalField(max_digits=12, decimal_places=3, read_only=True)
+    # New: item image URL for thumbnail rendering
+    item_image_url = serializers.SerializerMethodField()
+
+    def get_item_image_url(self, obj):
+        try:
+            img = getattr(obj.item, "image", None)
+            if not img:
+                return ""
+            url = getattr(img, "url", "") or ""
+            if not url:
+                return ""
+            req = self.context.get("request") if hasattr(self, "context") else None
+            return req.build_absolute_uri(url) if req else url
+        except Exception:
+            return ""
 
     class Meta:
         model = StockLedger
@@ -166,6 +181,7 @@ class StockLedgerListSerializer(serializers.ModelSerializer):
             "item",
             "item_sku",
             "item_name",
+            "item_image_url",
             "qty_delta",
             "movement_type",
             "ref_model",
