@@ -23,14 +23,15 @@ class Command(BaseCommand):
                     added += 1
                 except Permission.DoesNotExist:
                     self.stdout.write(self.style.WARNING(f"Permission missing: {codename}"))
-        # View only for ledger
+        # View only for ledger (ensure at least view permission exists)
         for model in models_view_only:
             ct = ContentType.objects.get_for_model(model)
-            codename = f"view_{model._meta.model_name}"
-            try:
-                perm = Permission.objects.get(content_type=ct, codename=codename)
-                group.permissions.add(perm)
-                added += 1
-            except Permission.DoesNotExist:
-                self.stdout.write(self.style.WARNING(f"Permission missing: {codename}"))
+            for action in ["view"]:
+                codename = f"{action}_{model._meta.model_name}"
+                try:
+                    perm = Permission.objects.get(content_type=ct, codename=codename)
+                    group.permissions.add(perm)
+                    added += 1
+                except Permission.DoesNotExist:
+                    self.stdout.write(self.style.WARNING(f"Permission missing: {codename}"))
         self.stdout.write(self.style.SUCCESS(f"Warehousing group ready. Permissions linked: {added}"))

@@ -85,6 +85,9 @@
     try{
       const url = new URL(window.location.origin + '/api/catalog/items/');
       if(q){ url.searchParams.set('search', q); }
+      // Restrict to ACTIVE GOODS items for adjustments
+      url.searchParams.set('status', 'ACTIVE');
+      url.searchParams.set('product_type', 'GOODS');
       url.searchParams.set('ordering', 'name');
       url.searchParams.set('page_size', '25');
       const data = await api(url.toString());
