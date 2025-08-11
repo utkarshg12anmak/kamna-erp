@@ -254,8 +254,20 @@ def decline_post_moves(adjr: AdjustmentRequest, user):
             memo=adjr.memo or "lost request declined",
         )
     elif adjr.type == AdjustmentType.EXCESS:
-        # No movement on decline of EXCESS
-        return
+        # Post out of EXCESS_PENDING to null (no destination). This removes pending stock.
+        src = get_virtual(wh, VirtualSubtype.EXCESS_PENDING)
+        post_ledger(
+            warehouse=wh,
+            from_location=src,
+            to_location=None,
+            item=item,
+            qty=qty,
+            movement_type=MovementType.ADJ_DECLINE_EXCESS,
+            user=user,
+            ref_model="warehousing.AdjustmentRequest",
+            ref_id=str(adjr.id),
+            memo=adjr.memo or "excess request declined",
+        )
     else:
         raise ValidationError("Unknown adjustment type")
 

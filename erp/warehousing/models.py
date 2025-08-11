@@ -173,6 +173,8 @@ class MovementType(models.TextChoices):
     ADJ_APPROVE_LOST = "ADJ_APPROVE_LOST", "Adj Approve Lost"
     ADJ_DECLINE_LOST = "ADJ_DECLINE_LOST", "Adj Decline Lost"
     ADJ_APPROVE_EXCESS = "ADJ_APPROVE_EXCESS", "Adj Approve Excess"
+    # New: decline of EXCESS should post out from EXCESS_PENDING to null
+    ADJ_DECLINE_EXCESS = "ADJ_DECLINE_EXCESS", "Adj Decline Excess"
     TRANSFER = "TRANSFER", "Transfer"
 
 

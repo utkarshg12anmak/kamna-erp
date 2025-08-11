@@ -238,3 +238,5 @@ class AdjustmentRequestSerializer(serializers.ModelSerializer):
         except Exception:
             raise serializers.ValidationError("Quantity must be a positive integer")
         return v
+
+# No serializer changes required; StockLedgerListSerializer already includes movement_type and user.
