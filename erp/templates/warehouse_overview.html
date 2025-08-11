@@ -35,6 +35,15 @@
         <div class="display-6" id="kpiMoves">-</div>
       </div>
     </div>
+    <div class="col-12">
+      <div class="card-like d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small text-muted">Active Locations Total Qty</div>
+          <div class="h4 m-0" id="activeTotalQty">-</div>
+        </div>
+        <button class="btn btn-outline-primary btn-sm" id="viewActiveBreakdown">View Breakdown</button>
+      </div>
+    </div>
   </div>
   <div class="mt-3">
     <div class="card-like">
@@ -52,7 +61,31 @@
   </div>
 </div>
 
-<!-- Context carrier to avoid inline template expressions in JS -->
+<!-- Modal for SKU breakdown -->
+<div class="modal fade" id="activeBreakdownModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Active Locations — SKU Breakdown</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead><tr><th>SKU</th><th>Name</th><th class="text-end">Qty</th></tr></thead>
+            <tbody id="activeSkuRows"></tbody>
+            <tfoot><tr><th colspan="2" class="text-end">Grand Total</th><th class="text-end" id="activeGrandTotal">0</th></tr></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Context carrier remains -->
 <div id="whCtx" data-wh-id="{{ warehouse.id }}" style="display:none;"></div>
 
 <script>
@@ -64,8 +97,13 @@
     const name = x.location_name || '';
     const code = x.location_code || '';
     const subtype = x.location_subtype || '';
-    // Prefer display name/code; fallback to subtype slug
     return name || code || subtype || (x.location || '');
+  }
+  async function loadActiveTotals(){
+    const whId = Number(document.getElementById('whCtx').dataset.whId || '0');
+    const data = await apiFetch(`/api/warehousing/warehouses/${whId}/active_stock_summary/`);
+    document.getElementById('activeTotalQty').textContent = data.total_qty ?? 0;
+    return data;
   }
   async function init(){
     const whId = Number(document.getElementById('whCtx').dataset.whId || '0');
@@ -74,9 +112,30 @@
     document.getElementById('kpiItems').textContent = (k.total_items ?? 0);
     document.getElementById('kpiLocs').textContent = (k.locations_with_stock ?? 0);
     document.getElementById('kpiMoves').textContent = (k.movements_today ?? 0);
+    // Load recent activity
     const r = await apiFetch(`/api/warehousing/warehouses/${whId}/recent_activity/`);
     const list = Array.isArray(r) ? r : (r.results || []);
     document.getElementById('recentRows').innerHTML = list.map(x => `<tr><td>${fmtDate(x.ts)}</td><td>${x.item_sku} — ${x.item_name}</td><td>${fmtLoc(x)}</td><td class='text-end'>${x.qty_delta}</td><td>${x.movement_type}</td></tr>`).join('');
+    // Active totals
+    await loadActiveTotals();
   }
   document.addEventListener('DOMContentLoaded', init);
+
+  // Breakdown button
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('viewActiveBreakdown');
+    if(!btn) return;
+    btn.addEventListener('click', async () => {
+      try{
+        const data = await loadActiveTotals();
+        const rows = (data.items||[]).sort((a,b)=> String(a.item_sku).localeCompare(String(b.item_sku)));
+        document.getElementById('activeSkuRows').innerHTML = rows.length ? rows.map(r => `<tr><td>${r.item_sku}</td><td>${r.item_name||''}</td><td class='text-end'>${r.qty}</td></tr>`).join('') : `<tr><td colspan="3" class="text-center text-muted">No stock</td></tr>`;
+        document.getElementById('activeGrandTotal').textContent = data.grand_total ?? 0;
+        // Show modal (Bootstrap 5)
+        const el = document.getElementById('activeBreakdownModal');
+        const m = window.bootstrap ? window.bootstrap.Modal.getOrCreateInstance(el) : null;
+        if(m){ m.show(); } else { el.style.display='block'; el.classList.add('show'); }
+      }catch(e){ /* rely on global toasts if present */ }
+    });
+  });
 </script>

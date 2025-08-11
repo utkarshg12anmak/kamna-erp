@@ -5,7 +5,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from django.db.models import Count, Q, Sum as DjangoSum
 from django.utils import timezone
 from django.http import JsonResponse
-from .models import Warehouse, Location, LocationType, StockLedger, AdjustmentRequest, AdjustmentStatus
+from .models import Warehouse, Location, LocationType, StockLedger, AdjustmentRequest, AdjustmentStatus, WarehouseStatus
 from .serializers import (
     WarehouseSerializer,
     LocationSerializer,
@@ -279,3 +279,33 @@ def adjustment_permissions(request):
     model_name = AdjustmentRequest._meta.model_name
     can_change = request.user.has_perm(f"{app_label}.change_{model_name}")
     return response.Response({"can_change": bool(can_change)})
+
+
+@api_view(["GET"])  # Active locations stock summary and SKU breakdown
+@permission_classes([permissions.IsAuthenticated])
+def warehouse_active_stock_summary(request, pk: int):
+    # Aggregate stock on-hand limited to ACTIVE locations
+    qs = (
+        StockLedger.objects
+        .filter(warehouse_id=pk, location__status=WarehouseStatus.ACTIVE)
+        .values("item_id", "item__sku", "item__name")
+        .annotate(q=DjangoSum("qty_delta"))
+    )
+    items = []
+    total = 0
+    for r in qs:
+        q = float(r.get("q") or 0)
+        if q == 0:
+            continue
+        items.append({
+            "item": int(r["item_id"]),
+            "item_sku": r["item__sku"],
+            "item_name": r["item__name"],
+            "qty": q,
+        })
+        total += q
+    return response.Response({
+        "total_qty": float(total),
+        "items": items,
+        "grand_total": float(total),
+    })

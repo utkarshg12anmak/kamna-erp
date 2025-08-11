@@ -69,7 +69,13 @@
 
 <script>
   function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
-  async function apiFetch(url){ const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token()}` }}); if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); } return res.json(); }
+  async function apiFetch(url){
+    const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token()}` }});
+    if(res.status===401){ window.location='/'; throw new Error('Unauthorized'); }
+    const ct = res.headers.get('content-type')||'';
+    if(!ct.includes('application/json')){ return { results: [] }; }
+    try{ return await res.json(); } catch(e){ return { results: [] }; }
+  }
   function fmtDate(v){ if(!v) return ''; return new Date(v).toLocaleString(); }
   function fmtLoc(x){ if(!x) return ''; return x.location_name || x.location_code || x.location_subtype || x.location; }
   function fromLoc(x){ return (Number(x.qty_delta) < 0) ? fmtLoc(x) : ''; }
@@ -93,12 +99,12 @@
 
     const url = `/api/warehousing/warehouses/${whId}/movements/?` + params.toString();
     const data = await apiFetch(url);
-    const results = data.results || data;
+    const results = data && (data.results || Array.isArray(data) && data) || [];
     hasNext = Boolean(data.next);
     hasPrev = Boolean(data.previous);
     totalCount = data.count ?? null;
 
-    document.getElementById('rows').innerHTML = results.map(x => `
+    document.getElementById('rows').innerHTML = results.length ? results.map(x => `
       <tr>
         <td>${fmtDate(x.ts)}</td>
         <td>${x.item_sku} — ${x.item_name}</td>
@@ -106,7 +112,7 @@
         <td>${toLoc(x)}</td>
         <td class='text-end'>${x.qty_delta}</td>
         <td>${x.movement_type}</td>
-      </tr>`).join('');
+      </tr>`).join('') : `<tr><td colspan="6" class="text-center text-muted">No movements</td></tr>`;
 
     const info = totalCount!=null ? `Page ${page}` + (totalCount? ` • ${totalCount} records` : '') : `Page ${page}`;
     document.getElementById('pageInfo').textContent = info;
