@@ -2,6 +2,7 @@ from decimal import Decimal
 from django.db import transaction, models
 from django.utils import timezone
 from .models import Warehouse, Location, StockLedger, MovementType, LocationType, VirtualSubtype
+import uuid
 
 # Compute on-hand by summing ledger
 
@@ -46,9 +47,14 @@ def validate_action(warehouse: Warehouse, action: dict):
 
 
 @transaction.atomic
-def post_actions(warehouse: Warehouse, actions: list, user, reason_map: dict | None = None):
+def post_actions(warehouse: Warehouse, actions: list, user, reason_map: dict | None = None, batch_ref_id: str | None = None):
     """Post a list of actions atomically. Each action: {type, item, source_bin, qty, target_location?}
     reason_map: optional mapping of source bin subtype -> memo ('return putaway'/'receive putaway')."""
+    # Create a batch reference for this confirm to aid grouping/debugging and duplicate detection upstream
+    batch_ref_id = batch_ref_id or f"putaway:{timezone.now().isoformat()}:{uuid.uuid4().hex[:8]}"
+    # Idempotency: if this ref already exists, skip posting
+    if StockLedger.objects.filter(warehouse=warehouse, ref_model='PUTAWAY', ref_id=batch_ref_id).exists():
+        return {'posted_count': 0, 'batch_ref_id': batch_ref_id, 'duplicate': True}
     # Merge by (type,item,source_bin,target_location)
     merged: dict[tuple, Decimal] = {}
     for a in actions:
@@ -74,10 +80,10 @@ def post_actions(warehouse: Warehouse, actions: list, user, reason_map: dict | N
             tgt = Location.objects.get(id=tgt_id)
             memo = (reason_map or {}).get(str(src.subtype), 'putaway')
             # − from src, + to tgt
-            StockLedger.objects.create(warehouse=warehouse, location=src, item_id=item_id, qty_delta=-qty, movement_type=MovementType.PUTAWAY, ref_model='PUTAWAY', user=user, memo=memo)
-            StockLedger.objects.create(warehouse=warehouse, location=tgt, item_id=item_id, qty_delta=+qty, movement_type=MovementType.PUTAWAY, ref_model='PUTAWAY', user=user, memo=memo)
+            StockLedger.objects.create(warehouse=warehouse, location=src, item_id=item_id, qty_delta=-qty, movement_type=MovementType.PUTAWAY, ref_model='PUTAWAY', ref_id=batch_ref_id, user=user, memo=memo)
+            StockLedger.objects.create(warehouse=warehouse, location=tgt, item_id=item_id, qty_delta=+qty, movement_type=MovementType.PUTAWAY, ref_model='PUTAWAY', ref_id=batch_ref_id, user=user, memo=memo)
         else:  # LOST
             lost_bin = get_virtual(warehouse, VirtualSubtype.LOST)
-            StockLedger.objects.create(warehouse=warehouse, location=src, item_id=item_id, qty_delta=-qty, movement_type=MovementType.PUTAWAY_LOST, ref_model='PUTAWAY', user=user, memo='lost via putaway')
-            StockLedger.objects.create(warehouse=warehouse, location=lost_bin, item_id=item_id, qty_delta=+qty, movement_type=MovementType.PUTAWAY_LOST, ref_model='PUTAWAY', user=user, memo='lost via putaway')
-    return {'posted_count': len(merged)}
+            StockLedger.objects.create(warehouse=warehouse, location=src, item_id=item_id, qty_delta=-qty, movement_type=MovementType.PUTAWAY_LOST, ref_model='PUTAWAY', ref_id=batch_ref_id, user=user, memo='lost via putaway')
+            StockLedger.objects.create(warehouse=warehouse, location=lost_bin, item_id=item_id, qty_delta=+qty, movement_type=MovementType.PUTAWAY_LOST, ref_model='PUTAWAY', ref_id=batch_ref_id, user=user, memo='lost via putaway')
+    return {'posted_count': len(merged), 'batch_ref_id': batch_ref_id, 'duplicate': False}

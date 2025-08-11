@@ -1,3 +1,79 @@
 from django.test import TestCase
+from django.contrib.auth import get_user_model
+from decimal import Decimal
+from catalog.models import Brand, Category, UoM, TaxRate, Item
+from .models import Warehouse, Location, LocationType, VirtualSubtype, StockLedger, MovementType
+from .services_putaway import post_actions
 
-# Create your tests here.
+
+class PutawayLostBehaviorTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create(username='tester', is_staff=True)
+        # Catalog basics
+        self.brand = Brand.objects.create(name='B')
+        self.root_cat = Category.objects.create(name='Root')
+        self.child_cat = Category.objects.create(name='Child', parent=self.root_cat)
+        self.uom = UoM.objects.create(code='EA', name='Each', ratio_to_base=1, base=True)
+        self.tax = TaxRate.objects.create(name='GST0', percent=0)
+        self.item = Item.objects.create(
+            name='Sample', product_type='GOODS', brand=self.brand, category=self.child_cat,
+            uom=self.uom, tax_rate=self.tax, status='ACTIVE'
+        )
+        # Warehouse and locations (signals create virtual bins)
+        self.wh = Warehouse.objects.create(
+            code='W1', name='WH', status='ACTIVE', gstin='27ABCDE1234F1Z5',
+            address_line1='', address_line2='', city='X', state='Y', pincode='123456', country='India',
+            latitude=0, longitude=0
+        )
+        self.phys = Location.objects.create(warehouse=self.wh, type=LocationType.PHYSICAL, code='A1', display_name='A1')
+        # Resolve virtuals
+        self.return_bin = Location.objects.get(warehouse=self.wh, type=LocationType.VIRTUAL, subtype=VirtualSubtype.RETURN)
+        self.lost_bin = Location.objects.get(warehouse=self.wh, type=LocationType.VIRTUAL, subtype=VirtualSubtype.LOST)
+        # Seed stock in RETURN
+        StockLedger.objects.create(warehouse=self.wh, location=self.return_bin, item=self.item, qty_delta=Decimal('10'), movement_type=MovementType.TRANSFER, ref_model='SEED')
+
+    def _bal(self, loc):
+        from django.db.models import Sum
+        return StockLedger.objects.filter(warehouse=self.wh, location=loc, item=self.item).aggregate(Sum('qty_delta'))['qty_delta__sum'] or Decimal('0')
+
+    def test_lost_actions_merge_into_single_pair(self):
+        # Two LOST actions from same (item, source_bin) should merge, creating exactly 2 ledger rows (out from src, in to LOST)
+        actions = [
+            {'type':'LOST','item':self.item.id,'source_bin':self.return_bin.id,'qty':Decimal('2')},
+            {'type':'LOST','item':self.item.id,'source_bin':self.return_bin.id,'qty':Decimal('1')},
+        ]
+        result = post_actions(self.wh, actions, user=self.user, reason_map=None, batch_ref_id='test-batch-1')
+        self.assertEqual(result['posted_count'], 1)
+        # Exactly one pair with the batch ref
+        rows = StockLedger.objects.filter(warehouse=self.wh, ref_model='PUTAWAY', ref_id='test-batch-1', movement_type=MovementType.PUTAWAY_LOST)
+        self.assertEqual(rows.count(), 2)
+        # Balances updated by total qty=3
+        self.assertEqual(self._bal(self.return_bin), Decimal('7'))
+        self.assertEqual(self._bal(self.lost_bin), Decimal('3'))
+
+    def test_idempotency_prevents_duplicate_postings(self):
+        actions = [{'type':'LOST','item':self.item.id,'source_bin':self.return_bin.id,'qty':Decimal('4')}]
+        first = post_actions(self.wh, actions, user=self.user, reason_map=None, batch_ref_id='dup-key-1')
+        self.assertEqual(first['posted_count'], 1)
+        again = post_actions(self.wh, actions, user=self.user, reason_map=None, batch_ref_id='dup-key-1')
+        self.assertEqual(again['posted_count'], 0)
+        self.assertTrue(again.get('duplicate'))
+        rows = StockLedger.objects.filter(warehouse=self.wh, ref_model='PUTAWAY', ref_id='dup-key-1', movement_type=MovementType.PUTAWAY_LOST)
+        self.assertEqual(rows.count(), 2)
+
+    def test_multiple_sequential_putaway_lost_postings(self):
+        actions = [{'type':'LOST','item':self.item.id,'source_bin':self.return_bin.id,'qty':Decimal('4')}]
+        first = post_actions(self.wh, actions, user=self.user, reason_map=None, batch_ref_id='batch-1')
+        self.assertEqual(first['posted_count'], 1)
+        # Posting again with the same batch_ref_id should not create duplicates
+        second = post_actions(self.wh, actions, user=self.user, reason_map=None, batch_ref_id='batch-1')
+        self.assertEqual(second['posted_count'], 0)
+        self.assertTrue(second.get('duplicate'))
+        rows = StockLedger.objects.filter(warehouse=self.wh, ref_model='PUTAWAY', ref_id='batch-1', movement_type=MovementType.PUTAWAY_LOST)
+        self.assertEqual(rows.count(), 2)
+        # Using a new batch_ref_id should create new postings
+        third = post_actions(self.wh, actions, user=self.user, reason_map=None, batch_ref_id='batch-2')
+        self.assertEqual(third['posted_count'], 1)
+        rows = StockLedger.objects.filter(warehouse=self.wh, ref_model='PUTAWAY', ref_id='batch-2', movement_type=MovementType.PUTAWAY_LOST)
+        self.assertEqual(rows.count(), 2)

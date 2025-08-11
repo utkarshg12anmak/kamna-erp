@@ -201,6 +201,7 @@ class StockLedger(models.Model):
             models.Index(fields=["warehouse", "item"]),
             models.Index(fields=["warehouse", "location"]),
             models.Index(fields=["movement_type", "ts"]),
+            models.Index(fields=["warehouse", "ref_model", "ref_id"]),
         ]
         verbose_name = "Stock Ledger Entry"
         verbose_name_plural = "Stock Ledger"

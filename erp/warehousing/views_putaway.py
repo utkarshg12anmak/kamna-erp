@@ -146,6 +146,7 @@ def putaway_confirm(request, pk: int):
     if not ser.is_valid():
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
     actions = ser.validated_data.get("actions", [])
+    idempotency_key = ser.validated_data.get("idempotency_key") or None
     # Optional double-confirm for LOST can be handled in UI; backend remains strict on validation
     try:
         result = post_actions(
@@ -156,6 +157,7 @@ def putaway_confirm(request, pk: int):
                 str(VirtualSubtype.RETURN): "return putaway",
                 str(VirtualSubtype.RECEIVE): "receive putaway",
             },
+            batch_ref_id=idempotency_key,
         )
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

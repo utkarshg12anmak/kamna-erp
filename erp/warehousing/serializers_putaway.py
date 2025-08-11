@@ -24,3 +24,4 @@ class PutawayActionSerializer(serializers.Serializer):
 
 class PutawayBatchSerializer(serializers.Serializer):
     actions = PutawayActionSerializer(many=True)
+    idempotency_key = serializers.CharField(required=False, allow_blank=True, allow_null=True)
