@@ -36,12 +36,20 @@
       </div>
     </div>
     <div class="col-12">
-      <div class="card-like d-flex justify-content-between align-items-center">
-        <div>
-          <div class="small text-muted">Active Locations Total Qty</div>
-          <div class="h4 m-0" id="activeTotalQty">-</div>
+      <div class="card-like">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <div class="small text-muted">Active Locations Total Qty</div>
+            <div class="h4 m-0" id="activeTotalQty">-</div>
+          </div>
+          <button class="btn btn-outline-primary btn-sm" id="viewActiveBreakdown">View Breakdown</button>
         </div>
-        <button class="btn btn-outline-primary btn-sm" id="viewActiveBreakdown">View Breakdown</button>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead><tr><th>Location Subtype</th><th class="text-end">Qty</th><th class="text-end"></th></tr></thead>
+            <tbody id="activeSubtypeRows"><tr><td colspan="3" class="text-center text-muted">Loading…</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -62,7 +70,7 @@
 </div>
 
 <!-- Modal for SKU breakdown -->
-<div class="modal fade" id="activeBreakdownModal" tabindex="-1">
+<div class="modal fade" id="activeBreakdownModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
@@ -99,10 +107,39 @@
     const subtype = x.location_subtype || '';
     return name || code || subtype || (x.location || '');
   }
+  function fmtSubtypeLabel(s){ return s || '—'; }
   async function loadActiveTotals(){
     const whId = Number(document.getElementById('whCtx').dataset.whId || '0');
     const data = await apiFetch(`/api/warehousing/warehouses/${whId}/active_stock_summary/`);
     document.getElementById('activeTotalQty').textContent = data.total_qty ?? 0;
+    // Populate subtype pivot with a per-row View button
+    const tbody = document.getElementById('activeSubtypeRows');
+    const rows = (data.per_subtype||[]).sort((a,b)=> String(a.subtype).localeCompare(String(b.subtype)));
+    if(!rows.length){ tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">No stock</td></tr>`; return data; }
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td>${fmtSubtypeLabel(r.subtype)}</td>
+        <td class='text-end'>${r.qty}</td>
+        <td class='text-end'>
+          <button type="button" class="btn btn-sm btn-outline-primary view-subtype" data-subtype="${String(r.subtype||'')}">View</button>
+        </td>
+      </tr>`).join('');
+    // Bind click to open filtered breakdown
+    tbody.querySelectorAll('.view-subtype').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const subtype = btn.getAttribute('data-subtype');
+        try{
+          const whId = Number(document.getElementById('whCtx').dataset.whId || '0');
+          const data = await apiFetch(`/api/warehousing/warehouses/${whId}/active_stock_summary/?subtype=${encodeURIComponent(subtype)}`);
+          const items = (data.items||[]).sort((a,b)=> String(a.item_sku).localeCompare(String(b.item_sku)));
+          document.getElementById('activeSkuRows').innerHTML = items.length ? items.map(r => `<tr><td>${r.item_sku}</td><td>${r.item_name||''}</td><td class='text-end'>${r.qty}</td></tr>`).join('') : `<tr><td colspan="3" class="text-center text-muted">No stock</td></tr>`;
+          document.getElementById('activeGrandTotal').textContent = data.grand_total ?? 0;
+          const el = document.getElementById('activeBreakdownModal');
+          const m = window.bootstrap ? window.bootstrap.Modal.getOrCreateInstance(el) : null;
+          if(m){ m.show(); } else { el.style.display='block'; el.classList.add('show'); }
+        }catch(e){ /* handled by apiFetch */ }
+      });
+    });
     return data;
   }
   async function init(){
@@ -131,7 +168,7 @@
         const rows = (data.items||[]).sort((a,b)=> String(a.item_sku).localeCompare(String(b.item_sku)));
         document.getElementById('activeSkuRows').innerHTML = rows.length ? rows.map(r => `<tr><td>${r.item_sku}</td><td>${r.item_name||''}</td><td class='text-end'>${r.qty}</td></tr>`).join('') : `<tr><td colspan="3" class="text-center text-muted">No stock</td></tr>`;
         document.getElementById('activeGrandTotal').textContent = data.grand_total ?? 0;
-        // Show modal (Bootstrap 5)
+        // Show modal (Bootstrap 5, closes on outside click by default when JS bundle loaded)
         const el = document.getElementById('activeBreakdownModal');
         const m = window.bootstrap ? window.bootstrap.Modal.getOrCreateInstance(el) : null;
         if(m){ m.show(); } else { el.style.display='block'; el.classList.add('show'); }

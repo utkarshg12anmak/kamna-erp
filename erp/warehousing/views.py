@@ -284,10 +284,19 @@ def adjustment_permissions(request):
 @api_view(["GET"])  # Active locations stock summary and SKU breakdown
 @permission_classes([permissions.IsAuthenticated])
 def warehouse_active_stock_summary(request, pk: int):
-    # Aggregate stock on-hand limited to ACTIVE locations
+    # Base filter: ACTIVE locations in this warehouse
+    base_qs = StockLedger.objects.filter(warehouse_id=pk, location__status=WarehouseStatus.ACTIVE)
+
+    # Optional subtype filter for per-row breakdown
+    subtype = request.GET.get("subtype")
+    if subtype:
+        filtered_qs = base_qs.filter(location__subtype=subtype)
+    else:
+        filtered_qs = base_qs
+
+    # Items breakdown (respecting optional subtype filter)
     qs = (
-        StockLedger.objects
-        .filter(warehouse_id=pk, location__status=WarehouseStatus.ACTIVE)
+        filtered_qs
         .values("item_id", "item__sku", "item__name")
         .annotate(q=DjangoSum("qty_delta"))
     )
@@ -304,8 +313,27 @@ def warehouse_active_stock_summary(request, pk: int):
             "qty": q,
         })
         total += q
+
+    # Per-subtype pivot across ACTIVE locations (unfiltered, for the pivot table)
+    subtype_qs = (
+        base_qs
+        .values("location__subtype")
+        .annotate(q=DjangoSum("qty_delta"))
+    )
+    per_subtype = []
+    for r in subtype_qs:
+        q = float(r.get("q") or 0)
+        if q == 0:
+            continue
+        per_subtype.append({
+            "subtype": r.get("location__subtype") or "",
+            "qty": q,
+        })
+
     return response.Response({
         "total_qty": float(total),
         "items": items,
         "grand_total": float(total),
+        "per_subtype": per_subtype,
+        "filter": {"subtype": subtype} if subtype else None,
     })
