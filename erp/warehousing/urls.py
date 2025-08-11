@@ -10,6 +10,7 @@ from .views import (
     stock_on_hand,
     adjustment_permissions,
     warehouse_active_stock_summary,
+    warehouse_physical_stock_summary,
 )
 from .views_putaway import putaway_kpis, putaway_list, putaway_confirm
 
@@ -23,6 +24,7 @@ urlpatterns = router.urls + [
     path("warehouses/<int:pk>/kpis/", warehouse_kpis, name="warehouse_kpis"),
     path("warehouses/<int:pk>/recent_activity/", warehouse_recent_activity, name="warehouse_recent_activity"),
     path("warehouses/<int:pk>/active_stock_summary/", warehouse_active_stock_summary, name="warehouse_active_stock_summary"),
+    path("warehouses/<int:pk>/physical_stock_summary/", warehouse_physical_stock_summary, name="warehouse_physical_stock_summary"),
     path("stock_on_hand/", stock_on_hand, name="stock_on_hand"),
     path("adjustment-permissions/", adjustment_permissions, name="adjustment_permissions"),
     # Putaway APIs

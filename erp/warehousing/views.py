@@ -353,3 +353,71 @@ def warehouse_active_stock_summary(request, pk: int):
         "per_subtype": per_subtype,
         "filter": {"subtype": subtype} if subtype else None,
     })
+
+
+@api_view(["GET"])  # Physical locations stock summary and SKU breakdown
+@permission_classes([permissions.IsAuthenticated])
+def warehouse_physical_stock_summary(request, pk: int):
+    # Base filter: ACTIVE, PHYSICAL locations in this warehouse
+    base_qs = StockLedger.objects.filter(
+        warehouse_id=pk,
+        location__status=WarehouseStatus.ACTIVE,
+        location__type=LocationType.PHYSICAL,
+    )
+
+    # Optional location filter for SKU breakdown
+    loc = request.GET.get("location")
+    if loc:
+        try:
+            loc_id = int(loc)
+        except (TypeError, ValueError):
+            return response.Response({"detail": "location must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+        filtered_qs = base_qs.filter(location_id=loc_id)
+        qs = (
+            filtered_qs
+            .values("item_id", "item__sku", "item__name")
+            .annotate(q=DjangoSum("qty_delta"))
+        )
+        items = []
+        total = 0.0
+        for r in qs:
+            q = float(r.get("q") or 0)
+            if q == 0:
+                continue
+            items.append({
+                "item": int(r["item_id"]),
+                "item_sku": r["item__sku"],
+                "item_name": r["item__name"],
+                "qty": q,
+            })
+            total += q
+        return response.Response({
+            "items": items,
+            "grand_total": float(total),
+            "filter": {"location": loc_id},
+        })
+
+    # Per-physical-location pivot and total
+    pivot = (
+        base_qs
+        .values("location_id", "location__code", "location__display_name")
+        .annotate(q=DjangoSum("qty_delta"))
+    )
+    per_location = []
+    total_qty = 0.0
+    for r in pivot:
+        q = float(r.get("q") or 0)
+        if q == 0:
+            continue
+        per_location.append({
+            "location": int(r["location_id"]),
+            "code": r.get("location__code") or "",
+            "name": r.get("location__display_name") or "",
+            "qty": q,
+        })
+        total_qty += q
+
+    return response.Response({
+        "total_qty": float(total_qty),
+        "per_location": per_location,
+    })
