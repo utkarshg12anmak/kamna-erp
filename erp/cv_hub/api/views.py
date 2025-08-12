@@ -156,12 +156,6 @@ class CvHubAddressViewSet(viewsets.ModelViewSet):
     filterset_fields={'entry':['exact'],'type':['exact'],'is_default_billing':['exact'],'is_default_shipping':['exact'],'state':['exact'],'city':['exact']}
     search_fields=['line1','line2','pincode']
 
-    def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user if self.request.user.is_authenticated else None)
-
-    def perform_update(self, serializer):
-        serializer.save(updated_by=self.request.user if self.request.user.is_authenticated else None)
-
 class CvHubContactViewSet(viewsets.ModelViewSet):
     queryset = CvHubContact.objects.select_related('entry')
     serializer_class = CvHubContactSerializer

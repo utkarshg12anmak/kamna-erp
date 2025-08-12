@@ -24,12 +24,10 @@ class CvHubContactSerializer(serializers.ModelSerializer):
 class CvHubAddressSerializer(serializers.ModelSerializer):
     state_name = serializers.CharField(source='state.name', read_only=True)
     city_name  = serializers.CharField(source='city.name', read_only=True)
-    created_by_username = serializers.CharField(source='created_by.username', read_only=True)
-    updated_by_username = serializers.CharField(source='updated_by.username', read_only=True)
     
     class Meta: 
         model = CvHubAddress
-        fields = ['id','entry','type','line1','line2','pincode','state','city','state_name','city_name','latitude','longitude','is_default_billing','is_default_shipping','created_by_username','updated_by_username']
+        fields = ['id','entry','type','line1','line2','pincode','state','city','state_name','city_name','latitude','longitude','is_default_billing','is_default_shipping']
     
     def validate(self, attrs):
         st = attrs.get('state') or getattr(self.instance,'state',None)

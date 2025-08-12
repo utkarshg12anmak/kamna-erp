@@ -816,7 +816,59 @@ async function saveAddress() {
             document.getElementById('addresses-tab').click(); // Switch to addresses tab to show new data
         } else {
             const errorData = await response.json();
-            alert('Error saving address: ' + (errorData.detail || 'Unknown error'));
+            console.error('Address save error:', errorData); // Debug logging
+            
+            let errorMessage = 'Error saving address: ';
+            let errorFound = false;
+            
+            // Check for specific field validation errors in order of priority
+            const fieldChecks = [
+                { field: 'line1', label: 'Address Line 1' },
+                { field: 'pincode', label: 'Pincode' },
+                { field: 'state', label: 'State' },
+                { field: 'city', label: 'City' },
+                { field: 'type', label: 'Address Type' }
+            ];
+            
+            // Check each field for errors
+            for (const check of fieldChecks) {
+                if (errorData[check.field] && Array.isArray(errorData[check.field]) && errorData[check.field].length > 0) {
+                    errorMessage += `${check.label} - ${errorData[check.field][0]}`;
+                    errorFound = true;
+                    break;
+                }
+            }
+            
+            // Check for non-field errors (like state/city mismatch)
+            if (!errorFound && errorData.non_field_errors && Array.isArray(errorData.non_field_errors) && errorData.non_field_errors.length > 0) {
+                errorMessage += errorData.non_field_errors[0];
+                errorFound = true;
+            }
+            
+            // Check for detail error
+            if (!errorFound && errorData.detail) {
+                errorMessage += errorData.detail;
+                errorFound = true;
+            }
+            
+            // Fallback: try to extract any error from the response
+            if (!errorFound) {
+                for (const [fieldName, fieldErrors] of Object.entries(errorData)) {
+                    if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
+                        errorMessage += `${fieldName}: ${fieldErrors[0]}`;
+                        errorFound = true;
+                        break;
+                    }
+                }
+            }
+            
+            // Final fallback
+            if (!errorFound) {
+                errorMessage += 'Please check all required fields and try again';
+                console.error('No specific error found in response:', errorData);
+            }
+            
+            alert(errorMessage);
         }
     } catch (error) {
         console.error('Error saving address:', error);
@@ -928,7 +980,59 @@ async function updateAddress(addressId) {
             alert('Address updated successfully');
         } else {
             const errorData = await response.json();
-            alert('Error updating address: ' + (errorData.detail || JSON.stringify(errorData) || 'Unknown error'));
+            console.error('Address update error:', errorData); // Debug logging
+            
+            let errorMessage = 'Error updating address: ';
+            let errorFound = false;
+            
+            // Check for specific field validation errors in order of priority
+            const fieldChecks = [
+                { field: 'line1', label: 'Address Line 1' },
+                { field: 'pincode', label: 'Pincode' },
+                { field: 'state', label: 'State' },
+                { field: 'city', label: 'City' },
+                { field: 'type', label: 'Address Type' }
+            ];
+            
+            // Check each field for errors
+            for (const check of fieldChecks) {
+                if (errorData[check.field] && Array.isArray(errorData[check.field]) && errorData[check.field].length > 0) {
+                    errorMessage += `${check.label} - ${errorData[check.field][0]}`;
+                    errorFound = true;
+                    break;
+                }
+            }
+            
+            // Check for non-field errors (like state/city mismatch)
+            if (!errorFound && errorData.non_field_errors && Array.isArray(errorData.non_field_errors) && errorData.non_field_errors.length > 0) {
+                errorMessage += errorData.non_field_errors[0];
+                errorFound = true;
+            }
+            
+            // Check for detail error
+            if (!errorFound && errorData.detail) {
+                errorMessage += errorData.detail;
+                errorFound = true;
+            }
+            
+            // Fallback: try to extract any error from the response
+            if (!errorFound) {
+                for (const [fieldName, fieldErrors] of Object.entries(errorData)) {
+                    if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
+                        errorMessage += `${fieldName}: ${fieldErrors[0]}`;
+                        errorFound = true;
+                        break;
+                    }
+                }
+            }
+            
+            // Final fallback
+            if (!errorFound) {
+                errorMessage += 'Please check all required fields and try again';
+                console.error('No specific error found in response:', errorData);
+            }
+            
+            alert(errorMessage);
         }
     } catch (error) {
         console.error('Error updating address:', error);
