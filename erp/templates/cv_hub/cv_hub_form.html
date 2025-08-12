@@ -170,6 +170,157 @@
   </div>
 </div>
 
+<!-- Same modals as in the view template -->
+<!-- Add GST Registration Modal -->
+<div class="modal fade" id="addGSTModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add GST Registration</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addGSTForm">
+          <div class="mb-3">
+            <label for="gst_taxpayer_type" class="form-label">Taxpayer Type</label>
+            <select class="form-select" id="gst_taxpayer_type" required>
+              <option value="REGULAR">Regular</option>
+              <option value="COMPOSITION">Composition</option>
+              <option value="CASUAL">Casual</option>
+              <option value="UNREGISTERED">Unregistered</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="gst_gstin" class="form-label">GSTIN</label>
+            <input type="text" class="form-control" id="gst_gstin" maxlength="15">
+          </div>
+          <div class="mb-3">
+            <label for="gst_legal_name" class="form-label">Legal Name of Business</label>
+            <input type="text" class="form-control" id="gst_legal_name" required>
+          </div>
+          <div class="mb-3">
+            <label for="gst_trade_name" class="form-label">Trade Name</label>
+            <input type="text" class="form-control" id="gst_trade_name">
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="gst_is_primary">
+            <label class="form-check-label" for="gst_is_primary">Set as Primary</label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveGSTRegistration()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Address Modal -->
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Address</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addAddressForm">
+          <div class="mb-3">
+            <label for="addr_type" class="form-label">Type</label>
+            <select class="form-select" id="addr_type" required>
+              <option value="BILLING">Billing</option>
+              <option value="SHIPPING">Shipping</option>
+              <option value="BOTH">Both</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="addr_line1" class="form-label">Address Line 1</label>
+            <input type="text" class="form-control" id="addr_line1" required>
+          </div>
+          <div class="mb-3">
+            <label for="addr_line2" class="form-label">Address Line 2</label>
+            <input type="text" class="form-control" id="addr_line2">
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="addr_state" class="form-label">State</label>
+              <select class="form-select" id="addr_state" required></select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="addr_city" class="form-label">City</label>
+              <select class="form-select" id="addr_city" required></select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="addr_pincode" class="form-label">Pincode</label>
+            <input type="text" class="form-control" id="addr_pincode" required>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="addr_is_default_billing">
+                <label class="form-check-label" for="addr_is_default_billing">Default Billing</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="addr_is_default_shipping">
+                <label class="form-check-label" for="addr_is_default_shipping">Default Shipping</label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveAddress()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Contact Modal -->
+<div class="modal fade" id="addContactModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Contact</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addContactForm">
+          <div class="mb-3">
+            <label for="contact_full_name" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="contact_full_name" required>
+          </div>
+          <div class="mb-3">
+            <label for="contact_designation" class="form-label">Designation</label>
+            <input type="text" class="form-control" id="contact_designation">
+          </div>
+          <div class="mb-3">
+            <label for="contact_phone" class="form-label">Phone</label>
+            <input type="tel" class="form-control" id="contact_phone" required>
+          </div>
+          <div class="mb-3">
+            <label for="contact_email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="contact_email">
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="contact_is_primary">
+            <label class="form-check-label" for="contact_is_primary">Set as Primary</label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveContact()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 let entryId = null;
 let entryData = null;
@@ -195,6 +346,19 @@ function setupEventListeners() {
         if (confirm('Discard changes and go back?')) {
             window.location.href = `/app/cv_hub/entries/${entryId}`;
         }
+    });
+    
+    // Add event listeners for the "Add" buttons
+    document.getElementById('addGstBtn').addEventListener('click', function() {
+        openAddGSTModal();
+    });
+    
+    document.getElementById('addAddressBtn').addEventListener('click', function() {
+        openAddAddressModal();
+    });
+    
+    document.getElementById('addContactBtn').addEventListener('click', function() {
+        openAddContactModal();
     });
 }
 
@@ -437,6 +601,195 @@ async function saveEntry() {
         alert('Error saving entry. Please try again.');
     } finally {
         document.getElementById('saveBtn').disabled = false;
+    }
+}
+
+// Modal Functions (same as in view template)
+function openAddGSTModal() {
+    document.getElementById('gst_legal_name').value = entryData.legal_name;
+    document.getElementById('gst_trade_name').value = entryData.trade_name || '';
+    new bootstrap.Modal(document.getElementById('addGSTModal')).show();
+}
+
+function openAddAddressModal() {
+    loadStatesForAddress();
+    new bootstrap.Modal(document.getElementById('addAddressModal')).show();
+}
+
+function openAddContactModal() {
+    new bootstrap.Modal(document.getElementById('addContactModal')).show();
+}
+
+async function loadStatesForAddress() {
+    try {
+        const response = await fetch('/api/cv_hub/states/');
+        const data = await response.json();
+        const states = data.results || data;
+        
+        const stateSelect = document.getElementById('addr_state');
+        stateSelect.innerHTML = '<option value="">Select State</option>';
+        states.forEach(state => {
+            stateSelect.innerHTML += `<option value="${state.id}">${state.name}</option>`;
+        });
+        
+        // Add state change listener for city cascade
+        stateSelect.addEventListener('change', function() {
+            loadCitiesForAddress(this.value);
+        });
+    } catch (error) {
+        console.error('Error loading states:', error);
+    }
+}
+
+async function loadCitiesForAddress(stateId) {
+    if (!stateId) {
+        document.getElementById('addr_city').innerHTML = '<option value="">Select City</option>';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/cv_hub/cities/?state=${stateId}`);
+        const data = await response.json();
+        const cities = data.results || data;
+        
+        const citySelect = document.getElementById('addr_city');
+        citySelect.innerHTML = '<option value="">Select City</option>';
+        cities.forEach(city => {
+            citySelect.innerHTML += `<option value="${city.id}">${city.name}</option>`;
+        });
+    } catch (error) {
+        console.error('Error loading cities:', error);
+    }
+}
+
+async function saveGSTRegistration() {
+    const data = {
+        entry: entryId,
+        taxpayer_type: document.getElementById('gst_taxpayer_type').value,
+        gstin: document.getElementById('gst_gstin').value,
+        legal_name_of_business: document.getElementById('gst_legal_name').value,
+        trade_name: document.getElementById('gst_trade_name').value,
+        is_primary: document.getElementById('gst_is_primary').checked,
+    };
+    
+    // Basic validation
+    if (!data.legal_name_of_business.trim()) {
+        alert('Legal name is required');
+        return;
+    }
+    
+    if (data.taxpayer_type !== 'UNREGISTERED' && data.gstin && data.gstin.length !== 15) {
+        alert('GSTIN must be 15 characters for registered taxpayers');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/cv_hub/registrations/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(data),
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('addGSTModal')).hide();
+            // Refresh the data and reload the GST tab
+            await loadEntryData();
+            document.getElementById('gst-tab').click(); // Switch to GST tab to show new data
+        } else {
+            const errorData = await response.json();
+            alert('Error saving GST registration: ' + (errorData.detail || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error saving GST registration:', error);
+        alert('Error saving GST registration');
+    }
+}
+
+async function saveAddress() {
+    const data = {
+        entry: entryId,
+        type: document.getElementById('addr_type').value,
+        line1: document.getElementById('addr_line1').value,
+        line2: document.getElementById('addr_line2').value,
+        state: document.getElementById('addr_state').value,
+        city: document.getElementById('addr_city').value,
+        pincode: document.getElementById('addr_pincode').value,
+        is_default_billing: document.getElementById('addr_is_default_billing').checked,
+        is_default_shipping: document.getElementById('addr_is_default_shipping').checked,
+    };
+    
+    // Basic validation
+    if (!data.line1.trim() || !data.state || !data.city || !data.pincode.trim()) {
+        alert('Please fill all required fields');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/cv_hub/addresses/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(data),
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('addAddressModal')).hide();
+            // Refresh the data and reload the addresses tab
+            await loadEntryData();
+            document.getElementById('addresses-tab').click(); // Switch to addresses tab to show new data
+        } else {
+            const errorData = await response.json();
+            alert('Error saving address: ' + (errorData.detail || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error saving address:', error);
+        alert('Error saving address');
+    }
+}
+
+async function saveContact() {
+    const data = {
+        entry: entryId,
+        full_name: document.getElementById('contact_full_name').value,
+        designation: document.getElementById('contact_designation').value,
+        phone: document.getElementById('contact_phone').value,
+        email: document.getElementById('contact_email').value,
+        is_primary: document.getElementById('contact_is_primary').checked,
+    };
+    
+    // Basic validation
+    if (!data.full_name.trim() || !data.phone.trim()) {
+        alert('Full name and phone are required');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/cv_hub/contacts/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(data),
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('addContactModal')).hide();
+            // Refresh the data and reload the contacts tab
+            await loadEntryData();
+            document.getElementById('contacts-tab').click(); // Switch to contacts tab to show new data
+        } else {
+            const errorData = await response.json();
+            alert('Error saving contact: ' + (errorData.detail || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error saving contact:', error);
+        alert('Error saving contact');
     }
 }
 
