@@ -1480,3 +1480,82 @@ Bad Request: /api/cv_hub/addresses/
 [12/Aug/2025 12:37:47] "GET /app/cv_hub/entries/29/edit HTTP/1.1" 200 59018
 [12/Aug/2025 12:37:47] "GET /api/cv_hub/entries/29/ HTTP/1.1" 200 927
 [12/Aug/2025 12:38:22] "GET /api/cv_hub/entries/29/history/ HTTP/1.1" 200 1183
+[12/Aug/2025 12:40:23] "GET /app HTTP/1.1" 200 5932
+[12/Aug/2025 12:40:25] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 12:40:25] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
+[12/Aug/2025 12:40:25] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 3817
+[12/Aug/2025 12:46:15] "GET / HTTP/1.1" 200 2849
+[12/Aug/2025 12:47:25] "GET /?id=b34795e2-20c7-4eb6-a885-def86677dd26&vscodeBrowserReqId=1755020845644 HTTP/1.1" 200 2849
+[12/Aug/2025 12:56:28] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 12:56:28] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
+[12/Aug/2025 12:56:28] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 3817
+[12/Aug/2025 12:56:35] "GET /app/cv_hub/entries/8 HTTP/1.1" 200 47954
+[12/Aug/2025 12:56:35] "GET /api/cv_hub/entries/8/ HTTP/1.1" 200 994
+[12/Aug/2025 12:56:35] "GET /api/cv_hub/entries/8/history/ HTTP/1.1" 200 940
+[12/Aug/2025 12:56:40] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 12:56:40] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
+[12/Aug/2025 12:56:40] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 3817
+[12/Aug/2025 12:56:43] "GET /app/cv_hub/entries/29 HTTP/1.1" 200 47954
+[12/Aug/2025 12:56:43] "GET /api/cv_hub/entries/29/ HTTP/1.1" 200 927
+[12/Aug/2025 12:56:43] "GET /api/cv_hub/entries/29/history/ HTTP/1.1" 200 1183
+[12/Aug/2025 12:56:55] "GET / HTTP/1.1" 200 2849
+[12/Aug/2025 12:56:55] "POST /api/auth/jwt/create/ HTTP/1.1" 200 489
+[12/Aug/2025 12:56:55] "GET /app HTTP/1.1" 200 5932
+[12/Aug/2025 12:57:00] "POST /api/cv_hub/contacts/ HTTP/1.1" 201 150
+[12/Aug/2025 12:57:00] "GET /app/cv_hub/entries/29 HTTP/1.1" 200 47954
+[12/Aug/2025 12:57:00] "GET /api/cv_hub/entries/29/ HTTP/1.1" 200 1077
+[12/Aug/2025 12:57:00] "GET /api/cv_hub/entries/29/history/ HTTP/1.1" 200 1302
+[12/Aug/2025 12:57:07] "GET /app/cv_hub/entries/29/edit HTTP/1.1" 200 63493
+[12/Aug/2025 12:57:07] "GET /api/cv_hub/entries/29/ HTTP/1.1" 200 1077
+[12/Aug/2025 12:57:22] "PATCH /api/cv_hub/contacts/26/ HTTP/1.1" 200 150
+[12/Aug/2025 12:57:22] "GET /api/cv_hub/entries/29/ HTTP/1.1" 200 1077
+[12/Aug/2025 12:57:26] "POST /api/auth/jwt/create/ HTTP/1.1" 200 489
+[12/Aug/2025 12:57:26] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 12:57:26] "GET /api/cv_hub/entries/ HTTP/1.1" 200 3817
+[12/Aug/2025 12:57:26] "POST /api/cv_hub/contacts/ HTTP/1.1" 201 169
+Bad Request: /api/cv_hub/contacts/
+[12/Aug/2025 12:57:26] "POST /api/cv_hub/contacts/ HTTP/1.1" 400 37
+Bad Request: /api/cv_hub/contacts/
+[12/Aug/2025 12:57:26] "POST /api/cv_hub/contacts/ HTTP/1.1" 400 46
+Bad Request: /api/cv_hub/contacts/
+[12/Aug/2025 12:57:26] "POST /api/cv_hub/contacts/ HTTP/1.1" 400 42
+Bad Request: /api/cv_hub/contacts/
+[12/Aug/2025 12:57:26] "POST /api/cv_hub/contacts/ HTTP/1.1" 400 72
+Bad Request: /api/cv_hub/contacts/
+[12/Aug/2025 12:57:26] "POST /api/cv_hub/contacts/ HTTP/1.1" 400 72
+[12/Aug/2025 12:57:26] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 12:57:26] "HEAD /app/cv_hub/entries/ HTTP/1.1" 200 0
+[12/Aug/2025 12:57:37] "POST /api/cv_hub/contacts/ HTTP/1.1" 201 150
+[12/Aug/2025 12:57:37] "GET /api/cv_hub/entries/29/ HTTP/1.1" 200 1228
+[12/Aug/2025 12:57:40] "PATCH /api/cv_hub/entries/29/ HTTP/1.1" 200 357
+[12/Aug/2025 12:57:40] "GET /app/cv_hub/entries/29 HTTP/1.1" 200 47954
+[12/Aug/2025 12:57:40] "GET /api/cv_hub/entries/29/ HTTP/1.1" 200 1228
+[12/Aug/2025 12:57:40] "GET /api/cv_hub/entries/29/history/ HTTP/1.1" 200 1682
+[12/Aug/2025 12:57:46] "GET /app/cv_hub/entries/29/edit HTTP/1.1" 200 63493
+[12/Aug/2025 12:57:46] "GET /api/cv_hub/entries/29/ HTTP/1.1" 200 1228
+[12/Aug/2025 12:57:54] "PATCH /api/cv_hub/contacts/26/ HTTP/1.1" 200 149
+[12/Aug/2025 12:57:54] "GET /api/cv_hub/entries/29/ HTTP/1.1" 200 1227
+[12/Aug/2025 12:57:56] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 12:57:56] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
+[12/Aug/2025 12:57:56] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 3817
+[12/Aug/2025 12:57:58] "GET /app/cv_hub/entries/29 HTTP/1.1" 200 47954
+[12/Aug/2025 12:57:58] "GET /api/cv_hub/entries/29/ HTTP/1.1" 200 1227
+[12/Aug/2025 12:57:58] "GET /api/cv_hub/entries/29/history/ HTTP/1.1" 200 1801
+[12/Aug/2025 12:58:16] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 12:58:16] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
+[12/Aug/2025 12:58:16] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 3817
+[12/Aug/2025 12:58:18] "GET /app/cv_hub/entries/22/edit HTTP/1.1" 200 63493
+[12/Aug/2025 12:58:18] "GET /api/cv_hub/entries/22/ HTTP/1.1" 200 1238
+[12/Aug/2025 12:58:19] "GET /api/cv_hub/entries/22/history/ HTTP/1.1" 200 726
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/cv_hub/apps.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 12:35:01
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader

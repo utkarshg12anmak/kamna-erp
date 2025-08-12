@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CV Hub Access Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <h1>🔍 CV Hub Access Debug</h1>
+    
+    <div class="debug-section">
+        <h2>User Information</h2>
+    <div class="debug-section">
+        <h2>User Information</h2>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Authenticated:</strong> {{ is_authenticated }}</p>
+        <p><strong>Superuser:</strong> {{ is_superuser }}</p>
+        
+        {% if not is_authenticated %}
+            <div class="error">
+                <strong>⚠️ Authentication Required</strong><br>
+                You need to log in to access CV Hub modules.<br>
+                <a href="/login/?next=/app/cv_hub" style="color: #721c24; font-weight: bold;">→ Login Here</a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="debug-section">
+        <h2>Groups</h2>
+        <p><strong>User Groups:</strong></p>
+        <ul>
+        {% for group in groups %}
+            <li>{{ group }}{% if group == "Customer & Vendor Hub" %} ✅ <strong>(CV Hub Access Group)</strong>{% endif %}</li>
+        {% empty %}
+            <li><em>No groups assigned</em></li>
+        {% endfor %}
+        </ul>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Access Status</h2>
+        {% if has_cv_hub_group %}
+            <div class="status success">
+                ✅ <strong>ACCESS GRANTED</strong> - User has "Customer & Vendor Hub" group
+            </div>
+        {% else %}
+            <div class="status error">
+                ❌ <strong>ACCESS DENIED</strong> - User missing "Customer & Vendor Hub" group
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="debug-section">
+        <h2>JavaScript Access Test</h2>
+        <button class="test-button" onclick="testApiAccess()">Test API Access</button>
+        <button class="test-button" onclick="testJavaScriptAuth()">Test JavaScript Auth Check</button>
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Quick Actions</h2>
+        <a href="/app/cv_hub/" class="test-button">Try CV Hub Dashboard</a>
+        <a href="/app/cv_hub/entries/" class="test-button">Try CV Hub Entries</a>
+        <a href="/app/" class="test-button">Back to Module Hub</a>
+    </div>
+
+    <script>
+        async function testApiAccess() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<div class="test-result">Testing API access...</div>';
+            
+            try {
+                const response = await fetch('/api/auth/me/', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const hasAccess = data.groups.includes('Customer & Vendor Hub');
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="test-result">
+                            <strong>API Test Result:</strong><br>
+                            Status: ${response.status}<br>
+                            Groups: ${data.groups.join(', ')}<br>
+                            CV Hub Access: ${hasAccess ? '✅ YES' : '❌ NO'}
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `<div class="test-result">❌ API Error: ${response.status}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="test-result">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testJavaScriptAuth() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<div class="test-result">Testing JavaScript auth logic...</div>';
+            
+            // Simulate the checkAccess function
+            try {
+                const response = await fetch('/api/auth/me/', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const moduleName = 'Customer & Vendor Hub';
+                    const allowed = data.groups.includes(moduleName);
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="test-result">
+                            <strong>JavaScript Auth Logic Test:</strong><br>
+                            Module: ${moduleName}<br>
+                            User Groups: ${data.groups.join(', ')}<br>
+                            Access Result: ${allowed ? '✅ ALLOWED' : '❌ DENIED'}<br>
+                            <br>
+                            ${allowed ? 
+                                'The page should show the module content.' : 
+                                'The page should show "You do not have access to this module".'
+                            }
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `<div class="test-result">❌ Auth check failed: ${response.status}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="test-result">❌ Auth check error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
