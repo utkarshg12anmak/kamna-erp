@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>HR Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root { --primary: #3C83F6; --bg: #f5f6f8; --card-shadow: 0 8px 24px rgba(0,0,0,.08); }
+    body { background: var(--bg); }
+    .card-like { background:#fff; border-radius:14px; box-shadow:var(--card-shadow); padding:24px; margin-bottom:20px; }
+    .btn-primary { background-color: var(--primary); border-color: var(--primary); }
+    .metric-card { text-align: center; }
+    .metric-value { font-size: 2.5rem; font-weight: 700; color: var(--primary); }
+    .metric-label { color: #6b7280; font-size: 0.875rem; margin-top: 4px; }
+    .upcoming-item { padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+    .upcoming-item:last-child { border-bottom: none; }
+    .device-badge { font-size: 1.2em; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/app">ERP</a>
+      <div class="navbar-nav ms-auto">
+        <a class="nav-link" href="/app">← Back to Modules</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="h3 mb-0">HR Dashboard</h1>
+        <p class="text-muted">Employee management and insights</p>
+      </div>
+      <div>
+        <a href="/app/hr/employees" class="btn btn-outline-primary me-2">View Employees</a>
+        <a href="/app/hr/employees/new" class="btn btn-primary">Add Employee</a>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card-like metric-card">
+          <div class="metric-value" id="totalActive">-</div>
+          <div class="metric-label">Active Employees</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card-like metric-card">
+          <div class="metric-value" id="birthdays">-</div>
+          <div class="metric-label">Birthdays This Month</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card-like metric-card">
+          <div class="metric-value" id="anniversaries">-</div>
+          <div class="metric-label">Anniversaries This Month</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card-like metric-card">
+          <div class="metric-value" id="monthlySalary">-</div>
+          <div class="metric-label">Monthly Salary Run (₹)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Upcoming Events -->
+      <div class="col-md-6">
+        <div class="card-like">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Upcoming Events</h5>
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="eventType" id="birthdays" value="birthday" checked>
+              <label class="btn btn-outline-primary" for="birthdays">Birthdays</label>
+              <input type="radio" class="btn-check" name="eventType" id="anniversaries" value="anniversary">
+              <label class="btn btn-outline-primary" for="anniversaries">Anniversaries</label>
+            </div>
+          </div>
+          <div id="upcomingList">
+            <div class="text-center text-muted py-3">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Device Summary -->
+      <div class="col-md-6">
+        <div class="card-like">
+          <h5 class="mb-3">Device Summary</h5>
+          <div class="row text-center">
+            <div class="col-6">
+              <div class="device-badge">📱</div>
+              <div class="fw-bold" id="phoneAssigned">-</div>
+              <div class="small text-muted">Phones Assigned</div>
+            </div>
+            <div class="col-6">
+              <div class="device-badge">💻</div>
+              <div class="fw-bold" id="laptopAssigned">-</div>
+              <div class="small text-muted">Laptops Assigned</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="card-like">
+          <h6 class="mb-3">Quick Actions</h6>
+          <div class="d-grid gap-2">
+            <a href="/app/hr/org/chart" class="btn btn-outline-primary btn-sm">View Org Chart</a>
+            <a href="/app/hr/reports" class="btn btn-outline-primary btn-sm">HR Reports</a>
+            <a href="/app/hr/settings" class="btn btn-outline-primary btn-sm">HR Settings</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let dashboardData = {};
+
+    // Load dashboard data
+    async function loadDashboardSummary() {
+      try {
+        const response = await fetch('/api/hr/dashboard/summary/', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          dashboardData = data;
+          
+          document.getElementById('totalActive').textContent = data.total_active || 0;
+          document.getElementById('birthdays').textContent = data.birthdays_this_month || 0;
+          document.getElementById('anniversaries').textContent = data.anniversaries_this_month || 0;
+          document.getElementById('monthlySalary').textContent = (data.monthly_salary_run || 0).toLocaleString();
+        } else {
+          console.error('Failed to load dashboard summary');
+        }
+      } catch (error) {
+        console.error('Error loading dashboard summary:', error);
+      }
+    }
+
+    // Load upcoming events
+    async function loadUpcomingEvents(type = 'birthday') {
+      try {
+        const response = await fetch(`/api/hr/dashboard/upcoming/?type=${type}&days=14`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          renderUpcomingEvents(data, type);
+        } else {
+          console.error('Failed to load upcoming events');
+        }
+      } catch (error) {
+        console.error('Error loading upcoming events:', error);
+      }
+    }
+
+    // Render upcoming events
+    function renderUpcomingEvents(events, type) {
+      const container = document.getElementById('upcomingList');
+      
+      if (events.length === 0) {
+        container.innerHTML = `<div class="text-center text-muted py-3">No upcoming ${type}s</div>`;
+        return;
+      }
+
+      container.innerHTML = events.map(event => {
+        const dateStr = new Date(event.date).toLocaleDateString();
+        const yearsText = type === 'anniversary' && event.years ? ` (${event.years} years)` : '';
+        
+        return `
+          <div class="upcoming-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-medium">${event.name}</div>
+                <div class="small text-muted">${event.emp_code}</div>
+              </div>
+              <div class="text-end">
+                <div class="small">${dateStr}${yearsText}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Load device statistics
+    async function loadDeviceStats() {
+      try {
+        const response = await fetch('/api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // This is a simplified approach - in a real scenario, you'd have separate endpoints
+          // For now, we'll make separate calls or calculate from the employee list
+          loadDeviceStatsFromEmployees();
+        }
+      } catch (error) {
+        console.error('Error loading device stats:', error);
+      }
+    }
+
+    async function loadDeviceStatsFromEmployees() {
+      try {
+        const [phonesResponse, laptopsResponse] = await Promise.all([
+          fetch('/api/hr/employees/?is_phone_assigned=true', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+          }),
+          fetch('/api/hr/employees/?is_laptop_assigned=true', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+          })
+        ]);
+
+        const phonesData = phonesResponse.ok ? await phonesResponse.json() : { count: 0 };
+        const laptopsData = laptopsResponse.ok ? await laptopsResponse.json() : { count: 0 };
+
+        document.getElementById('phoneAssigned').textContent = phonesData.count || 0;
+        document.getElementById('laptopAssigned').textContent = laptopsData.count || 0;
+      } catch (error) {
+        console.error('Error loading device stats:', error);
+      }
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load initial data
+      loadDashboardSummary();
+      loadUpcomingEvents('birthday');
+      loadDeviceStats();
+
+      // Event type toggle
+      document.querySelectorAll('input[name="eventType"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+          if (this.checked) {
+            loadUpcomingEvents(this.value);
+          }
+        });
+      });
+    });
+
+    // Utility function to get CSRF token
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  </script>
+</body>
+</html>

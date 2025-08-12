@@ -311,3 +311,41 @@ def cv_hub_entry_view(request, id: int):
 
 def cv_hub_entry_edit(request, id: int):
     return render_module(request, "Customer & Vendor Hub", cv_hub_menu("/app/cv_hub/entries"), "cv_hub/cv_hub_form.html")
+
+
+# HR module
+
+def hr_menu(active_href):
+    items = [
+        {"label": "Dashboard", "href": "/app/hr"},
+        {"label": "Employees", "href": "/app/hr/employees"},
+        {"label": "Org Chart", "href": "/app/hr/org-chart"},
+        {"label": "New Employee", "href": "/app/hr/employees/new"},
+    ]
+    for it in items:
+        it["active"] = (it["href"] == active_href)
+    return items
+
+
+def module_hr(request):
+    return render_module(request, "HR & Employees", hr_menu("/app/hr"), "hr/hr_dashboard.html")
+
+
+def hr_employees(request):
+    return render_module(request, "HR & Employees", hr_menu("/app/hr/employees"), "hr/employees_list.html")
+
+
+def hr_employees_new(request):
+    return render_module(request, "HR & Employees", hr_menu("/app/hr/employees"), "hr/employee_form.html")
+
+
+def hr_employee_view(request, id: int):
+    return render_module(request, "HR & Employees", hr_menu("/app/hr/employees"), "hr/employee_detail.html")
+
+
+def hr_employee_edit(request, id: int):
+    return render_module(request, "HR & Employees", hr_menu("/app/hr/employees"), "hr/employee_form.html")
+
+
+def hr_org_chart(request):
+    return render_module(request, "HR & Employees", hr_menu("/app/hr/org-chart"), "hr/org_chart.html")

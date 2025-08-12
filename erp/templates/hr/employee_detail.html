@@ -1,0 +1,502 @@
+<!-- Employee Detail Template -->
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="h5 mb-1" id="employeeName">Employee Details</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-sm mb-0">
+          <li class="breadcrumb-item"><a href="/app/hr">HR</a></li>
+          <li class="breadcrumb-item"><a href="/app/hr/employees">Employees</a></li>
+          <li class="breadcrumb-item active" id="breadcrumbName">Loading...</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="#" id="editEmployeeBtn" class="btn btn-primary btn-sm">Edit Employee</a>
+      <button type="button" id="archiveEmployeeBtn" class="btn btn-outline-danger btn-sm">Archive</button>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Left Column - Main Details -->
+    <div class="col-md-8">
+      
+      <!-- Employee Profile Card -->
+      <div class="card-like mb-3">
+        <div class="row">
+          <div class="col-md-3 text-center">
+            <div id="profileImageContainer" class="mb-3">
+              <!-- Profile image will be loaded here -->
+            </div>
+            <div class="d-flex justify-content-center gap-1 mb-2" id="assetBadges">
+              <!-- Asset badges will be shown here -->
+            </div>
+            <span class="badge bg-success" id="statusBadge">Active</span>
+          </div>
+          <div class="col-md-9">
+            <h4 id="fullName" class="mb-1">Loading...</h4>
+            <p class="text-muted mb-2" id="designation">Loading...</p>
+            <p class="text-muted mb-3" id="department">Loading...</p>
+            
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <strong>Employee Code:</strong>
+                  <span id="empCode">Loading...</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <strong>Email:</strong>
+                  <a href="#" id="emailLink">Loading...</a>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <strong>Phone:</strong>
+                  <a href="#" id="phoneLink">Loading...</a>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <strong>Joining Date:</strong>
+                  <span id="joiningDate">Loading...</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <strong>Manager:</strong>
+                  <a href="#" id="managerLink">Loading...</a>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <strong>Org Unit:</strong>
+                  <span id="orgUnit">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabbed Details -->
+      <div class="card-like">
+        <ul class="nav nav-tabs nav-fill mb-3" id="detailTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+              Overview
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">
+              Documents
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="assets-tab" data-bs-toggle="tab" data-bs-target="#assets" type="button" role="tab">
+              Assets
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
+              History
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content" id="detailTabContent">
+          
+          <!-- Overview Tab -->
+          <div class="tab-pane fade show active" id="overview" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <h6>Personal Information</h6>
+                <table class="table table-sm">
+                  <tr><td><strong>Gender:</strong></td><td id="gender">Loading...</td></tr>
+                  <tr><td><strong>Date of Birth:</strong></td><td id="birthDate">Loading...</td></tr>
+                  <tr><td><strong>Age:</strong></td><td id="age">Loading...</td></tr>
+                </table>
+              </div>
+              <div class="col-md-6">
+                <h6>Job Information</h6>
+                <table class="table table-sm">
+                  <tr><td><strong>Position:</strong></td><td id="position">Loading...</td></tr>
+                  <tr><td><strong>Employment Status:</strong></td><td id="employmentStatus">Loading...</td></tr>
+                  <tr><td><strong>Access Profile:</strong></td><td id="accessProfile">Loading...</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documents Tab -->
+          <div class="tab-pane fade" id="documents" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6>Employee Documents</h6>
+              <button class="btn btn-outline-primary btn-sm" id="addDocumentBtn">Add Document</button>
+            </div>
+            <div id="documentsContainer">
+              <!-- Documents will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Assets Tab -->
+          <div class="tab-pane fade" id="assets" role="tabpanel">
+            <h6>Company Assets</h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="card border">
+                  <div class="card-body">
+                    <h6 class="card-title">📱 Company Phone</h6>
+                    <div id="phoneAssetInfo">Loading...</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border">
+                  <div class="card-body">
+                    <h6 class="card-title">💻 Company Laptop</h6>
+                    <div id="laptopAssetInfo">Loading...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- History Tab -->
+          <div class="tab-pane fade" id="history" role="tabpanel">
+            <h6>Field Changes History</h6>
+            <div id="historyContainer">
+              <!-- History will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Quick Actions & Summary -->
+    <div class="col-md-4">
+      
+      <!-- Quick Actions -->
+      <div class="card-like mb-3">
+        <h6>Quick Actions</h6>
+        <div class="d-grid gap-2">
+          <button type="button" class="btn btn-outline-primary btn-sm" id="sendEmailBtn">Send Email</button>
+          <button type="button" class="btn btn-outline-primary btn-sm" id="callPhoneBtn">Call Phone</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="duplicateBtn">Duplicate Employee</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="printDetailsBtn">Print Details</button>
+        </div>
+      </div>
+
+      <!-- Team Summary -->
+      <div class="card-like mb-3" id="teamSummary">
+        <h6>Team</h6>
+        <div id="teamInfo">
+          <!-- Team information will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card-like">
+        <h6>Recent Activity</h6>
+        <div id="recentActivity" class="small">
+          <!-- Recent activity will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div id="loadingState" class="text-center py-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p class="mt-2 text-muted">Loading employee details...</p>
+</div>
+
+<!-- Error State -->
+<div id="errorState" class="text-center py-5" style="display:none;">
+  <div class="text-danger">
+    <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+    <p>Error loading employee details</p>
+    <button id="retryBtn" class="btn btn-outline-primary btn-sm">Retry</button>
+  </div>
+</div>
+
+<script>
+let employeeId = null;
+let employeeData = null;
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+  extractEmployeeId();
+  loadEmployeeDetails();
+  setupEventListeners();
+});
+
+function extractEmployeeId() {
+  const path = window.location.pathname;
+  const matches = path.match(/\/employees\/(\d+)/);
+  if (matches) {
+    employeeId = parseInt(matches[1]);
+  } else {
+    showError('Invalid employee ID');
+  }
+}
+
+async function loadEmployeeDetails() {
+  if (!employeeId) return;
+  
+  try {
+    document.getElementById('loadingState').style.display = 'block';
+    document.getElementById('errorState').style.display = 'none';
+    
+    // Note: API temporarily disabled, using mock data
+    employeeData = await getMockEmployeeData(employeeId);
+    
+    // const response = await fetch(`/api/hr/employees/${employeeId}/`);
+    // if (!response.ok) throw new Error('Failed to fetch employee');
+    // employeeData = await response.json();
+    
+    populateEmployeeDetails();
+    loadDocuments();
+    loadFieldHistory();
+    
+  } catch (error) {
+    console.error('Error loading employee:', error);
+    showError('Failed to load employee details');
+  } finally {
+    document.getElementById('loadingState').style.display = 'none';
+  }
+}
+
+function getMockEmployeeData(id) {
+  // Mock data for testing
+  return Promise.resolve({
+    id: id,
+    emp_code: 'EMP001',
+    first_name: 'John',
+    last_name: 'Doe',
+    gender: 'MALE',
+    email: 'john.doe@company.com',
+    phone: '+91 9876543210',
+    birth_date: '1990-01-15',
+    profile_image: null,
+    department: 'Engineering',
+    designation: 'Software Engineer',
+    position: { title: 'Software Engineer', grade: 'L2' },
+    org_unit: { name: 'Engineering - Team A' },
+    manager: { id: 2, first_name: 'Jane', last_name: 'Smith', emp_code: 'EMP002' },
+    status: 'ACTIVE',
+    date_of_joining: '2022-03-15',
+    salary_amount: 75000,
+    salary_currency: 'INR',
+    salary_period: 'MONTHLY',
+    is_phone_assigned: true,
+    company_assigned_phone_number: '+91 9876543210',
+    is_laptop_assigned: true,
+    company_assigned_laptop: 'Dell Latitude 5520 - 1234',
+    access_profile: { name: 'Employee' },
+    created_at: '2022-03-15T10:00:00Z',
+    updated_at: '2024-01-15T10:00:00Z'
+  });
+}
+
+function populateEmployeeDetails() {
+  if (!employeeData) return;
+  
+  // Header
+  document.getElementById('employeeName').textContent = `${employeeData.first_name} ${employeeData.last_name}`;
+  document.getElementById('breadcrumbName').textContent = employeeData.first_name;
+  
+  // Profile section
+  document.getElementById('fullName').textContent = `${employeeData.first_name} ${employeeData.last_name}`;
+  document.getElementById('designation').textContent = employeeData.designation || 'N/A';
+  document.getElementById('department').textContent = employeeData.department || 'N/A';
+  document.getElementById('empCode').textContent = employeeData.emp_code || 'N/A';
+  
+  // Contact info
+  const emailLink = document.getElementById('emailLink');
+  emailLink.textContent = employeeData.email || 'N/A';
+  emailLink.href = employeeData.email ? `mailto:${employeeData.email}` : '#';
+  
+  const phoneLink = document.getElementById('phoneLink');
+  phoneLink.textContent = employeeData.phone || 'N/A';
+  phoneLink.href = employeeData.phone ? `tel:${employeeData.phone}` : '#';
+  
+  // Job info
+  document.getElementById('joiningDate').textContent = new Date(employeeData.date_of_joining).toLocaleDateString();
+  
+  const managerLink = document.getElementById('managerLink');
+  if (employeeData.manager) {
+    managerLink.textContent = `${employeeData.manager.first_name} ${employeeData.manager.last_name}`;
+    managerLink.href = `/app/hr/employees/${employeeData.manager.id}`;
+  } else {
+    managerLink.textContent = 'N/A';
+    managerLink.href = '#';
+  }
+  
+  document.getElementById('orgUnit').textContent = employeeData.org_unit?.name || 'N/A';
+  
+  // Status badge
+  const statusBadge = document.getElementById('statusBadge');
+  statusBadge.textContent = employeeData.status;
+  statusBadge.className = `badge bg-${getStatusColor(employeeData.status)}`;
+  
+  // Profile image
+  const profileContainer = document.getElementById('profileImageContainer');
+  if (employeeData.profile_image) {
+    profileContainer.innerHTML = `<img src="${employeeData.profile_image}" class="rounded-circle" width="120" height="120" alt="Profile">`;
+  } else {
+    const initials = (employeeData.first_name[0] || '') + (employeeData.last_name[0] || '');
+    profileContainer.innerHTML = `
+      <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width:120px;height:120px;">
+        <span class="text-white h4">${initials.toUpperCase()}</span>
+      </div>
+    `;
+  }
+  
+  // Asset badges
+  const assetBadges = document.getElementById('assetBadges');
+  let badges = [];
+  if (employeeData.is_phone_assigned) badges.push('<span class="badge bg-info">📱</span>');
+  if (employeeData.is_laptop_assigned) badges.push('<span class="badge bg-info">💻</span>');
+  assetBadges.innerHTML = badges.join(' ');
+  
+  // Overview tab details
+  document.getElementById('gender').textContent = employeeData.gender || 'N/A';
+  document.getElementById('birthDate').textContent = employeeData.birth_date ? new Date(employeeData.birth_date).toLocaleDateString() : 'N/A';
+  
+  if (employeeData.birth_date) {
+    const age = new Date().getFullYear() - new Date(employeeData.birth_date).getFullYear();
+    document.getElementById('age').textContent = `${age} years`;
+  } else {
+    document.getElementById('age').textContent = 'N/A';
+  }
+  
+  document.getElementById('position').textContent = employeeData.position?.title || 'N/A';
+  document.getElementById('employmentStatus').textContent = employeeData.status || 'N/A';
+  document.getElementById('accessProfile').textContent = employeeData.access_profile?.name || 'N/A';
+  
+  // Assets tab
+  const phoneAssetInfo = document.getElementById('phoneAssetInfo');
+  if (employeeData.is_phone_assigned) {
+    phoneAssetInfo.innerHTML = `
+      <p class="mb-1"><strong>Status:</strong> <span class="badge bg-success">Assigned</span></p>
+      <p class="mb-0"><strong>Number:</strong> ${employeeData.company_assigned_phone_number || 'N/A'}</p>
+    `;
+  } else {
+    phoneAssetInfo.innerHTML = '<p class="mb-0"><span class="badge bg-secondary">Not Assigned</span></p>';
+  }
+  
+  const laptopAssetInfo = document.getElementById('laptopAssetInfo');
+  if (employeeData.is_laptop_assigned) {
+    laptopAssetInfo.innerHTML = `
+      <p class="mb-1"><strong>Status:</strong> <span class="badge bg-success">Assigned</span></p>
+      <p class="mb-0"><strong>Details:</strong> ${employeeData.company_assigned_laptop || 'N/A'}</p>
+    `;
+  } else {
+    laptopAssetInfo.innerHTML = '<p class="mb-0"><span class="badge bg-secondary">Not Assigned</span></p>';
+  }
+  
+  // Edit button
+  document.getElementById('editEmployeeBtn').href = `/app/hr/employees/${employeeData.id}/edit`;
+}
+
+function getStatusColor(status) {
+  const colors = {
+    'ACTIVE': 'success',
+    'ON_LEAVE': 'warning', 
+    'INACTIVE': 'secondary',
+    'EXITED': 'danger'
+  };
+  return colors[status] || 'secondary';
+}
+
+async function loadDocuments() {
+  // Mock documents for testing
+  const documents = [
+    { id: 1, doc_type: 'OFFER', number: 'OFFER-001', issued_on: '2022-03-01' },
+    { id: 2, doc_type: 'APPOINT', number: 'APPOINT-001', issued_on: '2022-03-15' }
+  ];
+  
+  const container = document.getElementById('documentsContainer');
+  
+  if (documents.length === 0) {
+    container.innerHTML = '<p class="text-muted">No documents uploaded</p>';
+    return;
+  }
+  
+  container.innerHTML = documents.map(doc => `
+    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+      <div>
+        <strong>${doc.doc_type}</strong>
+        <div class="small text-muted">${doc.number} • ${new Date(doc.issued_on).toLocaleDateString()}</div>
+      </div>
+      <div>
+        <button class="btn btn-outline-primary btn-sm">Download</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadFieldHistory() {
+  // Mock field history
+  const history = [
+    { field_name: 'salary_amount', old_value: '70000', new_value: '75000', changed_at: '2024-01-15T10:00:00Z', changed_by_name: 'HR Admin' },
+    { field_name: 'designation', old_value: 'Junior Developer', new_value: 'Software Engineer', changed_at: '2023-12-01T10:00:00Z', changed_by_name: 'Manager' }
+  ];
+  
+  const container = document.getElementById('historyContainer');
+  
+  if (history.length === 0) {
+    container.innerHTML = '<p class="text-muted">No changes recorded</p>';
+    return;
+  }
+  
+  container.innerHTML = history.map(change => `
+    <div class="border-bottom py-2">
+      <div class="d-flex justify-content-between">
+        <strong>${change.field_name.replace('_', ' ').toUpperCase()}</strong>
+        <small class="text-muted">${new Date(change.changed_at).toLocaleDateString()}</small>
+      </div>
+      <div class="small text-muted">
+        ${change.old_value || 'Empty'} → ${change.new_value || 'Empty'}
+        <br>by ${change.changed_by_name}
+      </div>
+    </div>
+  `).join('');
+}
+
+function setupEventListeners() {
+  // Archive employee
+  document.getElementById('archiveEmployeeBtn').addEventListener('click', function() {
+    if (confirm('Are you sure you want to archive this employee?')) {
+      // Implement archive functionality
+      console.log('Archive employee:', employeeId);
+    }
+  });
+  
+  // Quick actions
+  document.getElementById('sendEmailBtn').addEventListener('click', function() {
+    if (employeeData?.email) {
+      window.open(`mailto:${employeeData.email}`);
+    }
+  });
+  
+  document.getElementById('callPhoneBtn').addEventListener('click', function() {
+    if (employeeData?.phone) {
+      window.open(`tel:${employeeData.phone}`);
+    }
+  });
+  
+  document.getElementById('duplicateBtn').addEventListener('click', function() {
+    window.location.href = `/app/hr/employees/new?duplicate=${employeeId}`;
+  });
+  
+  document.getElementById('printDetailsBtn').addEventListener('click', function() {
+    window.print();
+  });
+  
+  document.getElementById('retryBtn').addEventListener('click', loadEmployeeDetails);
+}
+
+function showError(message) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorState').style.display = 'block';
+  console.error(message);
+}
+</script>

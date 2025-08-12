@@ -1,0 +1,620 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}HR - Organizational Chart{% endblock %}
+
+{% block extra_css %}
+<style>
+    .org-chart {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+        position: relative;
+    }
+    
+    .org-node {
+        background: white;
+        border: 2px solid #3C83F6;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        min-width: 200px;
+    }
+    
+    .org-node:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .org-node.ceo {
+        border-color: #dc3545;
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+    }
+    
+    .org-node.manager {
+        border-color: #28a745;
+        background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+        color: white;
+    }
+    
+    .org-node.employee {
+        border-color: #3C83F6;
+        background: linear-gradient(135deg, #3C83F6 0%, #2563eb 100%);
+        color: white;
+    }
+    
+    .employee-photo {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        margin: 0 auto 10px;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: #6c757d;
+    }
+    
+    .employee-name {
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+    
+    .employee-title {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-bottom: 5px;
+    }
+    
+    .employee-department {
+        font-size: 12px;
+        opacity: 0.8;
+    }
+    
+    .org-connector {
+        position: absolute;
+        border-left: 2px solid #6c757d;
+        border-bottom: 2px solid #6c757d;
+    }
+    
+    .org-level {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: 30px 0;
+    }
+    
+    .search-filters {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .view-toggle {
+        margin-bottom: 20px;
+    }
+    
+    .org-stats {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card {
+        text-align: center;
+        padding: 15px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #3C83F6 0%, #2563eb 100%);
+        color: white;
+    }
+    
+    .stat-number {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    
+    .org-actions {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    @media print {
+        .search-filters, .org-actions, .view-toggle, .btn {
+            display: none !important;
+        }
+        
+        .org-chart {
+            background: white !important;
+            box-shadow: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-sitemap text-primary"></i> Organizational Chart</h2>
+        <p class="text-muted mb-0">Company structure and hierarchy visualization</p>
+    </div>
+    <div>
+        <button class="btn btn-outline-primary" onclick="window.print()">
+            <i class="fas fa-print"></i> Print Chart
+        </button>
+        <a href="{% url 'hr_employees' %}" class="btn btn-primary">
+            <i class="fas fa-users"></i> Employee List
+        </a>
+    </div>
+</div>
+
+<!-- Organization Statistics -->
+<div class="org-stats">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" id="totalEmployees">24</div>
+                <div class="stat-label">Total Employees</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">
+                <div class="stat-number" id="totalManagers">8</div>
+                <div class="stat-label">Managers</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                <div class="stat-number" id="totalDepartments">5</div>
+                <div class="stat-label">Departments</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);">
+                <div class="stat-number" id="avgTeamSize">3.2</div>
+                <div class="stat-label">Avg Team Size</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Controls -->
+<div class="org-actions">
+    <div class="row align-items-center">
+        <div class="col-md-4">
+            <div class="view-toggle">
+                <label class="form-label"><strong>View Type:</strong></label>
+                <select class="form-select" id="viewType" onchange="changeView()">
+                    <option value="hierarchy">Hierarchy View</option>
+                    <option value="department">Department View</option>
+                    <option value="compact">Compact View</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label"><strong>Department Filter:</strong></label>
+            <select class="form-select" id="departmentFilter" onchange="filterDepartment()">
+                <option value="">All Departments</option>
+                <option value="executive">Executive</option>
+                <option value="hr">Human Resources</option>
+                <option value="finance">Finance</option>
+                <option value="it">Information Technology</option>
+                <option value="sales">Sales & Marketing</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label"><strong>Search Employee:</strong></label>
+            <input type="text" class="form-control" id="employeeSearch" 
+                   placeholder="Search by name or position..." onkeyup="searchEmployee()">
+        </div>
+    </div>
+</div>
+
+<!-- Organizational Chart -->
+<div class="org-chart" id="orgChart">
+    <!-- CEO Level -->
+    <div class="org-level">
+        <div class="org-node ceo" data-department="executive" data-name="sarah wilson" data-position="ceo">
+            <div class="employee-photo">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="employee-name">Sarah Wilson</div>
+            <div class="employee-title">Chief Executive Officer</div>
+            <div class="employee-department">Executive</div>
+        </div>
+    </div>
+
+    <!-- Department Heads Level -->
+    <div class="org-level">
+        <div class="org-node manager" data-department="hr" data-name="michael chen" data-position="hr director">
+            <div class="employee-photo">
+                <i class="fas fa-user-friends"></i>
+            </div>
+            <div class="employee-name">Michael Chen</div>
+            <div class="employee-title">HR Director</div>
+            <div class="employee-department">Human Resources</div>
+        </div>
+        
+        <div class="org-node manager" data-department="finance" data-name="jessica taylor" data-position="cfo">
+            <div class="employee-photo">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="employee-name">Jessica Taylor</div>
+            <div class="employee-title">Chief Financial Officer</div>
+            <div class="employee-department">Finance</div>
+        </div>
+        
+        <div class="org-node manager" data-department="it" data-name="david kumar" data-position="cto">
+            <div class="employee-photo">
+                <i class="fas fa-laptop-code"></i>
+            </div>
+            <div class="employee-name">David Kumar</div>
+            <div class="employee-title">Chief Technology Officer</div>
+            <div class="employee-department">Information Technology</div>
+        </div>
+        
+        <div class="org-node manager" data-department="sales" data-name="emily rodriguez" data-position="sales director">
+            <div class="employee-photo">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <div class="employee-name">Emily Rodriguez</div>
+            <div class="employee-title">Sales Director</div>
+            <div class="employee-department">Sales & Marketing</div>
+        </div>
+    </div>
+
+    <!-- Team Members Level -->
+    <div class="org-level">
+        <!-- HR Team -->
+        <div class="org-node employee" data-department="hr" data-name="robert johnson" data-position="hr specialist">
+            <div class="employee-photo">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="employee-name">Robert Johnson</div>
+            <div class="employee-title">HR Specialist</div>
+            <div class="employee-department">Human Resources</div>
+        </div>
+        
+        <div class="org-node employee" data-department="hr" data-name="lisa brown" data-position="recruiter">
+            <div class="employee-photo">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="employee-name">Lisa Brown</div>
+            <div class="employee-title">Recruiter</div>
+            <div class="employee-department">Human Resources</div>
+        </div>
+
+        <!-- Finance Team -->
+        <div class="org-node employee" data-department="finance" data-name="tom wilson" data-position="accountant">
+            <div class="employee-photo">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <div class="employee-name">Tom Wilson</div>
+            <div class="employee-title">Senior Accountant</div>
+            <div class="employee-department">Finance</div>
+        </div>
+        
+        <div class="org-node employee" data-department="finance" data-name="maria garcia" data-position="analyst">
+            <div class="employee-photo">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <div class="employee-name">Maria Garcia</div>
+            <div class="employee-title">Financial Analyst</div>
+            <div class="employee-department">Finance</div>
+        </div>
+
+        <!-- IT Team -->
+        <div class="org-node employee" data-department="it" data-name="james lee" data-position="developer">
+            <div class="employee-photo">
+                <i class="fas fa-code"></i>
+            </div>
+            <div class="employee-name">James Lee</div>
+            <div class="employee-title">Senior Developer</div>
+            <div class="employee-department">Information Technology</div>
+        </div>
+        
+        <div class="org-node employee" data-department="it" data-name="anna smith" data-position="designer">
+            <div class="employee-photo">
+                <i class="fas fa-palette"></i>
+            </div>
+            <div class="employee-name">Anna Smith</div>
+            <div class="employee-title">UI/UX Designer</div>
+            <div class="employee-department">Information Technology</div>
+        </div>
+
+        <!-- Sales Team -->
+        <div class="org-node employee" data-department="sales" data-name="chris martinez" data-position="sales rep">
+            <div class="employee-photo">
+                <i class="fas fa-phone"></i>
+            </div>
+            <div class="employee-name">Chris Martinez</div>
+            <div class="employee-title">Sales Representative</div>
+            <div class="employee-department">Sales & Marketing</div>
+        </div>
+        
+        <div class="org-node employee" data-department="sales" data-name="kelly davis" data-position="marketing manager">
+            <div class="employee-photo">
+                <i class="fas fa-bullhorn"></i>
+            </div>
+            <div class="employee-name">Kelly Davis</div>
+            <div class="employee-title">Marketing Manager</div>
+            <div class="employee-department">Sales & Marketing</div>
+        </div>
+    </div>
+</div>
+
+<!-- Legend -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">Legend</h6>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="org-node ceo me-3" style="transform: scale(0.3); margin: 0;">
+                                <div class="employee-photo"><i class="fas fa-user-tie"></i></div>
+                            </div>
+                            <span>Executive Level</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="org-node manager me-3" style="transform: scale(0.3); margin: 0;">
+                                <div class="employee-photo"><i class="fas fa-user-friends"></i></div>
+                            </div>
+                            <span>Management Level</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="org-node employee me-3" style="transform: scale(0.3); margin: 0;">
+                                <div class="employee-photo"><i class="fas fa-user"></i></div>
+                            </div>
+                            <span>Employee Level</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            Click on any employee to view details
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Initialize org chart
+    initializeOrgChart();
+    
+    // Add click handlers for employee nodes
+    $('.org-node').click(function() {
+        showEmployeeDetails(this);
+    });
+});
+
+function initializeOrgChart() {
+    // Load organization data
+    updateStats();
+}
+
+function updateStats() {
+    // Update statistics
+    const stats = {
+        totalEmployees: $('.org-node').length,
+        totalManagers: $('.org-node.manager').length + $('.org-node.ceo').length,
+        totalDepartments: [...new Set($('.org-node').map(function() { 
+            return $(this).data('department'); 
+        }).get())].length,
+        avgTeamSize: ($(org-node').length / ($('.org-node.manager').length + $('.org-node.ceo').length)).toFixed(1)
+    };
+    
+    $('#totalEmployees').text(stats.totalEmployees);
+    $('#totalManagers').text(stats.totalManagers);
+    $('#totalDepartments').text(stats.totalDepartments);
+    $('#avgTeamSize').text(stats.avgTeamSize);
+}
+
+function changeView() {
+    const viewType = $('#viewType').val();
+    const chart = $('#orgChart');
+    
+    chart.removeClass('hierarchy-view department-view compact-view');
+    chart.addClass(viewType + '-view');
+    
+    switch(viewType) {
+        case 'hierarchy':
+            showHierarchyView();
+            break;
+        case 'department':
+            showDepartmentView();
+            break;
+        case 'compact':
+            showCompactView();
+            break;
+    }
+}
+
+function showHierarchyView() {
+    // Default hierarchy view - already implemented
+    $('.org-level').show();
+    $('.org-node').show();
+}
+
+function showDepartmentView() {
+    // Group by departments
+    const departments = {};
+    $('.org-node').each(function() {
+        const dept = $(this).data('department');
+        if (!departments[dept]) {
+            departments[dept] = [];
+        }
+        departments[dept].push(this);
+    });
+    
+    // Reorganize display by departments
+    let html = '';
+    Object.keys(departments).forEach(dept => {
+        html += `<div class="department-group">
+                   <h5 class="text-primary text-center mb-3">${dept.toUpperCase()}</h5>
+                   <div class="org-level">`;
+        departments[dept].forEach(node => {
+            html += $(node)[0].outerHTML;
+        });
+        html += '</div></div>';
+    });
+    
+    $('#orgChart').html(html);
+    $('.org-node').click(function() { showEmployeeDetails(this); });
+}
+
+function showCompactView() {
+    // Compact view with smaller nodes
+    $('.org-node').addClass('compact');
+}
+
+function filterDepartment() {
+    const department = $('#departmentFilter').val();
+    
+    if (department === '') {
+        $('.org-node').show();
+    } else {
+        $('.org-node').hide();
+        $(`.org-node[data-department="${department}"]`).show();
+    }
+    
+    updateStats();
+}
+
+function searchEmployee() {
+    const searchTerm = $('#employeeSearch').val().toLowerCase();
+    
+    if (searchTerm === '') {
+        $('.org-node').show();
+        $('.org-node').removeClass('highlighted');
+    } else {
+        $('.org-node').each(function() {
+            const name = $(this).data('name');
+            const position = $(this).data('position');
+            
+            if (name.includes(searchTerm) || position.includes(searchTerm)) {
+                $(this).show().addClass('highlighted');
+            } else {
+                $(this).hide().removeClass('highlighted');
+            }
+        });
+    }
+}
+
+function showEmployeeDetails(node) {
+    const $node = $(node);
+    const employeeData = {
+        name: $node.find('.employee-name').text(),
+        title: $node.find('.employee-title').text(),
+        department: $node.find('.employee-department').text()
+    };
+    
+    // Show employee details modal or redirect to employee page
+    const modal = new bootstrap.Modal(document.getElementById('employeeModal') || createEmployeeModal());
+    
+    // Populate modal with employee data
+    $('#modalEmployeeName').text(employeeData.name);
+    $('#modalEmployeeTitle').text(employeeData.title);
+    $('#modalEmployeeDepartment').text(employeeData.department);
+    
+    modal.show();
+}
+
+function createEmployeeModal() {
+    const modalHtml = `
+    <div class="modal fade" id="employeeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEmployeeName">Employee Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Position:</strong> <span id="modalEmployeeTitle"></span></p>
+                    <p><strong>Department:</strong> <span id="modalEmployeeDepartment"></span></p>
+                    <p><strong>Status:</strong> <span class="badge bg-success">Active</span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">View Full Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    
+    $('body').append(modalHtml);
+    return document.getElementById('employeeModal');
+}
+
+// Export functionality
+function exportOrgChart() {
+    const chartData = [];
+    $('.org-node').each(function() {
+        chartData.push({
+            name: $(this).find('.employee-name').text(),
+            title: $(this).find('.employee-title').text(),
+            department: $(this).find('.employee-department').text(),
+            level: $(this).hasClass('ceo') ? 'Executive' : 
+                   $(this).hasClass('manager') ? 'Manager' : 'Employee'
+        });
+    });
+    
+    // Convert to CSV
+    const csv = convertToCSV(chartData);
+    downloadCSV(csv, 'organizational_chart.csv');
+}
+
+function convertToCSV(data) {
+    const headers = Object.keys(data[0]);
+    const csvContent = [
+        headers.join(','),
+        ...data.map(row => headers.map(header => `"${row[header]}"`).join(','))
+    ].join('\n');
+    
+    return csvContent;
+}
+
+function downloadCSV(csv, filename) {
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', filename);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+</script>
+{% endblock %}

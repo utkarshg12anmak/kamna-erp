@@ -1,0 +1,947 @@
+<!-- Employee Form Template -->
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="h5 mb-1" id="formTitle">New Employee</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-sm mb-0">
+          <li class="breadcrumb-item"><a href="/app/hr">HR</a></li>
+          <li class="breadcrumb-item"><a href="/app/hr/employees">Employees</a></li>
+          <li class="breadcrumb-item active" id="breadcrumbTitle">New</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" id="saveAsDraft" class="btn btn-outline-secondary">Save as Draft</button>
+      <button type="submit" form="employeeForm" class="btn btn-primary">Save Employee</button>
+    </div>
+  </div>
+
+  <!-- Form Container -->
+  <form id="employeeForm" class="row g-3">
+    <input type="hidden" id="employeeId" name="id">
+    
+    <!-- Left Column - Main Info -->
+    <div class="col-md-8">
+      
+      <!-- Personal Information Tab -->
+      <div class="card-like mb-3">
+        <ul class="nav nav-tabs nav-fill" id="employeeTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab">
+              Personal Info
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="job-tab" data-bs-toggle="tab" data-bs-target="#job" type="button" role="tab">
+              Job Details
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="payroll-tab" data-bs-toggle="tab" data-bs-target="#payroll" type="button" role="tab">
+              Payroll
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">
+              Documents
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="assets-tab" data-bs-toggle="tab" data-bs-target="#assets" type="button" role="tab">
+              Assets
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content p-3" id="employeeTabContent">
+          
+          <!-- Personal Information Tab -->
+          <div class="tab-pane fade show active" id="personal" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="firstName" name="first_name" required>
+                <div class="invalid-feedback"></div>
+              </div>
+              <div class="col-md-6">
+                <label for="lastName" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="lastName" name="last_name">
+              </div>
+              <div class="col-md-6">
+                <label for="empCode" class="form-label">Employee Code</label>
+                <input type="text" class="form-control" id="empCode" name="emp_code" placeholder="Auto-generated if empty">
+                <div class="form-text">Leave empty to auto-generate</div>
+              </div>
+              <div class="col-md-6">
+                <label for="gender" class="form-label">Gender</label>
+                <select class="form-select" id="gender" name="gender">
+                  <option value="NA">Prefer not to say</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email">
+                <div class="invalid-feedback"></div>
+              </div>
+              <div class="col-md-6">
+                <label for="phone" class="form-label">Phone <span class="text-danger">*</span></label>
+                <input type="tel" class="form-control" id="phone" name="phone" required>
+                <div class="invalid-feedback"></div>
+              </div>
+              <div class="col-md-6">
+                <label for="birthDate" class="form-label">Date of Birth</label>
+                <input type="date" class="form-control" id="birthDate" name="birth_date">
+              </div>
+              <div class="col-md-6">
+                <label for="joiningDate" class="form-label">Date of Joining <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" id="joiningDate" name="date_of_joining" required>
+                <div class="invalid-feedback"></div>
+              </div>
+              
+              <!-- ID Documents -->
+              <div class="col-12"><hr></div>
+              <div class="col-12"><h6>Identity Documents</h6></div>
+              
+              <div class="col-md-6">
+                <label for="aadhaarLast4" class="form-label">Aadhaar (Last 4 digits)</label>
+                <input type="text" class="form-control" id="aadhaarLast4" name="aadhaar_last4" maxlength="4" pattern="[0-9]{4}">
+                <div class="form-text">For privacy, only last 4 digits are stored</div>
+              </div>
+              <div class="col-md-6">
+                <label for="panNumber" class="form-label">PAN Number</label>
+                <input type="text" class="form-control text-uppercase" id="panNumber" name="pan_number" maxlength="10" pattern="[A-Z]{5}[0-9]{4}[A-Z]">
+                <div class="invalid-feedback"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Job Details Tab -->
+          <div class="tab-pane fade" id="job" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="department" class="form-label">Department</label>
+                <input type="text" class="form-control" id="department" name="department" list="departmentList">
+                <datalist id="departmentList"></datalist>
+              </div>
+              <div class="col-md-6">
+                <label for="designation" class="form-label">Designation</label>
+                <input type="text" class="form-control" id="designation" name="designation" list="designationList">
+                <datalist id="designationList"></datalist>
+              </div>
+              <div class="col-md-6">
+                <label for="orgUnit" class="form-label">Organization Unit</label>
+                <select class="form-select" id="orgUnit" name="org_unit">
+                  <option value="">Select Org Unit</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="position" class="form-label">Position</label>
+                <select class="form-select" id="position" name="position">
+                  <option value="">Select Position</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="manager" class="form-label">Manager</label>
+                <select class="form-select" id="manager" name="manager">
+                  <option value="">Select Manager</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="status" class="form-label">Employment Status</label>
+                <select class="form-select" id="status" name="status">
+                  <option value="ACTIVE">Active</option>
+                  <option value="ON_LEAVE">On Leave</option>
+                  <option value="INACTIVE">Inactive</option>
+                  <option value="EXITED">Exited</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="accessProfile" class="form-label">Access Profile</label>
+                <select class="form-select" id="accessProfile" name="access_profile">
+                  <option value="">Select Access Profile</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check mt-4">
+                  <input class="form-check-input" type="checkbox" id="createUser" name="create_user">
+                  <label class="form-check-label" for="createUser">
+                    Create user account
+                  </label>
+                  <div class="form-text">Creates a login account for this employee</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payroll Tab -->
+          <div class="tab-pane fade" id="payroll" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label for="salaryAmount" class="form-label">Salary Amount</label>
+                <input type="number" class="form-control" id="salaryAmount" name="salary_amount" min="0" step="0.01">
+              </div>
+              <div class="col-md-4">
+                <label for="salaryCurrency" class="form-label">Currency</label>
+                <select class="form-select" id="salaryCurrency" name="salary_currency">
+                  <option value="INR">INR</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="salaryPeriod" class="form-label">Period</label>
+                <select class="form-select" id="salaryPeriod" name="salary_period">
+                  <option value="MONTHLY">Monthly</option>
+                  <option value="ANNUAL">Annual</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <div class="alert alert-info">
+                  <strong>Note:</strong> Salary information is confidential and will be masked in audit logs.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documents Tab -->
+          <div class="tab-pane fade" id="documents" role="tabpanel">
+            <div class="row g-3">
+              <!-- File Uploads -->
+              <div class="col-md-6">
+                <label for="aadhaarFront" class="form-label">Aadhaar Card (Front)</label>
+                <input type="file" class="form-control" id="aadhaarFront" name="aadhaar_doc_front" accept="image/*,.pdf">
+                <div class="form-text">Upload front side of Aadhaar card</div>
+              </div>
+              <div class="col-md-6">
+                <label for="aadhaarBack" class="form-label">Aadhaar Card (Back)</label>
+                <input type="file" class="form-control" id="aadhaarBack" name="aadhaar_doc_back" accept="image/*,.pdf">
+                <div class="form-text">Upload back side of Aadhaar card</div>
+              </div>
+              <div class="col-md-6">
+                <label for="panDoc" class="form-label">PAN Card</label>
+                <input type="file" class="form-control" id="panDoc" name="pan_doc" accept="image/*,.pdf">
+                <div class="form-text">Upload PAN card document</div>
+              </div>
+              <div class="col-md-6">
+                <label for="profileImage" class="form-label">Profile Photo</label>
+                <input type="file" class="form-control" id="profileImage" name="profile_image" accept="image/*">
+                <div class="form-text">Upload employee profile photo</div>
+              </div>
+              
+              <!-- Additional Documents -->
+              <div class="col-12"><hr></div>
+              <div class="col-12 d-flex justify-content-between align-items-center">
+                <h6>Additional Documents</h6>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="addDocument">Add Document</button>
+              </div>
+              
+              <div class="col-12">
+                <div id="additionalDocuments">
+                  <!-- Additional documents will be added here -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Assets Tab -->
+          <div class="tab-pane fade" id="assets" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-12">
+                <h6>Company Assets</h6>
+                <p class="text-muted">Track devices and equipment assigned to the employee</p>
+              </div>
+              
+              <!-- Phone Asset -->
+              <div class="col-md-6">
+                <div class="card border">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h6 class="card-title mb-0">📱 Company Phone</h6>
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="isPhoneAssigned" name="is_phone_assigned">
+                        <label class="form-check-label" for="isPhoneAssigned">Assigned</label>
+                      </div>
+                    </div>
+                    <div id="phoneDetails" style="display:none;">
+                      <label for="companyPhone" class="form-label">Phone Number</label>
+                      <input type="tel" class="form-control" id="companyPhone" name="company_assigned_phone_number" placeholder="+91 9876543210">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Laptop Asset -->
+              <div class="col-md-6">
+                <div class="card border">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h6 class="card-title mb-0">💻 Company Laptop</h6>
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="isLaptopAssigned" name="is_laptop_assigned">
+                        <label class="form-check-label" for="isLaptopAssigned">Assigned</label>
+                      </div>
+                    </div>
+                    <div id="laptopDetails" style="display:none;">
+                      <label for="companyLaptop" class="form-label">Laptop Details</label>
+                      <input type="text" class="form-control" id="companyLaptop" name="company_assigned_laptop" placeholder="Model, Serial Number, etc.">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Summary & Actions -->
+    <div class="col-md-4">
+      
+      <!-- Employee Summary -->
+      <div class="card-like mb-3">
+        <h6>Employee Summary</h6>
+        <div class="text-center mb-3">
+          <div id="profilePreview" class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-2" style="width:80px;height:80px;">
+            <span class="text-white h5" id="profileInitials">?</span>
+          </div>
+          <div id="employeeName" class="fw-semibold">New Employee</div>
+          <div id="employeeCode" class="text-muted small">Code will be auto-generated</div>
+        </div>
+        
+        <div class="row text-center">
+          <div class="col-6">
+            <div class="small text-muted">Status</div>
+            <div id="employeeStatus" class="fw-semibold">Active</div>
+          </div>
+          <div class="col-6">
+            <div class="small text-muted">Department</div>
+            <div id="employeeDepartment" class="fw-semibold">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card-like mb-3">
+        <h6>Quick Actions</h6>
+        <div class="d-grid gap-2">
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="fillSampleData">Fill Sample Data</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="resetForm">Reset Form</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="duplicateEmployee" style="display:none;">Duplicate Employee</button>
+        </div>
+      </div>
+
+      <!-- Validation Summary -->
+      <div class="card-like" id="validationSummary" style="display:none;">
+        <h6 class="text-danger">Validation Errors</h6>
+        <ul id="validationList" class="list-unstyled mb-0 small text-danger">
+          <!-- Validation errors will be shown here -->
+        </ul>
+      </div>
+
+      <!-- Field Changes (for edit mode) -->
+      <div class="card-like" id="fieldChanges" style="display:none;">
+        <h6>Recent Changes</h6>
+        <div id="changesList" class="small">
+          <!-- Recent field changes will be shown here -->
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Additional Document Template -->
+<template id="documentTemplate">
+  <div class="row g-2 mb-2 additional-doc">
+    <div class="col-md-3">
+      <select class="form-control form-control-sm" name="doc_type">
+        <option value="OFFER">Offer Letter</option>
+        <option value="APPOINT">Appointment Letter</option>
+        <option value="OTHER">Other</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <input type="text" class="form-control form-control-sm" name="doc_number" placeholder="Document Number">
+    </div>
+    <div class="col-md-4">
+      <input type="file" class="form-control form-control-sm" name="doc_file" accept=".pdf,.doc,.docx,image/*">
+    </div>
+    <div class="col-md-2">
+      <button type="button" class="btn btn-outline-danger btn-sm w-100 remove-doc">Remove</button>
+    </div>
+  </div>
+</template>
+
+<script>
+let isEditMode = false;
+let employeeId = null;
+let originalData = {};
+
+// Initialize form
+document.addEventListener('DOMContentLoaded', function() {
+  checkEditMode();
+  loadFormData();
+  setupEventListeners();
+  updateSummary();
+});
+
+function checkEditMode() {
+  const path = window.location.pathname;
+  const matches = path.match(/\/employees\/(\d+)/);
+  if (matches) {
+    isEditMode = true;
+    employeeId = parseInt(matches[1]);
+    document.getElementById('employeeId').value = employeeId;
+    document.getElementById('formTitle').textContent = 'Edit Employee';
+    document.getElementById('breadcrumbTitle').textContent = 'Edit';
+    document.getElementById('duplicateEmployee').style.display = 'block';
+  }
+}
+
+async function loadFormData() {
+  try {
+    // Load dropdown options
+    await Promise.all([
+      loadOrgUnits(),
+      loadPositions(),
+      loadManagers(),
+      loadAccessProfiles(),
+      loadDataLists()
+    ]);
+    
+    // Load employee data if in edit mode
+    if (isEditMode) {
+      await loadEmployee();
+      await loadFieldChanges();
+    }
+    
+  } catch (error) {
+    console.error('Error loading form data:', error);
+    showToast('Error loading form data', 'error');
+  }
+}
+
+async function loadOrgUnits() {
+  const response = await fetch('/api/hr/org-units/');
+  if (response.ok) {
+    const data = await response.json();
+    const select = document.getElementById('orgUnit');
+    (data.results || data).forEach(unit => {
+      const option = document.createElement('option');
+      option.value = unit.id;
+      option.textContent = unit.name;
+      select.appendChild(option);
+    });
+  }
+}
+
+async function loadPositions() {
+  const response = await fetch('/api/hr/positions/');
+  if (response.ok) {
+    const data = await response.json();
+    const select = document.getElementById('position');
+    (data.results || data).forEach(position => {
+      const option = document.createElement('option');
+      option.value = position.id;
+      option.textContent = position.title;
+      select.appendChild(option);
+    });
+  }
+}
+
+async function loadManagers() {
+  const response = await fetch('/api/hr/employees/?status=ACTIVE');
+  if (response.ok) {
+    const data = await response.json();
+    const select = document.getElementById('manager');
+    (data.results || data).forEach(emp => {
+      if (emp.id !== employeeId) { // Don't show self as manager option
+        const option = document.createElement('option');
+        option.value = emp.id;
+        option.textContent = `${emp.first_name} ${emp.last_name} (${emp.emp_code})`;
+        select.appendChild(option);
+      }
+    });
+  }
+}
+
+async function loadAccessProfiles() {
+  const response = await fetch('/api/hr/access-profiles/');
+  if (response.ok) {
+    const data = await response.json();
+    const select = document.getElementById('accessProfile');
+    (data.results || data).forEach(profile => {
+      const option = document.createElement('option');
+      option.value = profile.id;
+      option.textContent = profile.name;
+      select.appendChild(option);
+    });
+  }
+}
+
+async function loadDataLists() {
+  // Load existing departments and designations for datalists
+  const response = await fetch('/api/hr/employees/');
+  if (response.ok) {
+    const data = await response.json();
+    const employees = data.results || data;
+    
+    const departments = [...new Set(employees.map(emp => emp.department).filter(Boolean))];
+    const designations = [...new Set(employees.map(emp => emp.designation).filter(Boolean))];
+    
+    populateDataList('departmentList', departments);
+    populateDataList('designationList', designations);
+  }
+}
+
+function populateDataList(listId, options) {
+  const datalist = document.getElementById(listId);
+  options.forEach(option => {
+    const element = document.createElement('option');
+    element.value = option;
+    datalist.appendChild(element);
+  });
+}
+
+async function loadEmployee() {
+  const response = await fetch(`/api/hr/employees/${employeeId}/`);
+  if (response.ok) {
+    const employee = await response.json();
+    originalData = { ...employee };
+    populateForm(employee);
+    updateSummary();
+  } else {
+    showToast('Employee not found', 'error');
+    window.location.href = '/app/hr/employees';
+  }
+}
+
+function populateForm(employee) {
+  // Personal info
+  document.getElementById('firstName').value = employee.first_name || '';
+  document.getElementById('lastName').value = employee.last_name || '';
+  document.getElementById('empCode').value = employee.emp_code || '';
+  document.getElementById('gender').value = employee.gender || 'NA';
+  document.getElementById('email').value = employee.email || '';
+  document.getElementById('phone').value = employee.phone || '';
+  document.getElementById('birthDate').value = employee.birth_date || '';
+  document.getElementById('joiningDate').value = employee.date_of_joining || '';
+  document.getElementById('aadhaarLast4').value = employee.aadhaar_last4 || '';
+  document.getElementById('panNumber').value = employee.pan_number || '';
+  
+  // Job details
+  document.getElementById('department').value = employee.department || '';
+  document.getElementById('designation').value = employee.designation || '';
+  document.getElementById('orgUnit').value = employee.org_unit || '';
+  document.getElementById('position').value = employee.position || '';
+  document.getElementById('manager').value = employee.manager || '';
+  document.getElementById('status').value = employee.status || 'ACTIVE';
+  document.getElementById('accessProfile').value = employee.access_profile || '';
+  
+  // Payroll
+  document.getElementById('salaryAmount').value = employee.salary_amount || '';
+  document.getElementById('salaryCurrency').value = employee.salary_currency || 'INR';
+  document.getElementById('salaryPeriod').value = employee.salary_period || 'MONTHLY';
+  
+  // Assets
+  document.getElementById('isPhoneAssigned').checked = employee.is_phone_assigned || false;
+  document.getElementById('companyPhone').value = employee.company_assigned_phone_number || '';
+  document.getElementById('isLaptopAssigned').checked = employee.is_laptop_assigned || false;
+  document.getElementById('companyLaptop').value = employee.company_assigned_laptop || '';
+  
+  // Toggle asset details visibility
+  toggleAssetDetails();
+}
+
+async function loadFieldChanges() {
+  const response = await fetch(`/api/hr/employees/${employeeId}/field-changes/`);
+  if (response.ok) {
+    const changes = await response.json();
+    displayFieldChanges(changes.slice(0, 5)); // Show last 5 changes
+  }
+}
+
+function displayFieldChanges(changes) {
+  if (changes.length === 0) return;
+  
+  const container = document.getElementById('fieldChanges');
+  const list = document.getElementById('changesList');
+  
+  list.innerHTML = changes.map(change => `
+    <div class="mb-2 pb-2 border-bottom border-light">
+      <div class="fw-semibold small">${change.field_name}</div>
+      <div class="text-muted small">
+        ${change.old_value || 'Empty'} → ${change.new_value || 'Empty'}
+      </div>
+      <div class="text-muted small">
+        ${new Date(change.changed_at).toLocaleDateString()} by ${change.changed_by_name || 'System'}
+      </div>
+    </div>
+  `).join('');
+  
+  container.style.display = 'block';
+}
+
+function setupEventListeners() {
+  // Form submission
+  document.getElementById('employeeForm').addEventListener('submit', handleSubmit);
+  document.getElementById('saveAsDraft').addEventListener('click', () => handleSubmit(null, true));
+  
+  // Real-time validation
+  document.getElementById('firstName').addEventListener('input', updateSummary);
+  document.getElementById('lastName').addEventListener('input', updateSummary);
+  document.getElementById('empCode').addEventListener('input', updateSummary);
+  document.getElementById('department').addEventListener('input', updateSummary);
+  document.getElementById('status').addEventListener('change', updateSummary);
+  
+  // PAN number formatting
+  document.getElementById('panNumber').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
+    validatePAN(e.target.value);
+  });
+  
+  // Phone validation
+  document.getElementById('phone').addEventListener('input', function(e) {
+    validatePhone(e.target.value);
+  });
+  
+  // Email validation
+  document.getElementById('email').addEventListener('input', function(e) {
+    validateEmail(e.target.value);
+  });
+  
+  // Asset toggles
+  document.getElementById('isPhoneAssigned').addEventListener('change', toggleAssetDetails);
+  document.getElementById('isLaptopAssigned').addEventListener('change', toggleAssetDetails);
+  
+  // Additional documents
+  document.getElementById('addDocument').addEventListener('click', addDocumentRow);
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-doc')) {
+      e.target.closest('.additional-doc').remove();
+    }
+  });
+  
+  // Quick actions
+  document.getElementById('fillSampleData').addEventListener('click', fillSampleData);
+  document.getElementById('resetForm').addEventListener('click', resetForm);
+  document.getElementById('duplicateEmployee').addEventListener('click', duplicateEmployee);
+  
+  // Profile image preview
+  document.getElementById('profileImage').addEventListener('change', previewProfileImage);
+}
+
+function updateSummary() {
+  const firstName = document.getElementById('firstName').value;
+  const lastName = document.getElementById('lastName').value;
+  const empCode = document.getElementById('empCode').value;
+  const department = document.getElementById('department').value;
+  const status = document.getElementById('status').value;
+  
+  // Update name
+  const fullName = `${firstName} ${lastName}`.trim();
+  document.getElementById('employeeName').textContent = fullName || 'New Employee';
+  
+  // Update initials
+  const initials = firstName[0] || '?';
+  document.getElementById('profileInitials').textContent = initials.toUpperCase();
+  
+  // Update code
+  document.getElementById('employeeCode').textContent = empCode || 'Code will be auto-generated';
+  
+  // Update department
+  document.getElementById('employeeDepartment').textContent = department || '-';
+  
+  // Update status
+  document.getElementById('employeeStatus').textContent = status || 'Active';
+}
+
+function toggleAssetDetails() {
+  const phoneAssigned = document.getElementById('isPhoneAssigned').checked;
+  const laptopAssigned = document.getElementById('isLaptopAssigned').checked;
+  
+  document.getElementById('phoneDetails').style.display = phoneAssigned ? 'block' : 'none';
+  document.getElementById('laptopDetails').style.display = laptopAssigned ? 'block' : 'none';
+  
+  if (!phoneAssigned) document.getElementById('companyPhone').value = '';
+  if (!laptopAssigned) document.getElementById('companyLaptop').value = '';
+}
+
+function addDocumentRow() {
+  const template = document.getElementById('documentTemplate');
+  const clone = document.importNode(template.content, true);
+  document.getElementById('additionalDocuments').appendChild(clone);
+}
+
+async function handleSubmit(event, isDraft = false) {
+  if (event) event.preventDefault();
+  
+  try {
+    // Validate form
+    if (!isDraft && !validateForm()) {
+      showValidationErrors();
+      return;
+    }
+    
+    // Prepare form data
+    const formData = new FormData(document.getElementById('employeeForm'));
+    
+    // Handle additional documents
+    const additionalDocs = [];
+    document.querySelectorAll('.additional-doc').forEach(row => {
+      const docType = row.querySelector('[name="doc_type"]').value;
+      const docNumber = row.querySelector('[name="doc_number"]').value;
+      const docFile = row.querySelector('[name="doc_file"]').files[0];
+      
+      if (docFile) {
+        additionalDocs.push({ type: docType, number: docNumber, file: docFile });
+      }
+    });
+    
+    // Submit employee data
+    const method = isEditMode ? 'PATCH' : 'POST';
+    const url = isEditMode ? `/api/hr/employees/${employeeId}/` : '/api/hr/employees/';
+    
+    const response = await fetch(url, {
+      method,
+      body: formData
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      handleFormErrors(errorData);
+      return;
+    }
+    
+    const savedEmployee = await response.json();
+    
+    // Upload additional documents
+    if (additionalDocs.length > 0) {
+      await uploadAdditionalDocuments(savedEmployee.id, additionalDocs);
+    }
+    
+    showToast(`Employee ${isDraft ? 'saved as draft' : 'saved'} successfully`, 'success');
+    
+    if (!isDraft) {
+      // Redirect to employee detail or list
+      window.location.href = `/app/hr/employees/${savedEmployee.id}`;
+    }
+    
+  } catch (error) {
+    console.error('Error saving employee:', error);
+    showToast('Error saving employee', 'error');
+  }
+}
+
+async function uploadAdditionalDocuments(employeeId, documents) {
+  for (const doc of documents) {
+    const formData = new FormData();
+    formData.append('employee', employeeId);
+    formData.append('doc_type', doc.type);
+    formData.append('number', doc.number);
+    formData.append('file', doc.file);
+    
+    await fetch('/api/hr/employee-documents/', {
+      method: 'POST',
+      body: formData
+    });
+  }
+}
+
+function validateForm() {
+  const errors = [];
+  
+  // Required fields
+  if (!document.getElementById('firstName').value.trim()) {
+    errors.push({ field: 'firstName', message: 'First name is required' });
+  }
+  
+  if (!document.getElementById('phone').value.trim()) {
+    errors.push({ field: 'phone', message: 'Phone number is required' });
+  }
+  
+  if (!document.getElementById('joiningDate').value) {
+    errors.push({ field: 'joiningDate', message: 'Date of joining is required' });
+  }
+  
+  // PAN validation
+  const panNumber = document.getElementById('panNumber').value;
+  if (panNumber && !validatePAN(panNumber)) {
+    errors.push({ field: 'panNumber', message: 'Invalid PAN format' });
+  }
+  
+  // Phone validation
+  const phone = document.getElementById('phone').value;
+  if (phone && !validatePhone(phone)) {
+    errors.push({ field: 'phone', message: 'Invalid phone format' });
+  }
+  
+  // Email validation
+  const email = document.getElementById('email').value;
+  if (email && !validateEmail(email)) {
+    errors.push({ field: 'email', message: 'Invalid email format' });
+  }
+  
+  // Asset validation
+  if (document.getElementById('isPhoneAssigned').checked && !document.getElementById('companyPhone').value.trim()) {
+    errors.push({ field: 'companyPhone', message: 'Phone number required when phone is assigned' });
+  }
+  
+  if (document.getElementById('isLaptopAssigned').checked && !document.getElementById('companyLaptop').value.trim()) {
+    errors.push({ field: 'companyLaptop', message: 'Laptop details required when laptop is assigned' });
+  }
+  
+  // Store validation errors
+  window.validationErrors = errors;
+  return errors.length === 0;
+}
+
+function validatePAN(pan) {
+  const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+  const isValid = panRegex.test(pan);
+  
+  const field = document.getElementById('panNumber');
+  if (pan && !isValid) {
+    field.classList.add('is-invalid');
+    field.nextElementSibling.textContent = 'PAN must be in format: AAAAA9999A';
+  } else {
+    field.classList.remove('is-invalid');
+  }
+  
+  return isValid || !pan;
+}
+
+function validatePhone(phone) {
+  const phoneRegex = /^[0-9+\-\s]{8,20}$/;
+  const isValid = phoneRegex.test(phone);
+  
+  const field = document.getElementById('phone');
+  if (phone && !isValid) {
+    field.classList.add('is-invalid');
+    field.nextElementSibling.textContent = 'Please enter a valid phone number';
+  } else {
+    field.classList.remove('is-invalid');
+  }
+  
+  return isValid || !phone;
+}
+
+function validateEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isValid = emailRegex.test(email);
+  
+  const field = document.getElementById('email');
+  if (email && !isValid) {
+    field.classList.add('is-invalid');
+    field.nextElementSibling.textContent = 'Please enter a valid email address';
+  } else {
+    field.classList.remove('is-invalid');
+  }
+  
+  return isValid || !email;
+}
+
+function showValidationErrors() {
+  const summary = document.getElementById('validationSummary');
+  const list = document.getElementById('validationList');
+  
+  if (window.validationErrors && window.validationErrors.length > 0) {
+    list.innerHTML = window.validationErrors.map(error => 
+      `<li>• ${error.message}</li>`
+    ).join('');
+    summary.style.display = 'block';
+    
+    // Scroll to first error
+    const firstErrorField = document.getElementById(window.validationErrors[0].field);
+    if (firstErrorField) {
+      firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      firstErrorField.focus();
+    }
+  } else {
+    summary.style.display = 'none';
+  }
+}
+
+function handleFormErrors(errors) {
+  // Handle server-side validation errors
+  Object.keys(errors).forEach(field => {
+    const fieldElement = document.getElementById(field) || document.querySelector(`[name="${field}"]`);
+    if (fieldElement) {
+      fieldElement.classList.add('is-invalid');
+      const feedback = fieldElement.nextElementSibling;
+      if (feedback && feedback.classList.contains('invalid-feedback')) {
+        feedback.textContent = Array.isArray(errors[field]) ? errors[field][0] : errors[field];
+      }
+    }
+  });
+  
+  showToast('Please fix the validation errors', 'error');
+}
+
+function fillSampleData() {
+  if (!confirm('This will fill the form with sample data. Continue?')) return;
+  
+  document.getElementById('firstName').value = 'John';
+  document.getElementById('lastName').value = 'Doe';
+  document.getElementById('gender').value = 'MALE';
+  document.getElementById('email').value = 'john.doe@company.com';
+  document.getElementById('phone').value = '+91 9876543210';
+  document.getElementById('birthDate').value = '1990-01-15';
+  document.getElementById('joiningDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('department').value = 'Engineering';
+  document.getElementById('designation').value = 'Software Engineer';
+  document.getElementById('salaryAmount').value = '50000';
+  
+  updateSummary();
+}
+
+function resetForm() {
+  if (!confirm('This will reset all form data. Continue?')) return;
+  
+  document.getElementById('employeeForm').reset();
+  document.getElementById('employeeName').textContent = 'New Employee';
+  document.getElementById('employeeCode').textContent = 'Code will be auto-generated';
+  document.getElementById('employeeDepartment').textContent = '-';
+  document.getElementById('employeeStatus').textContent = 'Active';
+  document.getElementById('profileInitials').textContent = '?';
+  
+  // Clear validation errors
+  document.querySelectorAll('.is-invalid').forEach(field => {
+    field.classList.remove('is-invalid');
+  });
+  
+  document.getElementById('validationSummary').style.display = 'none';
+  
+  // Clear additional documents
+  document.getElementById('additionalDocuments').innerHTML = '';
+  
+  updateSummary();
+}
+
+function duplicateEmployee() {
+  const newUrl = `/app/hr/employees/new?duplicate=${employeeId}`;
+  window.location.href = newUrl;
+}
+
+function previewProfileImage(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const preview = document.getElementById('profilePreview');
+      preview.innerHTML = `<img src="${e.target.result}" class="rounded-circle" width="80" height="80" style="object-fit: cover;" alt="Profile Preview">`;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// Utility function
+function showToast(message, type = 'info') {
+  // Implementation depends on your toast system
+  console.log(`${type.toUpperCase()}: ${message}`);
+}
+</script>

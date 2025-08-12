@@ -1559,3 +1559,819 @@ Quit the server with CONTROL-C.
 WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
 For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
 Watching for file changes with StatReloader
+[12/Aug/2025 12:58:54] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 12:58:54] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
+[12/Aug/2025 12:58:54] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 3817
+[12/Aug/2025 12:58:55] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 12:58:55] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
+[12/Aug/2025 12:58:55] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 3817
+[12/Aug/2025 12:59:00] "GET /app/cv_hub/entries/8 HTTP/1.1" 200 47954
+[12/Aug/2025 12:59:00] "GET /api/cv_hub/entries/8/ HTTP/1.1" 200 994
+[12/Aug/2025 12:59:00] "GET /api/cv_hub/entries/8/history/ HTTP/1.1" 200 940
+[12/Aug/2025 12:59:04] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 12:59:04] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
+[12/Aug/2025 12:59:04] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 3817
+[12/Aug/2025 12:59:09] "GET /app/cv_hub HTTP/1.1" 200 16724
+[12/Aug/2025 12:59:09] "GET /api/cv_hub/entries/ HTTP/1.1" 200 3817
+[12/Aug/2025 12:59:09] "GET /api/cv_hub/entries/?is_customer=true&status=ACTIVE HTTP/1.1" 200 3714
+[12/Aug/2025 12:59:09] "GET /api/cv_hub/entries/?is_supplier=true&status=ACTIVE HTTP/1.1" 200 456
+[12/Aug/2025 12:59:09] "GET /api/cv_hub/entries/?registrations__taxpayer_type=REGULAR HTTP/1.1" 200 1942
+[12/Aug/2025 12:59:09] "GET /api/cv_hub/entries/?ordering=-updated_at&page_size=5 HTTP/1.1" 200 3744
+[12/Aug/2025 12:59:18] "GET /app HTTP/1.1" 200 5932
+[12/Aug/2025 12:59:20] "GET /app HTTP/1.1" 200 5932
+[12/Aug/2025 13:23:13] "GET /app HTTP/1.1" 200 5932
+[12/Aug/2025 13:23:14] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 13:23:14] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
+[12/Aug/2025 13:23:14] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 3817
+[12/Aug/2025 13:23:17] "GET /app/cv_hub HTTP/1.1" 200 16724
+[12/Aug/2025 13:23:17] "GET /api/cv_hub/entries/ HTTP/1.1" 200 3817
+[12/Aug/2025 13:23:17] "GET /api/cv_hub/entries/?is_customer=true&status=ACTIVE HTTP/1.1" 200 3714
+[12/Aug/2025 13:23:17] "GET /api/cv_hub/entries/?is_supplier=true&status=ACTIVE HTTP/1.1" 200 456
+[12/Aug/2025 13:23:17] "GET /api/cv_hub/entries/?registrations__taxpayer_type=REGULAR HTTP/1.1" 200 1942
+[12/Aug/2025 13:23:17] "GET /api/cv_hub/entries/?ordering=-updated_at&page_size=5 HTTP/1.1" 200 3744
+[12/Aug/2025 13:23:20] "GET /app HTTP/1.1" 200 5932
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/settings.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 12:58:32
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/apps.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 13:24:21
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/models.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 13:24:30
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+Exception in thread django-main-thread:
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/threading.py", line 1038, in _bootstrap_inner
+    self.run()
+  File "/Users/dealshare/anaconda3/lib/python3.11/threading.py", line 975, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/utils/autoreload.py", line 64, in wrapper
+    fn(*args, **kwargs)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/management/commands/runserver.py", line 124, in inner_run
+    autoreload.raise_last_exception()
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/utils/autoreload.py", line 86, in raise_last_exception
+    raise _exception[1]
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/management/__init__.py", line 394, in execute
+    autoreload.check_errors(django.setup)()
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/utils/autoreload.py", line 64, in wrapper
+    fn(*args, **kwargs)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/apps/registry.py", line 116, in populate
+    app_config.import_models()
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/apps/config.py", line 269, in import_models
+    self.models_module = import_module(models_module_name)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/models.py", line 55, in <module>
+    class Employee(models.Model):
+  File "/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/models.py", line 103, in Employee
+    class Meta:
+  File "/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/models.py", line 105, in Meta
+    models.Index(models.functions.Lower('first_name')),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/db/models/indexes.py", line 48, in __init__
+    raise ValueError("An index must be named to use expressions.")
+ValueError: An index must be named to use expressions.
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/apps.py changed, reloading.
+Watching for file changes with StatReloader
+Exception in thread django-main-thread:
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/urls/resolvers.py", line 720, in url_patterns
+    iter(patterns)
+TypeError: 'module' object is not iterable
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/threading.py", line 1038, in _bootstrap_inner
+    self.run()
+  File "/Users/dealshare/anaconda3/lib/python3.11/threading.py", line 975, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/utils/autoreload.py", line 64, in wrapper
+    fn(*args, **kwargs)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/management/commands/runserver.py", line 134, in inner_run
+    self.check(**check_kwargs)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/management/base.py", line 492, in check
+    all_issues = checks.run_checks(
+                 ^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+           ^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/urls/resolvers.py", line 532, in check
+    messages.extend(check_resolver(pattern))
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+           ^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/urls/resolvers.py", line 728, in url_patterns
+    raise ImproperlyConfigured(msg.format(name=self.urlconf_name)) from e
+django.core.exceptions.ImproperlyConfigured: The included URLconf '<module 'hr.api.urls' from '/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/api/urls.py'>' does not appear to have any patterns in it. If you see the 'urlpatterns' variable with valid patterns in the file then the issue is probably caused by a circular import.
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/urls.py changed, reloading.
+Performing system checks...
+
+Watching for file changes with StatReloader
+[12/Aug/2025 13:46:32] "GET /app HTTP/1.1" 200 5932
+[12/Aug/2025 13:46:33] "GET /app HTTP/1.1" 200 5932
+[12/Aug/2025 13:46:33] "GET /app HTTP/1.1" 200 5932
+[12/Aug/2025 13:46:33] "GET /app HTTP/1.1" 200 5932
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 13:42:16
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+Exception in thread django-main-thread:
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/urls/resolvers.py", line 720, in url_patterns
+    iter(patterns)
+TypeError: 'module' object is not iterable
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/threading.py", line 1038, in _bootstrap_inner
+    self.run()
+  File "/Users/dealshare/anaconda3/lib/python3.11/threading.py", line 975, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/utils/autoreload.py", line 64, in wrapper
+    fn(*args, **kwargs)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/management/commands/runserver.py", line 134, in inner_run
+    self.check(**check_kwargs)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/management/base.py", line 492, in check
+    all_issues = checks.run_checks(
+                 ^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+           ^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/urls/resolvers.py", line 532, in check
+    messages.extend(check_resolver(pattern))
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+           ^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/urls/resolvers.py", line 728, in url_patterns
+    raise ImproperlyConfigured(msg.format(name=self.urlconf_name)) from e
+django.core.exceptions.ImproperlyConfigured: The included URLconf '<module 'hr.api.urls' from '/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/api/urls.py'>' does not appear to have any patterns in it. If you see the 'urlpatterns' variable with valid patterns in the file then the issue is probably caused by a circular import.
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/urls.py changed, reloading.
+Performing system checks...
+
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 13:48:58
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 13:50:11
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 13:50:25
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+[12/Aug/2025 13:51:49] "GET /app HTTP/1.1" 200 6535
+[12/Aug/2025 13:51:52] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/employees/
+Not Found: /api/hr/dashboard/upcoming/
+[12/Aug/2025 13:51:52] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 13:51:52] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 13:51:52] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+Unauthorized: /api/auth/me/
+[12/Aug/2025 13:51:52] "GET /api/auth/me/ HTTP/1.1" 401 172
+[12/Aug/2025 13:51:52] "GET / HTTP/1.1" 200 2849
+[12/Aug/2025 13:51:56] "POST /api/auth/jwt/create/ HTTP/1.1" 200 489
+[12/Aug/2025 13:51:56] "GET /app HTTP/1.1" 200 6535
+[12/Aug/2025 13:51:59] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/employees/
+[12/Aug/2025 13:51:59] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 13:51:59] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 13:51:59] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 13:51:59] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 13:52:01] "GET /app/hr/employees HTTP/1.1" 200 32420
+Not Found: /api/hr/employees/
+Not Found: /api/hr/org-units/
+[12/Aug/2025 13:52:01] "GET /api/hr/employees/ HTTP/1.1" 404 23482
+[12/Aug/2025 13:52:01] "GET /api/hr/org-units/ HTTP/1.1" 404 23482
+[12/Aug/2025 13:52:01] "GET /api/auth/me/ HTTP/1.1" 200 181
+Internal Server Error: /app/hr/org-chart
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/loader_tags.py", line 199, in render
+    template = context.template.engine.select_template(template_name)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/engine.py", line 214, in select_template
+    raise TemplateDoesNotExist(", ".join(not_found))
+django.template.exceptions.TemplateDoesNotExist: hr/org_chart.html
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/views.py", line 351, in hr_org_chart
+    return render_module(request, "HR & Employees", hr_menu("/app/hr/org-chart"), "hr/org_chart.html")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/views.py", line 16, in render_module
+    return render(request, "base_module.html", ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/backends/django.py", line 109, in render
+    reraise(exc, self.backend)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/backends/django.py", line 130, in reraise
+    raise new from exc
+django.template.exceptions.TemplateDoesNotExist: hr/org_chart.html
+[12/Aug/2025 13:52:02] "GET /app/hr/org-chart HTTP/1.1" 500 132059
+[12/Aug/2025 13:52:04] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[12/Aug/2025 13:52:05] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+Not Found: /api/hr/employees/
+[12/Aug/2025 13:52:05] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 13:52:05] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 13:52:05] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 13:52:05] "GET /app HTTP/1.1" 200 6535
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 13:50:41
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+Exception in thread django-main-thread:
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/urls/resolvers.py", line 720, in url_patterns
+    iter(patterns)
+TypeError: 'module' object is not iterable
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/threading.py", line 1038, in _bootstrap_inner
+    self.run()
+  File "/Users/dealshare/anaconda3/lib/python3.11/threading.py", line 975, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/utils/autoreload.py", line 64, in wrapper
+    fn(*args, **kwargs)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/management/commands/runserver.py", line 134, in inner_run
+    self.check(**check_kwargs)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/management/base.py", line 492, in check
+    all_issues = checks.run_checks(
+                 ^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+           ^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/urls/resolvers.py", line 532, in check
+    messages.extend(check_resolver(pattern))
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+           ^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/urls/resolvers.py", line 728, in url_patterns
+    raise ImproperlyConfigured(msg.format(name=self.urlconf_name)) from e
+django.core.exceptions.ImproperlyConfigured: The included URLconf '<module 'hr.api.urls' from '/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/api/urls.py'>' does not appear to have any patterns in it. If you see the 'urlpatterns' variable with valid patterns in the file then the issue is probably caused by a circular import.
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/urls.py changed, reloading.
+Performing system checks...
+
+Watching for file changes with StatReloader
+[12/Aug/2025 13:59:05] "GET /app HTTP/1.1" 200 6535
+[12/Aug/2025 13:59:09] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 13:59:09] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/employees/
+[12/Aug/2025 13:59:09] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 13:59:09] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 13:59:09] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 13:59:11] "GET /app/hr/employees HTTP/1.1" 200 32420
+Not Found: /api/hr/employees/
+Not Found: /api/hr/org-units/
+[12/Aug/2025 13:59:11] "GET /api/hr/employees/ HTTP/1.1" 404 23482
+[12/Aug/2025 13:59:11] "GET /api/hr/org-units/ HTTP/1.1" 404 23482
+[12/Aug/2025 13:59:11] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 13:59:12] "GET /app/hr/employees HTTP/1.1" 200 32420
+Not Found: /api/hr/employees/
+Not Found: /api/hr/org-units/
+[12/Aug/2025 13:59:12] "GET /api/hr/org-units/ HTTP/1.1" 404 23482
+[12/Aug/2025 13:59:12] "GET /api/hr/employees/ HTTP/1.1" 404 23482
+[12/Aug/2025 13:59:12] "GET /api/auth/me/ HTTP/1.1" 200 181
+Internal Server Error: /app/hr/org-chart
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/loader_tags.py", line 199, in render
+    template = context.template.engine.select_template(template_name)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/engine.py", line 214, in select_template
+    raise TemplateDoesNotExist(", ".join(not_found))
+django.template.exceptions.TemplateDoesNotExist: hr/org_chart.html
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/views.py", line 351, in hr_org_chart
+    return render_module(request, "HR & Employees", hr_menu("/app/hr/org-chart"), "hr/org_chart.html")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/views.py", line 16, in render_module
+    return render(request, "base_module.html", ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/backends/django.py", line 109, in render
+    reraise(exc, self.backend)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/backends/django.py", line 130, in reraise
+    raise new from exc
+django.template.exceptions.TemplateDoesNotExist: hr/org_chart.html
+[12/Aug/2025 13:59:12] "GET /app/hr/org-chart HTTP/1.1" 500 132059
+[12/Aug/2025 13:59:15] "GET /app/hr/employees/new HTTP/1.1" 200 43384
+Not Found: /api/hr/employees/
+Not Found: /api/hr/org-units/
+Not Found: /api/hr/positions/
+[12/Aug/2025 13:59:15] "GET /api/hr/org-units/ HTTP/1.1" 404 23482
+Not Found: /api/hr/access-profiles/
+[12/Aug/2025 13:59:15] "GET /api/hr/employees/?status=ACTIVE HTTP/1.1" 404 23496
+Not Found: /api/hr/employees/
+[12/Aug/2025 13:59:15] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 13:59:15] "GET /api/hr/positions/ HTTP/1.1" 404 23482
+[12/Aug/2025 13:59:15] "GET /api/hr/access-profiles/ HTTP/1.1" 404 23500
+[12/Aug/2025 13:59:15] "GET /api/hr/employees/ HTTP/1.1" 404 23482
+[12/Aug/2025 13:59:16] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 13:59:16] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+Not Found: /api/hr/employees/
+[12/Aug/2025 13:59:16] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 13:59:16] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 13:59:16] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 13:59:17] "GET /app HTTP/1.1" 200 6535
+[12/Aug/2025 14:06:55] "GET /app HTTP/1.1" 200 6535
+[12/Aug/2025 14:06:56] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:06:56] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:06:56] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:06:56] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:06:56] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:07:12] "GET /?id=00b6f2c0-6ea6-4d8f-a887-0ce51607cdf5&vscodeBrowserReqId=1755025632479 HTTP/1.1" 200 2849
+[12/Aug/2025 14:09:37] "GET /app HTTP/1.1" 200 6535
+[12/Aug/2025 14:09:39] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:39] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:39] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:39] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:39] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:40] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 14:09:40] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+Not Found: /api/hr/employees/
+Not Found: /api/hr/dashboard/upcoming/
+[12/Aug/2025 14:09:40] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:40] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:40] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:42] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:42] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:42] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 14:09:42] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:42] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:42] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 14:09:42] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:42] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:42] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:42] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:42] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:42] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[12/Aug/2025 14:09:42] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:42] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:42] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:43] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/employees/
+Not Found: /api/hr/dashboard/upcoming/
+[12/Aug/2025 14:09:43] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:43] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 14:09:43] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:43] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:43] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:43] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+Not Found: /api/hr/dashboard/upcoming/
+[12/Aug/2025 14:09:43] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:43] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:43] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:43] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:43] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:43] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:43] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:43] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:44] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 14:09:44] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:44] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+Not Found: /api/hr/dashboard/upcoming/
+[12/Aug/2025 14:09:44] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:44] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:44] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 14:09:44] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:44] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:44] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:44] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:44] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/employees/
+Not Found: /api/hr/dashboard/upcoming/
+[12/Aug/2025 14:09:44] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:44] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:44] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:44] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:44] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 14:09:44] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:45] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:45] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:45] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:45] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 14:09:45] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:45] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:45] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:45] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:46] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:46] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:46] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:46] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:46] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:46] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:46] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:46] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 14:09:46] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:46] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:47] "GET /app/hr/employees HTTP/1.1" 200 32420
+Not Found: /api/hr/employees/
+Not Found: /api/hr/org-units/
+[12/Aug/2025 14:09:47] "GET /api/hr/employees/ HTTP/1.1" 404 23482
+[12/Aug/2025 14:09:47] "GET /api/hr/org-units/ HTTP/1.1" 404 23482
+[12/Aug/2025 14:09:47] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:48] "GET /app/hr/org-chart HTTP/1.1" 200 5497
+[12/Aug/2025 14:09:48] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:48] "GET /app/hr/employees/new HTTP/1.1" 200 43384
+Not Found: /api/hr/org-units/
+Not Found: /api/hr/access-profiles/
+[12/Aug/2025 14:09:48] "GET /api/hr/org-units/ HTTP/1.1" 404 23482
+Not Found: /api/hr/positions/
+[12/Aug/2025 14:09:48] "GET /api/hr/access-profiles/ HTTP/1.1" 404 23500
+Not Found: /api/hr/employees/
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:48] "GET /api/hr/positions/ HTTP/1.1" 404 23482
+[12/Aug/2025 14:09:48] "GET /api/hr/employees/?status=ACTIVE HTTP/1.1" 404 23496
+[12/Aug/2025 14:09:48] "GET /api/hr/employees/ HTTP/1.1" 404 23482
+[12/Aug/2025 14:09:48] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:49] "GET /app/hr/employees HTTP/1.1" 200 32420
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:49] "GET /api/hr/employees/ HTTP/1.1" 404 23482
+Not Found: /api/hr/org-units/
+[12/Aug/2025 14:09:49] "GET /api/hr/org-units/ HTTP/1.1" 404 23482
+[12/Aug/2025 14:09:49] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:49] "GET /app/hr/employees HTTP/1.1" 200 32420
+Not Found: /api/hr/employees/
+Not Found: /api/hr/org-units/
+[12/Aug/2025 14:09:49] "GET /api/hr/employees/ HTTP/1.1" 404 23482
+[12/Aug/2025 14:09:49] "GET /api/hr/org-units/ HTTP/1.1" 404 23482
+[12/Aug/2025 14:09:49] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:50] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/employees/
+Not Found: /api/hr/dashboard/upcoming/
+[12/Aug/2025 14:09:50] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:50] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:50] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:50] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:50] "GET /app HTTP/1.1" 200 6535
+[12/Aug/2025 14:09:52] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:52] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:52] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:52] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:52] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:54] "GET /app HTTP/1.1" 200 6535
+[12/Aug/2025 14:09:55] "GET /app/hr/employees/new HTTP/1.1" 200 43384
+Not Found: /api/hr/org-units/
+Not Found: /api/hr/positions/
+[12/Aug/2025 14:09:55] "GET /api/hr/org-units/ HTTP/1.1" 404 23482
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:55] "GET /api/hr/positions/ HTTP/1.1" 404 23482
+Not Found: /api/hr/access-profiles/
+[12/Aug/2025 14:09:55] "GET /api/auth/me/ HTTP/1.1" 200 181
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:55] "GET /api/hr/employees/?status=ACTIVE HTTP/1.1" 404 23496
+[12/Aug/2025 14:09:55] "GET /api/hr/access-profiles/ HTTP/1.1" 404 23500
+[12/Aug/2025 14:09:55] "GET /api/hr/employees/ HTTP/1.1" 404 23482
+[12/Aug/2025 14:09:56] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:09:56] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+Not Found: /api/hr/dashboard/upcoming/
+[12/Aug/2025 14:09:56] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:56] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:56] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:09:58] "GET /app HTTP/1.1" 200 6535
+[12/Aug/2025 14:09:58] "GET /app/hr HTTP/1.1" 200 15876
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/employees/
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 14:09:58] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:09:58] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+[12/Aug/2025 14:09:58] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:09:58] "GET /api/auth/me/ HTTP/1.1" 200 181
+[12/Aug/2025 14:12:30] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:12:30] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 404 23533
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[12/Aug/2025 14:12:30] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23506
+[12/Aug/2025 14:12:30] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23535
+[12/Aug/2025 14:12:47] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/employees/
+Not Found: /api/hr/org-units/
+[12/Aug/2025 14:12:47] "GET /api/hr/employees/ HTTP/1.1" 404 23482
+[12/Aug/2025 14:12:47] "GET /api/hr/org-units/ HTTP/1.1" 404 23482
+Internal Server Error: /app/hr/org-chart
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/loader_tags.py", line 210, in render
+    return template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 173, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/loader_tags.py", line 134, in render
+    compiled_parent = self.get_parent(context)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/loader_tags.py", line 131, in get_parent
+    return self.find_template(parent, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/loader_tags.py", line 109, in find_template
+    template, origin = context.template.engine.find_template(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/engine.py", line 163, in find_template
+    raise TemplateDoesNotExist(name, tried=tried)
+django.template.exceptions.TemplateDoesNotExist: base.html
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/views.py", line 351, in hr_org_chart
+    return render_module(request, "HR & Employees", hr_menu("/app/hr/org-chart"), "hr/org_chart.html")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/Documents/GitHub/kamna-erp/erp/erp/views.py", line 16, in render_module
+    return render(request, "base_module.html", ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/backends/django.py", line 109, in render
+    reraise(exc, self.backend)
+  File "/Users/dealshare/anaconda3/lib/python3.11/site-packages/django/template/backends/django.py", line 130, in reraise
+    raise new from exc
+django.template.exceptions.TemplateDoesNotExist: base.html
+[12/Aug/2025 14:12:51] "GET /app/hr/org-chart HTTP/1.1" 500 171601
+[12/Aug/2025 14:12:54] "GET /app/hr/employees/new HTTP/1.1" 200 43553
+Not Found: /api/hr/org-units/
+Not Found: /api/hr/positions/
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:12:54] "GET /api/hr/org-units/ HTTP/1.1" 404 23482
+Not Found: /api/hr/access-profiles/
+[12/Aug/2025 14:12:54] "GET /api/hr/employees/?status=ACTIVE HTTP/1.1" 404 23496
+Not Found: /api/hr/employees/
+[12/Aug/2025 14:12:54] "GET /api/hr/positions/ HTTP/1.1" 404 23482
+[12/Aug/2025 14:12:54] "GET /api/hr/access-profiles/ HTTP/1.1" 404 23500
+[12/Aug/2025 14:12:54] "GET /api/hr/employees/ HTTP/1.1" 404 23482
