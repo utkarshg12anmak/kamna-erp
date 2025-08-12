@@ -1,0 +1,13 @@
+```html
+async function loadHistory(){
+  if(!empId) return;
+  const r = await fetch(`/api/hr/employees/${empId}/`); // get current for timestamp refs
+  if(!r.ok) return;
+  // Hit history endpoint if simple_history provides /history/ else fallback not implemented
+  // Placeholder: show last updated time from object
+  const data = await r.json();
+  document.getElementById('historyPanel').innerHTML = `<div>Updated at: ${data.updated_at}</div>`;
+}
+
+(async()=>{ await loadManagers(); await loadAccessProfiles(); if(empId){ await loadExisting(); await loadHistory(); }})();
+```

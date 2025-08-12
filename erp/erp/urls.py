@@ -53,6 +53,9 @@ from .views import (
     partners_list,
     partners_form,
     partner_view,
+    hr_employees_list,
+    hr_employee_new,
+    hr_employee_view,
 )
 from .api_auth_views import AuthMeView
 from django.conf import settings
@@ -68,6 +71,7 @@ urlpatterns = [
     path("", include("catalog.urls")),
     path("api/warehousing/", include("warehousing.urls")),
     path("api/partners/", include("customer_vendor_hub.urls")),
+    path("api/hr/", include("hr.api.urls")),  # HR API
     path("api/auth/jwt/create/", TokenObtainPairView.as_view(), name="jwt-create"),
     path("api/auth/jwt/refresh/", TokenRefreshView.as_view(), name="jwt-refresh"),
     path("api/auth/me/", AuthMeView.as_view(), name="auth-me"),
@@ -100,6 +104,9 @@ urlpatterns = [
     path("app/partners", partners_list, name="partners_list"),
     path("app/partners/new", partners_form, name="partners_form"),
     path("app/partners/<int:id>", partner_view, name="partner_view"),
+    path("app/hr/employees", hr_employees_list, name="hr_employees_list"),
+    path("app/hr/employees/new", hr_employee_new, name="hr_employee_new"),
+    path("app/hr/employees/<int:id>", hr_employee_view, name="hr_employee_view"),
 ]
 
 if settings.DEBUG:

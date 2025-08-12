@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Employee</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+:root { --primary:#3C83F6; }
+body { background:#f5f6f8; }
+.btn-primary { background:var(--primary); border-color:var(--primary); }
+.card-like{ background:#fff; border-radius:14px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,.08);}    
+.nav-tabs .nav-link.active{ font-weight:600; }
+</style>
+</head>
+<body>
+<div class="container py-4">
+  <a href="/app/hr/employees" class="btn btn-link">&larr; Back</a>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h5" id="pageTitle">New Employee</h1>
+    <div>
+      <button class="btn btn-secondary me-2" onclick="loadExisting()" id="reloadBtn" style="display:none">Reload</button>
+      <button class="btn btn-primary" onclick="submitForm()">Save</button>
+    </div>
+  </div>
+  <div class="card-like">
+    <ul class="nav nav-tabs" id="empTabs" role="tablist">
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-personal" type="button">Personal</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-job" type="button">Job</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-ids" type="button">IDs & Documents</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-login" type="button">Login Account</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-history" type="button">History</button></li>
+    </ul>
+    <div class="tab-content pt-3">
+      <form id="empForm" enctype="multipart/form-data" onsubmit="event.preventDefault();">
+      <div class="tab-pane fade show active" id="tab-personal">
+        <div class="row g-3">
+          <div class="col-md-4"><label class="form-label">First Name</label><input name="first_name" class="form-control" required></div>
+          <div class="col-md-4"><label class="form-label">Last Name</label><input name="last_name" class="form-control"></div>
+          <div class="col-md-4"><label class="form-label">Emp Code</label><input name="emp_code" class="form-control" readonly></div>
+          <div class="col-md-4"><label class="form-label">Email</label><input type="email" name="email" class="form-control"></div>
+          <div class="col-md-4"><label class="form-label">Phone</label><input name="phone" class="form-control" required></div>
+          <div class="col-md-4"><label class="form-label">Birth Date</label><input type="date" name="birth_date" class="form-control"></div>
+          <div class="col-md-4"><label class="form-label">Profile Image</label><input type="file" name="profile_image" class="form-control"></div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="tab-job">
+        <div class="row g-3">
+          <div class="col-md-4"><label class="form-label">Department</label><input name="department" class="form-control"></div>
+            <div class="col-md-4"><label class="form-label">Designation</label><input name="designation" class="form-control"></div>
+          <div class="col-md-4"><label class="form-label">Manager</label><select name="manager" class="form-select"><option value="">-- None --</option></select></div>
+          <div class="col-md-3"><label class="form-label">Status</label><select name="status" class="form-select"><option>ACTIVE</option><option>ON_LEAVE</option><option>INACTIVE</option><option>EXITED</option></select></div>
+          <div class="col-md-3"><label class="form-label">Date of Joining</label><input type="date" name="date_of_joining" class="form-control" required></div>
+          <div class="col-md-3"><label class="form-label">Salary Amount</label><input type="number" step="0.01" name="salary_amount" class="form-control" value="0"></div>
+          <div class="col-md-1"><label class="form-label">Currency</label><input name="salary_currency" class="form-control" value="INR"></div>
+          <div class="col-md-2"><label class="form-label">Period</label><select name="salary_period" class="form-select"><option>MONTHLY</option><option>ANNUAL</option></select></div>
+          <div class="col-md-4"><label class="form-label">Access Profile</label><select name="access_profile" class="form-select"><option value="">-- None --</option></select></div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="tab-ids">
+        <div class="row g-3">
+          <div class="col-md-2"><label class="form-label">Aadhaar Last 4</label><input name="aadhaar_last4" maxlength="4" pattern="[0-9]{4}" class="form-control"></div>
+          <div class="col-md-3"><label class="form-label">Aadhaar Front</label><input type="file" name="aadhaar_doc_front" class="form-control"></div>
+          <div class="col-md-3"><label class="form-label">Aadhaar Back</label><input type="file" name="aadhaar_doc_back" class="form-control"></div>
+          <div class="col-md-2"><label class="form-label">PAN Number</label><input name="pan_number" class="form-control" pattern="[A-Za-z]{5}[0-9]{4}[A-Za-z]" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="col-md-2"><label class="form-label">PAN Doc</label><input type="file" name="pan_doc" class="form-control"></div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="tab-login">
+        <div class="row g-3">
+          <div class="col-md-3 form-check ms-2 mt-2"><input class="form-check-input" type="checkbox" id="create_user" name="create_user"><label class="form-check-label" for="create_user">Create login</label></div>
+          <div class="col-md-3"><label class="form-label">Username</label><input name="username" class="form-control" placeholder="(defaults to emp_code)"></div>
+          <div class="col-md-2 form-check ms-2 mt-2"><input class="form-check-input" type="checkbox" id="is_staff" name="is_staff"><label class="form-check-label" for="is_staff">Is Staff</label></div>
+          <div class="col-12"><div class="alert alert-info small">Password will be randomly generated; admin can reset later.</div></div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="tab-history">
+        <div id="historyPanel" class="text-muted small">History will appear after save.</div>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const urlParts = window.location.pathname.split('/');
+const empId = urlParts[urlParts.length-1] && !isNaN(parseInt(urlParts[urlParts.length-1])) ? parseInt(urlParts[urlParts.length-1]) : null;
+function setFormValues(data){
+  for (const k in data){
+    const el = document.querySelector(`[name="${k}"]`);
+    if(!el) continue;
+    if(el.type==='checkbox') el.checked = !!data[k];
+    else if(el.tagName==='SELECT') el.value = data[k] || '';
+    else if(el.type!=='file') el.value = data[k]||'';
+  }
+}
+async function loadManagers(){
+  const r = await fetch('/api/hr/employees/?page_size=100');
+  const data = await r.json();
+  const sel = document.querySelector('select[name="manager"]');
+  (data.results||data||[]).forEach(e=>{ const opt=document.createElement('option'); opt.value=e.id; opt.textContent=`${e.emp_code} ${e.full_name}`; sel.appendChild(opt); });
+}
+async function loadAccessProfiles(){
+  const r = await fetch('/api/hr/access-profiles/?page_size=100');
+  const data = await r.json();
+  const sel = document.querySelector('select[name="access_profile"]');
+  (data.results||data||[]).forEach(e=>{ const opt=document.createElement('option'); opt.value=e.id; opt.textContent=e.name; sel.appendChild(opt); });
+}
+async function loadExisting(){
+  if(!empId) return;
+  const r = await fetch(`/api/hr/employees/${empId}/`);
+  const data = await r.json();
+  setFormValues(data);
+  document.getElementById('pageTitle').textContent = data.full_name || data.emp_code;
+  document.getElementById('reloadBtn').style.display='inline-block';
+}
+async function submitForm(){
+  const form = document.getElementById('empForm');
+  const fd = new FormData(form);
+  if(!empId){
+    const resp = await fetch('/api/hr/employees/', {method:'POST', body:fd});
+    if(resp.ok){ const data = await resp.json(); window.location = `/app/hr/employees/${data.id}`; } else { alert('Error creating'); }
+  } else {
+    const resp = await fetch(`/api/hr/employees/${empId}/`, {method:'PATCH', body:fd});
+    if(resp.ok){ await loadExisting(); alert('Saved'); } else { alert('Error saving'); }
+  }
+}
+(async()=>{ await loadManagers(); await loadAccessProfiles(); if(empId){ await loadExisting(); }})();
+</script>
+</body>
+</html>

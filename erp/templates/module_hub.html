@@ -99,44 +99,20 @@
           </div>
         </a>
       </div>
+      <div class="col-12 col-sm-6 col-lg-4" data-group="HR">
+        <a class="card-link" href="/app/hr/employees">
+          <div class="module-card">
+            <div class="d-flex align-items-center gap-2 mb-1"><span class="icon">🧑‍💼</span><h2 class="title">HR</h2></div>
+            <div class="divider"></div>
+            <p class="desc mb-3">Employees and documents.</p>
+            <button class="btn btn-primary btn-sm">Enter</button>
+          </div>
+        </a>
+      </div>
     </div>
   </div>
 
   <script>
-    function showOnlyAllowed(me) {
-      const groups = me.groups || [];
-      const perms = me.perms || {};
-      document.querySelectorAll('[data-group]').forEach(card => {
-        const group = card.getAttribute('data-group');
-        let allowed = false;
-        if (group === 'Admin') {
-          allowed = groups.includes('Admin');
-        } else if (group === 'Partners') {
-          allowed = groups.includes('Partners') || !!perms.partners_view;
-        } else {
-          allowed = groups.includes(group);
-        }
-        card.style.display = allowed ? '' : 'none';
-      });
-    }
-
-    async function fetchMe(token) {
-      const res = await fetch('/api/auth/me/', { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.status === 401) { window.location = '/'; return null; }
-      if (!res.ok) throw new Error('Failed to load user');
-      return res.json();
-    }
-
-    (async function init() {
-      const token = localStorage.getItem('accessToken');
-      if (!token) { window.location = '/'; return; }
-      try {
-        const me = await fetchMe(token);
-        if (!me) return;
-        showOnlyAllowed(me);
-      } catch (e) { window.location = '/'; }
-    })();
-
     document.getElementById('logoutBtn').addEventListener('click', function () {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');

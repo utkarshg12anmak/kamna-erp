@@ -299,3 +299,24 @@ def partners_form(request):
 
 def partner_view(request, id: int):
     return render_module(request, "Partners", partners_menu("/app/partners"), "partner_view.html")
+
+
+def hr_menu(active_href):
+    items = [
+        {"label": "Employees", "href": "/app/hr/employees"},
+    ]
+    for it in items:
+        it["active"] = (it["href"] == active_href)
+    return items
+
+
+def hr_employees_list(request):
+    return render_module(request, "HR", hr_menu("/app/hr/employees"), "hr/employees_list.html")
+
+
+def hr_employee_new(request):
+    return render_module(request, "HR", hr_menu("/app/hr/employees"), "hr/employee_form.html")
+
+
+def hr_employee_view(request, id: int):
+    return render_module(request, "HR", hr_menu("/app/hr/employees"), "hr/employee_form.html")
