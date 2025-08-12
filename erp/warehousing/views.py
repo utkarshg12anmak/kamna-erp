@@ -61,6 +61,78 @@ class WarehouseViewSet(viewsets.ModelViewSet):
         data = [{"state": row["state"], "count": row["count"]} for row in qs]
         return response.Response({"results": data})
 
+    @decorators.action(detail=True, methods=["post"], url_path="zero_return_lostpending")
+    def zero_return_lostpending(self, request, pk=None):
+        """Zero the RETURN and LOST_PENDING virtual bins by writing off inventory into LOST.
+        Logic:
+          - RETURN: move all positive on-hand to LOST (pair entries). If negative (rare), pull from LOST up to needed to zero.
+          - LOST_PENDING: move all positive on-hand to LOST (finalize). Negatives ignored (should not occur).
+        Uses movement_type=PUTAWAY_LOST for all postings (consistent lost semantics).
+        Returns summary per bin and item counts.
+        """
+        from django.db import transaction
+        from django.db.models import Sum
+        from decimal import Decimal
+        from .models import LocationType, VirtualSubtype, MovementType, StockLedger
+        wh = self.get_object()
+        return_bin = wh.locations.filter(type=LocationType.VIRTUAL, subtype=VirtualSubtype.RETURN).first()
+        lost_pending_bin = wh.locations.filter(type=LocationType.VIRTUAL, subtype=VirtualSubtype.LOST_PENDING).first()
+        lost_bin = wh.locations.filter(type=LocationType.VIRTUAL, subtype=VirtualSubtype.LOST).first()
+        if not (return_bin and lost_bin):
+            return response.Response({"detail": "RETURN and LOST bins required"}, status=status.HTTP_400_BAD_REQUEST)
+        summary = {"return": [], "lost_pending": []}
+        with transaction.atomic():
+            # RETURN bin processing
+            if return_bin:
+                rows = (
+                    StockLedger.objects.filter(warehouse=wh, location=return_bin)
+                    .values("item_id")
+                    .annotate(total=Sum("qty_delta"))
+                )
+                for r in rows:
+                    qty = r["total"] or Decimal("0")
+                    if qty == 0:
+                        continue
+                    item_id = r["item_id"]
+                    if qty > 0:
+                        # Move to LOST
+                        StockLedger.objects.create(warehouse=wh, location=return_bin, item_id=item_id, qty_delta=-qty, movement_type=MovementType.PUTAWAY_LOST, ref_model="ZERO_BINS", ref_id="RETURN->LOST", user=request.user, memo="zero return write-off")
+                        StockLedger.objects.create(warehouse=wh, location=lost_bin, item_id=item_id, qty_delta=+qty, movement_type=MovementType.PUTAWAY_LOST, ref_model="ZERO_BINS", ref_id="RETURN->LOST", user=request.user, memo="zero return write-off")
+                        summary["return"].append({"item": item_id, "moved_to_lost": float(qty)})
+                    else:
+                        # Negative qty: attempt to pull from LOST to zero
+                        need = -qty
+                        lost_bal = (
+                            StockLedger.objects.filter(warehouse=wh, location=lost_bin, item_id=item_id)
+                            .aggregate(s=Sum("qty_delta"))
+                            .get("s")
+                            or Decimal("0")
+                        )
+                        take = min(need, lost_bal)
+                        if take > 0:
+                            StockLedger.objects.create(warehouse=wh, location=lost_bin, item_id=item_id, qty_delta=-take, movement_type=MovementType.PUTAWAY_LOST, ref_model="ZERO_BINS", ref_id="LOST->RETURN", user=request.user, memo="offset negative return from lost")
+                            StockLedger.objects.create(warehouse=wh, location=return_bin, item_id=item_id, qty_delta=+take, movement_type=MovementType.PUTAWAY_LOST, ref_model="ZERO_BINS", ref_id="LOST->RETURN", user=request.user, memo="offset negative return from lost")
+                            need -= take
+                        if need > 0:
+                            # Cannot fully offset; leave remainder (avoid fabricating stock)
+                            summary["return"].append({"item": item_id, "unresolved_negative": float(-need)})
+            # LOST_PENDING processing
+            if lost_pending_bin and lost_bin:
+                rows2 = (
+                    StockLedger.objects.filter(warehouse=wh, location=lost_pending_bin)
+                    .values("item_id")
+                    .annotate(total=Sum("qty_delta"))
+                )
+                for r in rows2:
+                    qty = r["total"] or Decimal("0")
+                    if qty <= 0:
+                        continue  # ignore zero/negative
+                    item_id = r["item_id"]
+                    StockLedger.objects.create(warehouse=wh, location=lost_pending_bin, item_id=item_id, qty_delta=-qty, movement_type=MovementType.PUTAWAY_LOST, ref_model="ZERO_BINS", ref_id="LOST_PENDING->LOST", user=request.user, memo="finalize lost pending")
+                    StockLedger.objects.create(warehouse=wh, location=lost_bin, item_id=item_id, qty_delta=+qty, movement_type=MovementType.PUTAWAY_LOST, ref_model="ZERO_BINS", ref_id="LOST_PENDING->LOST", user=request.user, memo="finalize lost pending")
+                    summary["lost_pending"].append({"item": item_id, "finalized": float(qty)})
+        return response.Response({"ok": True, "warehouse": wh.id, "summary": summary})
+
 
 class LocationViewSet(viewsets.ModelViewSet):
     queryset = Location.objects.select_related("warehouse").all().order_by("-updated_at")
@@ -93,6 +165,125 @@ class LocationViewSet(viewsets.ModelViewSet):
         hist = loc.history.all().order_by("-history_date")
         data = LocationHistorySerializer(hist, many=True).data
         return response.Response({"results": data})
+
+    @decorators.action(detail=True, methods=["post"], url_path="zero_stock")
+    def zero_stock(self, request, pk=None):
+        loc = self.get_object()
+        # Aggregate on-hand per item at this location
+        from django.db.models import Sum
+        rows = (
+            StockLedger.objects.filter(location=loc, warehouse=loc.warehouse)
+            .values("item_id")
+            .annotate(total=Sum("qty_delta"))
+        )
+        if not rows:
+            return response.Response({"ok": True, "zeroed": 0})
+        # Destination logic: positives -> move out to RETURN, negatives -> pull from RETURN (offset) or write to LOST if insuff.
+        from .models import VirtualSubtype
+        return_bin = loc.warehouse.locations.filter(type=LocationType.VIRTUAL, subtype=VirtualSubtype.RETURN).first()
+        lost_bin = loc.warehouse.locations.filter(type=LocationType.VIRTUAL, subtype=VirtualSubtype.LOST).first()
+        if not return_bin or not lost_bin:
+            return response.Response({"detail": "Required virtual bins missing"}, status=status.HTTP_400_BAD_REQUEST)
+        moved = []
+        from .services import on_hand_qty as svc_on_hand
+        for r in rows:
+            qty = r["total"] or Decimal("0")
+            if qty == 0:
+                continue
+            item_id = r["item_id"]
+            if qty > 0:
+                # move out qty to RETURN bin
+                StockLedger.objects.create(warehouse=loc.warehouse, location=loc, item_id=item_id, qty_delta=-qty, movement_type=MovementType.TRANSFER, ref_model="LOCATION_ZERO", ref_id=str(loc.id), user=request.user, memo="zero stock out")
+                StockLedger.objects.create(warehouse=loc.warehouse, location=return_bin, item_id=item_id, qty_delta=+qty, movement_type=MovementType.TRANSFER, ref_model="LOCATION_ZERO", ref_id=str(loc.id), user=request.user, memo="zero stock in RETURN")
+                moved.append({"item": item_id, "delta": float(qty)})
+            else:
+                need = -qty
+                available_return = svc_on_hand(loc.warehouse.id, return_bin.id, item_id)
+                take = min(need, available_return)
+                if take > 0:
+                    StockLedger.objects.create(warehouse=loc.warehouse, location=return_bin, item_id=item_id, qty_delta=-take, movement_type=MovementType.TRANSFER, ref_model="LOCATION_ZERO", ref_id=str(loc.id), user=request.user, memo="offset negative via RETURN")
+                    StockLedger.objects.create(warehouse=loc.warehouse, location=loc, item_id=item_id, qty_delta=+take, movement_type=MovementType.TRANSFER, ref_model="LOCATION_ZERO", ref_id=str(loc.id), user=request.user, memo="offset negative at location")
+                    need -= take
+                if need > 0:
+                    # residual negative: post into LOST to balance
+                    StockLedger.objects.create(warehouse=loc.warehouse, location=loc, item_id=item_id, qty_delta=+need, movement_type=MovementType.PUTAWAY_LOST, ref_model="LOCATION_ZERO", ref_id=str(loc.id), user=request.user, memo="cover negative with LOST")
+                    StockLedger.objects.create(warehouse=loc.warehouse, location=lost_bin, item_id=item_id, qty_delta=+need, movement_type=MovementType.PUTAWAY_LOST, ref_model="LOCATION_ZERO", ref_id=str(loc.id), user=request.user, memo="from zero negative")
+                    moved.append({"item": item_id, "delta": float(qty)})
+        return response.Response({"ok": True, "zeroed": len(moved), "details": moved})
+
+    @decorators.action(detail=True, methods=["post"], url_path="zero_item")
+    def zero_item(self, request, pk=None):
+        """Zero a single item's on-hand at this location.
+        Body: {"item": <item_id>} or {"sku": "SKU"}
+        Logic mirrors zero_stock but scoped to one item.
+        Positive qty -> move to RETURN; negative qty -> try offset from RETURN else cover with LOST postings.
+        """
+        from decimal import Decimal
+        from django.db import transaction
+        from .models import VirtualSubtype, MovementType, StockLedger
+        from catalog.models import Item
+        loc = self.get_object()
+        data = request.data or {}
+        item_obj = None
+        item_id = data.get("item")
+        sku = data.get("sku")
+        if item_id:
+            try:
+                item_obj = Item.objects.get(id=item_id)
+            except Item.DoesNotExist:
+                return response.Response({"detail": "Item not found"}, status=status.HTTP_400_BAD_REQUEST)
+        elif sku:
+            try:
+                item_obj = Item.objects.get(sku=sku)
+            except Item.DoesNotExist:
+                return response.Response({"detail": "SKU not found"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return response.Response({"detail": "Provide item or sku"}, status=status.HTTP_400_BAD_REQUEST)
+        # Compute on-hand for this item @ location
+        from django.db.models import Sum
+        agg = (
+            StockLedger.objects.filter(warehouse=loc.warehouse, location=loc, item=item_obj)
+            .aggregate(total=Sum("qty_delta"))
+        )
+        qty = agg["total"] or Decimal("0")
+        if qty == 0:
+            return response.Response({"ok": True, "zeroed": False, "before": 0, "after": 0, "detail": "Already zero"})
+        return_bin = loc.warehouse.locations.filter(type=LocationType.VIRTUAL, subtype=VirtualSubtype.RETURN).first()
+        lost_bin = loc.warehouse.locations.filter(type=LocationType.VIRTUAL, subtype=VirtualSubtype.LOST).first()
+        if not return_bin or not lost_bin:
+            return response.Response({"detail": "Required virtual bins missing"}, status=status.HTTP_400_BAD_REQUEST)
+        ops = []
+        from .services import on_hand_qty as svc_on_hand  # reuse existing util
+        with transaction.atomic():
+            if qty > 0:
+                # Move out to RETURN
+                StockLedger.objects.create(warehouse=loc.warehouse, location=loc, item=item_obj, qty_delta=-qty, movement_type=MovementType.TRANSFER, ref_model="LOCATION_ZERO_ITEM", ref_id=f"{loc.id}:{item_obj.id}", user=request.user, memo="zero item out")
+                StockLedger.objects.create(warehouse=loc.warehouse, location=return_bin, item=item_obj, qty_delta=+qty, movement_type=MovementType.TRANSFER, ref_model="LOCATION_ZERO_ITEM", ref_id=f"{loc.id}:{item_obj.id}", user=request.user, memo="zero item to RETURN")
+                ops.append({"action": "MOVE_TO_RETURN", "qty": float(qty)})
+            else:
+                need = -qty  # qty is negative
+                available_return = svc_on_hand(loc.warehouse.id, return_bin.id, item_obj.id)
+                take = min(need, available_return)
+                if take > 0:
+                    StockLedger.objects.create(warehouse=loc.warehouse, location=return_bin, item=item_obj, qty_delta=-take, movement_type=MovementType.TRANSFER, ref_model="LOCATION_ZERO_ITEM", ref_id=f"{loc.id}:{item_obj.id}", user=request.user, memo="offset neg via RETURN")
+                    StockLedger.objects.create(warehouse=loc.warehouse, location=loc, item=item_obj, qty_delta=+take, movement_type=MovementType.TRANSFER, ref_model="LOCATION_ZERO_ITEM", ref_id=f"{loc.id}:{item_obj.id}", user=request.user, memo="offset neg at location")
+                    ops.append({"action": "OFFSET_FROM_RETURN", "qty": float(take)})
+                    need -= take
+                if need > 0:
+                    StockLedger.objects.create(warehouse=loc.warehouse, location=loc, item=item_obj, qty_delta=+need, movement_type=MovementType.PUTAWAY_LOST, ref_model="LOCATION_ZERO_ITEM", ref_id=f"{loc.id}:{item_obj.id}", user=request.user, memo="cover negative with LOST")
+                    StockLedger.objects.create(warehouse=loc.warehouse, location=lost_bin, item=item_obj, qty_delta=+need, movement_type=MovementType.PUTAWAY_LOST, ref_model="LOCATION_ZERO_ITEM", ref_id=f"{loc.id}:{item_obj.id}", user=request.user, memo="zero item negative to LOST")
+                    ops.append({"action": "COVER_WITH_LOST", "qty": float(need)})
+        # After state
+        new_qty = svc_on_hand(loc.warehouse.id, loc.id, item_obj.id)
+        return response.Response({
+            "ok": True,
+            "zeroed": True,
+            "item": item_obj.id,
+            "sku": item_obj.sku,
+            "before": float(qty),
+            "after": float(new_qty),
+            "operations": ops,
+        })
 
 
 # Movement log per warehouse

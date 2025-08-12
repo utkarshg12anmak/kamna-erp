@@ -217,6 +217,8 @@
         <div class="btn-group btn-group-sm">
           <button class="btn btn-outline-primary" onclick='openEdit(${JSON.stringify(r)})'>Edit</button>
           <button class="btn btn-outline-secondary" onclick="viewHistory(${r.id})">History</button>
+          <button class="btn btn-outline-warning" onclick="zeroItem(${r.id})" title="Zero one SKU">Zero SKU</button>
+          <button class="btn btn-outline-danger" onclick="zeroStock(${r.id})" title="Zero inventory">Zero All</button>
         </div>
       </td>
     </tr>`; }
@@ -283,4 +285,33 @@
   document.getElementById('filterWarehouse').addEventListener('change', ()=>{ currentWarehouse = document.getElementById('filterWarehouse').value; currentPage=1; load(); });
 
   document.addEventListener('DOMContentLoaded', init);
+
+  async function zeroStock(id){
+    if(!window.confirm('Zero all stock in this location?')) return;
+    try{
+      const res = await apiFetch(`${API}/${id}/zero_stock/`, { method:'POST' });
+      const data = await res.json();
+      if(!res.ok){ notify(data.detail||'Failed to zero','error'); return; }
+      notify(`Zeroed ${data.zeroed} item(s)`,'success');
+    }catch(e){ notify('Error zeroing','error'); }
+  }
+
+  async function zeroItem(id){
+    const sku = prompt('Enter SKU (or leave blank to input Item ID)');
+    let body = {};
+    if(sku && sku.trim()) { body.sku = sku.trim().toUpperCase(); }
+    if(!body.sku){
+      const itemId = prompt('Enter Item ID');
+      if(!itemId) return;
+      body.item = parseInt(itemId,10);
+      if(!body.item){ notify('Invalid item id','error'); return; }
+    }
+    if(!window.confirm('Zero this SKU at the location?')) return;
+    try{
+      const res = await apiFetch(`${API}/${id}/zero_item/`, { method:'POST', body: JSON.stringify(body) });
+      const data = await res.json();
+      if(!res.ok){ notify(data.detail||'Failed','error'); return; }
+      notify(`Zeroed SKU ${data.sku} (before ${data.before}, after ${data.after})`,'success');
+    }catch(e){ notify('Error zeroing SKU','error'); }
+  }
 </script>

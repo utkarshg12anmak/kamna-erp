@@ -4,5 +4,30 @@
   <div class="d-flex gap-2">
     <a class="btn btn-primary btn-sm" href="/app/warehousing/config/warehouses">Manage Warehouses</a>
     <a class="btn btn-outline-primary btn-sm" href="/app/warehousing/config/locations">Manage Locations</a>
+    <button id="btnZeroSkuGlobal" class="btn btn-outline-danger btn-sm" type="button" title="Zero a single SKU in a location">Zero SKU in Location</button>
   </div>
 </div>
+<script>
+(function(){
+  function token(){ const t = localStorage.getItem('accessToken'); if(!t){ window.location='/'; } return t; }
+  async function zeroSkuGlobal(){
+    const loc = prompt('Enter Location ID to zero a SKU in');
+    if(!loc) return;
+    const skuOrId = prompt('Enter SKU (or leave blank to input Item ID)');
+    let body = {};
+    if(skuOrId && skuOrId.trim()){
+      body.sku = skuOrId.trim().toUpperCase();
+    } else {
+      const itemId = prompt('Enter Item ID');
+      if(!itemId) return; const parsed = parseInt(itemId,10); if(!parsed){ alert('Invalid item id'); return; } body.item = parsed; }
+    if(!confirm('Confirm zeroing this SKU at location '+loc+'? This posts irreversible ledger entries.')) return;
+    try{
+      const res = await fetch(`/api/warehousing/locations/${encodeURIComponent(loc)}/zero_item/`, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+token() }, body: JSON.stringify(body) });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok){ alert('Failed: '+ (data.detail || res.status)); return; }
+      alert(`Zeroed SKU ${data.sku} at location ${loc}. Before=${data.before} After=${data.after}`);
+    }catch(e){ alert('Error: '+e); }
+  }
+  document.getElementById('btnZeroSkuGlobal').addEventListener('click', zeroSkuGlobal);
+})();
+</script>
