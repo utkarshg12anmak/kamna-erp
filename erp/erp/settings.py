@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     # Local apps
     "catalog",
     "warehousing",
-    "customer_vendor_hub",
 ]
 
 MIDDLEWARE = [

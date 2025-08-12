@@ -89,8 +89,6 @@
       let allowed = false;
       if (moduleName === 'Admin') {
         allowed = groups.includes('Admin');
-      } else if (moduleName === 'Partners') {
-        allowed = groups.includes('Partners') || !!perms.partners_view;
       } else {
         allowed = groups.includes(moduleName);
       }

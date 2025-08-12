@@ -278,24 +278,3 @@ def module_sales(request):
 def module_finance(request):
     menu = [{"label": "Dashboard", "href": "/app/finance", "active": True}]
     return render_module(request, "Finance", menu, "finance_index.html")
-
-
-def partners_menu(active_href):
-    items = [
-        {"label": "Partners", "href": "/app/partners"},
-    ]
-    for it in items:
-        it["active"] = (it["href"] == active_href)
-    return items
-
-
-def partners_list(request):
-    return render_module(request, "Partners", partners_menu("/app/partners"), "partners_list.html")
-
-
-def partners_form(request):
-    return render_module(request, "Partners", partners_menu("/app/partners"), "partners_form.html")
-
-
-def partner_view(request, id: int):
-    return render_module(request, "Partners", partners_menu("/app/partners"), "partner_view.html")
