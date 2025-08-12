@@ -72,7 +72,7 @@ class CvHubGSTStatus(models.TextChoices):
 class CvHubGSTRegistration(models.Model):
     entry = models.ForeignKey(CvHubEntry, on_delete=models.CASCADE, related_name='registrations')
     taxpayer_type = models.CharField(max_length=20, choices=CvHubTaxpayerType.choices, default=CvHubTaxpayerType.UNREGISTERED)
-    gstin = models.CharField(max_length=15, null=True, blank=True)
+    gstin = models.CharField(max_length=15, null=True, blank=True, unique=True)  # Made unique
     # Business details
     legal_name_of_business = models.CharField(max_length=200)
     trade_name = models.CharField(max_length=200, blank=True)
@@ -88,6 +88,13 @@ class CvHubGSTRegistration(models.Model):
     history = HistoricalRecords()
     class Meta:
         indexes = [models.Index(fields=['gstin']), models.Index(fields=['taxpayer_type','gstin_status'])]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['gstin'], 
+                condition=models.Q(gstin__isnull=False) & ~models.Q(gstin=''),
+                name='unique_gstin_when_not_null'
+            )
+        ]
     def __str__(self): return self.gstin or f"UNREG:{self.entry_id}"
 
 # ---- Addresses ----
@@ -139,12 +146,17 @@ class CvHubContact(models.Model):
     first_name = models.CharField(max_length=75, blank=True)
     last_name = models.CharField(max_length=75, blank=True)
     designation = models.CharField(max_length=20, choices=CvHubDesignation.choices, default=CvHubDesignation.OTHER, blank=True)
-    phone = models.CharField(max_length=15, unique=True, validators=[_phone_norm])  # globally unique
+    phone = models.CharField(max_length=15, validators=[_phone_norm])  # Removed unique constraint
     email = models.EmailField(blank=True)
     is_primary = models.BooleanField(default=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='cv_hub_contact_created')
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='cv_hub_contact_updated')
     history = HistoricalRecords()
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['entry', 'phone'], name='unique_phone_per_entry')
+        ]
     
     def save(self, *args, **kwargs):
         # Auto-populate first_name and last_name from full_name if not set

@@ -932,3 +932,71 @@ Bad Request: /api/cv_hub/entries/8/
 [12/Aug/2025 11:27:43] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
 [12/Aug/2025 11:27:43] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
 [12/Aug/2025 11:27:43] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 1220
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/cv_hub/models.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 11:15:06
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/cv_hub/signals.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 11:29:59
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/cv_hub/models.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 11:30:24
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+[12/Aug/2025 11:43:52] "GET /app HTTP/1.1" 200 5932
+[12/Aug/2025 11:44:40] "GET /app HTTP/1.1" 200 5932
+[12/Aug/2025 11:44:41] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 11:44:41] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
+[12/Aug/2025 11:44:41] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 1220
+[12/Aug/2025 11:44:43] "GET /app/cv_hub/entries/8/edit HTTP/1.1" 200 53388
+[12/Aug/2025 11:44:43] "GET /api/cv_hub/entries/8/ HTTP/1.1" 200 1136
+Bad Request: /api/cv_hub/registrations/
+[12/Aug/2025 11:44:54] "POST /api/cv_hub/registrations/ HTTP/1.1" 400 127
+[12/Aug/2025 11:44:58] "GET /app/cv_hub/entries/8/edit HTTP/1.1" 200 53388
+[12/Aug/2025 11:44:58] "GET /api/cv_hub/entries/8/ HTTP/1.1" 200 1136
+Bad Request: /api/cv_hub/entries/8/
+[12/Aug/2025 11:45:17] "PATCH /api/cv_hub/entries/8/ HTTP/1.1" 400 34
+[12/Aug/2025 11:45:20] "GET /app/cv_hub/entries/8/edit HTTP/1.1" 200 53388
+[12/Aug/2025 11:45:20] "GET /api/cv_hub/entries/8/ HTTP/1.1" 200 1136
+[12/Aug/2025 11:45:32] "DELETE /api/cv_hub/contacts/19/ HTTP/1.1" 204 0
+[12/Aug/2025 11:45:32] "GET /api/cv_hub/entries/8/ HTTP/1.1" 200 962
+[12/Aug/2025 11:45:34] "GET /app/cv_hub/entries/ HTTP/1.1" 200 36884
+[12/Aug/2025 11:45:34] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
+[12/Aug/2025 11:45:34] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 1220
+[12/Aug/2025 11:45:36] "GET /app/cv_hub/entries/8 HTTP/1.1" 200 41396
+[12/Aug/2025 11:45:36] "GET /api/cv_hub/entries/8/ HTTP/1.1" 200 962
+[12/Aug/2025 11:45:36] "GET /api/cv_hub/entries/8/history/ HTTP/1.1" 200 784
+[12/Aug/2025 11:45:44] "GET /app/cv_hub/entries/8/edit HTTP/1.1" 200 53388
+[12/Aug/2025 11:45:44] "GET /api/cv_hub/entries/8/ HTTP/1.1" 200 962
+[12/Aug/2025 11:45:45] "GET /api/cv_hub/entries/8/history/ HTTP/1.1" 200 784
+[12/Aug/2025 11:45:55] "GET /app/cv_hub HTTP/1.1" 200 16724
+[12/Aug/2025 11:45:56] "GET /api/cv_hub/entries/ HTTP/1.1" 200 1220
+[12/Aug/2025 11:45:56] "GET /api/cv_hub/entries/?is_customer=true&status=ACTIVE HTTP/1.1" 200 438
+[12/Aug/2025 11:45:56] "GET /api/cv_hub/entries/?is_supplier=true&status=ACTIVE HTTP/1.1" 200 456
+[12/Aug/2025 11:45:56] "GET /api/cv_hub/entries/?registrations__taxpayer_type=REGULAR HTTP/1.1" 200 1220
+[12/Aug/2025 11:45:56] "GET /api/cv_hub/entries/?ordering=-updated_at&page_size=5 HTTP/1.1" 200 1220

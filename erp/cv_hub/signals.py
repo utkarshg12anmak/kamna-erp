@@ -18,7 +18,18 @@ def gst_validate(sender, instance, **kwargs):
     else:
         if not instance.gstin or len(instance.gstin.strip()) != 15:
             raise ValidationError('GSTIN must be 15 characters for registered taxpayers')
+        
+        # Normalize GSTIN
         instance.gstin = instance.gstin.strip().upper()
+        
+        # Check for duplicate GSTIN (excluding current instance)
+        existing_gstin = CvHubGSTRegistration.objects.filter(gstin=instance.gstin)
+        if instance.pk:
+            existing_gstin = existing_gstin.exclude(pk=instance.pk)
+        
+        if existing_gstin.exists():
+            existing_entry = existing_gstin.first().entry
+            raise ValidationError(f'GSTIN {instance.gstin} is already registered to {existing_entry.legal_name}')
 
 @receiver(post_save, sender=CvHubGSTRegistration)
 def gst_primary_unique(sender, instance, **kwargs):

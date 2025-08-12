@@ -163,7 +163,9 @@
       <div class="tab-pane fade" id="history" role="tabpanel">
         <div class="card-like">
           <h6 class="mb-3">Change History</h6>
-          <p class="text-muted">History tracking will be available in a future update.</p>
+          <div id="changeHistory">
+            <p class="text-muted">Loading change history...</p>
+          </div>
         </div>
       </div>
     </div>
@@ -426,6 +428,7 @@ function populateForm() {
     document.getElementById('gst-tab').addEventListener('click', loadGSTTab);
     document.getElementById('addresses-tab').addEventListener('click', loadAddressesTab);
     document.getElementById('contacts-tab').addEventListener('click', loadContactsTab);
+    document.getElementById('history-tab').addEventListener('click', loadChangeHistory);
 }
 
 function loadGSTTab() {
@@ -437,15 +440,15 @@ function loadGSTTab() {
     }
     
     container.innerHTML = entryData.registrations.map(reg => `
-        <div class="border rounded p-3 mb-2">
+        <div class="border rounded p-3 mb-2" data-gst-id="${reg.id}">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label small">GSTIN</label>
-                    <input type="text" class="form-control" value="${reg.gstin || ''}" maxlength="15">
+                    <input type="text" class="form-control" value="${reg.gstin || ''}" maxlength="15" data-field="gstin">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label small">Taxpayer Type</label>
-                    <select class="form-select">
+                    <select class="form-select" data-field="taxpayer_type">
                         <option value="REGULAR" ${reg.taxpayer_type === 'REGULAR' ? 'selected' : ''}>Regular</option>
                         <option value="COMPOSITION" ${reg.taxpayer_type === 'COMPOSITION' ? 'selected' : ''}>Composition</option>
                         <option value="CASUAL" ${reg.taxpayer_type === 'CASUAL' ? 'selected' : ''}>Casual</option>
@@ -455,14 +458,14 @@ function loadGSTTab() {
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
                     <div class="form-check me-3">
-                        <input class="form-check-input" type="checkbox" ${reg.is_primary ? 'checked' : ''}>
+                        <input class="form-check-input" type="checkbox" ${reg.is_primary ? 'checked' : ''} data-field="is_primary">
                         <label class="form-check-label">Primary</label>
                     </div>
-                    <button type="button" class="btn btn-outline-danger btn-sm">Remove</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteGSTRegistration(${reg.id})">Remove</button>
                 </div>
                 <div class="col-12">
                     <label class="form-label small">Legal Name of Business</label>
-                    <input type="text" class="form-control" value="${reg.legal_name_of_business}">
+                    <input type="text" class="form-control" value="${reg.legal_name_of_business}" data-field="legal_name_of_business">
                 </div>
             </div>
         </div>
@@ -478,11 +481,11 @@ function loadAddressesTab() {
     }
     
     container.innerHTML = entryData.addresses.map(addr => `
-        <div class="border rounded p-3 mb-2">
+        <div class="border rounded p-3 mb-2" data-address-id="${addr.id}">
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label small">Type</label>
-                    <select class="form-select">
+                    <select class="form-select" data-field="type">
                         <option value="REGISTERED" ${addr.type === 'REGISTERED' ? 'selected' : ''}>Registered Office</option>
                         <option value="BILLING" ${addr.type === 'BILLING' ? 'selected' : ''}>Billing</option>
                         <option value="SHIPPING" ${addr.type === 'SHIPPING' ? 'selected' : ''}>Shipping</option>
@@ -500,27 +503,28 @@ function loadAddressesTab() {
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small">Pincode</label>
-                    <input type="text" class="form-control" value="${addr.pincode}">
+                    <input type="text" class="form-control" value="${addr.pincode}" data-field="pincode">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label small">Address Line 1</label>
-                    <input type="text" class="form-control" value="${addr.line1}">
+                    <input type="text" class="form-control" value="${addr.line1}" data-field="line1">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label small">Address Line 2</label>
-                    <input type="text" class="form-control" value="${addr.line2 || ''}">
+                    <input type="text" class="form-control" value="${addr.line2 || ''}" data-field="line2">
                 </div>
                 <div class="col-12">
                     <div class="d-flex gap-3 align-items-center">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" ${addr.is_default_billing ? 'checked' : ''}>
+                            <input class="form-check-input" type="checkbox" ${addr.is_default_billing ? 'checked' : ''} data-field="is_default_billing">
                             <label class="form-check-label">Default Billing</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" ${addr.is_default_shipping ? 'checked' : ''}>
+                            <input class="form-check-input" type="checkbox" ${addr.is_default_shipping ? 'checked' : ''} data-field="is_default_shipping">
                             <label class="form-check-label">Default Shipping</label>
                         </div>
-                        <button type="button" class="btn btn-outline-danger btn-sm ms-auto">Remove</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="updateAddress(${addr.id})">Update</button>
+                        <button type="button" class="btn btn-outline-danger btn-sm ms-auto" onclick="deleteAddress(${addr.id})">Remove</button>
                     </div>
                 </div>
             </div>
@@ -537,19 +541,19 @@ function loadContactsTab() {
     }
     
     container.innerHTML = entryData.contacts.map(contact => `
-        <div class="border rounded p-3 mb-2">
+        <div class="border rounded p-3 mb-2" data-contact-id="${contact.id}">
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label small">First Name</label>
-                    <input type="text" class="form-control" value="${contact.first_name || ''}">
+                    <input type="text" class="form-control" value="${contact.first_name || ''}" data-field="first_name">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small">Last Name</label>
-                    <input type="text" class="form-control" value="${contact.last_name || ''}">
+                    <input type="text" class="form-control" value="${contact.last_name || ''}" data-field="last_name">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small">Designation</label>
-                    <select class="form-select">
+                    <select class="form-select" data-field="designation">
                         <option value="CEO" ${contact.designation === 'CEO' ? 'selected' : ''}>CEO</option>
                         <option value="CFO" ${contact.designation === 'CFO' ? 'selected' : ''}>CFO</option>
                         <option value="CTO" ${contact.designation === 'CTO' ? 'selected' : ''}>CTO</option>
@@ -568,18 +572,19 @@ function loadContactsTab() {
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small">Phone</label>
-                    <input type="tel" class="form-control" value="${contact.phone}" maxlength="10" pattern="[0-9]{8,10}">
+                    <input type="tel" class="form-control" value="${contact.phone}" maxlength="10" pattern="[0-9]{8,10}" data-field="phone">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label small">Email</label>
-                    <input type="email" class="form-control" value="${contact.email || ''}">
+                    <input type="email" class="form-control" value="${contact.email || ''}" data-field="email">
                 </div>
                 <div class="col-md-6 d-flex align-items-end">
                     <div class="form-check me-3">
-                        <input class="form-check-input" type="checkbox" ${contact.is_primary ? 'checked' : ''}>
+                        <input class="form-check-input" type="checkbox" ${contact.is_primary ? 'checked' : ''} data-field="is_primary">
                         <label class="form-check-label">Primary Contact</label>
                     </div>
-                    <button type="button" class="btn btn-outline-danger btn-sm">Remove</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="updateContact(${contact.id})">Update</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteContact(${contact.id})">Remove</button>
                 </div>
             </div>
         </div>
@@ -843,12 +848,263 @@ async function saveContact() {
             document.getElementById('contacts-tab').click(); // Switch to contacts tab to show new data
         } else {
             const errorData = await response.json();
-            alert('Error saving contact: ' + (errorData.detail || 'Unknown error'));
+            alert('Error saving contact: ' + (errorData.detail || JSON.stringify(errorData) || 'Unknown error'));
         }
     } catch (error) {
         console.error('Error saving contact:', error);
         alert('Error saving contact');
     }
+}
+
+async function updateAddress(addressId) {
+    const addressContainer = document.querySelector(`[data-address-id="${addressId}"]`);
+    if (!addressContainer) {
+        alert('Address container not found');
+        return;
+    }
+    
+    // Collect form data from the address container
+    const formData = {};
+    const inputs = addressContainer.querySelectorAll('[data-field]');
+    inputs.forEach(input => {
+        const field = input.getAttribute('data-field');
+        if (input.type === 'checkbox') {
+            formData[field] = input.checked;
+        } else {
+            formData[field] = input.value;
+        }
+    });
+    
+    // Basic validation
+    if (!formData.line1 || !formData.line1.trim()) {
+        alert('Address Line 1 is required');
+        return;
+    }
+    
+    if (!formData.pincode || !formData.pincode.trim()) {
+        alert('Pincode is required');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/cv_hub/addresses/${addressId}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(formData),
+        });
+        
+        if (response.ok) {
+            // Refresh the data and reload the addresses tab
+            await loadEntryData();
+            document.getElementById('addresses-tab').click();
+            alert('Address updated successfully');
+        } else {
+            const errorData = await response.json();
+            alert('Error updating address: ' + (errorData.detail || JSON.stringify(errorData) || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error updating address:', error);
+        alert('Error updating address');
+    }
+}
+
+async function deleteAddress(addressId) {
+    if (!confirm('Are you sure you want to delete this address?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/cv_hub/addresses/${addressId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+        });
+        
+        if (response.ok) {
+            // Refresh the data and reload the addresses tab
+            await loadEntryData();
+            document.getElementById('addresses-tab').click();
+        } else {
+            const errorData = await response.json();
+            alert('Error deleting address: ' + (errorData.detail || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error deleting address:', error);
+        alert('Error deleting address');
+    }
+}
+
+async function updateContact(contactId) {
+    const contactContainer = document.querySelector(`[data-contact-id="${contactId}"]`);
+    if (!contactContainer) {
+        alert('Contact container not found');
+        return;
+    }
+    
+    // Collect form data from the contact container
+    const formData = {};
+    const inputs = contactContainer.querySelectorAll('[data-field]');
+    inputs.forEach(input => {
+        const field = input.getAttribute('data-field');
+        if (input.type === 'checkbox') {
+            formData[field] = input.checked;
+        } else {
+            formData[field] = input.value;
+        }
+    });
+    
+    // Basic validation
+    if (!formData.first_name || !formData.first_name.trim()) {
+        alert('First name is required');
+        return;
+    }
+    
+    if (!formData.phone || !formData.phone.trim()) {
+        alert('Phone number is required');
+        return;
+    }
+    
+    // Phone validation (8-10 digits)
+    if (!/^[0-9]{8,10}$/.test(formData.phone)) {
+        alert('Phone number must be 8-10 digits');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/cv_hub/contacts/${contactId}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(formData),
+        });
+        
+        if (response.ok) {
+            // Refresh the data and reload the contacts tab
+            await loadEntryData();
+            document.getElementById('contacts-tab').click();
+            alert('Contact updated successfully');
+        } else {
+            const errorData = await response.json();
+            alert('Error updating contact: ' + (errorData.detail || JSON.stringify(errorData) || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error updating contact:', error);
+        alert('Error updating contact');
+    }
+}
+
+async function deleteContact(contactId) {
+    if (!confirm('Are you sure you want to delete this contact?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/cv_hub/contacts/${contactId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+        });
+        
+        if (response.ok) {
+            // Refresh the data and reload the contacts tab
+            await loadEntryData();
+            document.getElementById('contacts-tab').click();
+        } else {
+            const errorData = await response.json();
+            alert('Error deleting contact: ' + (errorData.detail || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error deleting contact:', error);
+        alert('Error deleting contact');
+    }
+}
+
+async function deleteGSTRegistration(gstId) {
+    if (!confirm('Are you sure you want to delete this GST registration?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/cv_hub/registrations/${gstId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+        });
+        
+        if (response.ok) {
+            // Refresh the data and reload the GST tab
+            await loadEntryData();
+            document.getElementById('gst-tab').click();
+        } else {
+            const errorData = await response.json();
+            alert('Error deleting GST registration: ' + (errorData.detail || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error deleting GST registration:', error);
+        alert('Error deleting GST registration');
+    }
+}
+
+async function loadChangeHistory() {
+    try {
+        const response = await fetch(`/api/cv_hub/entries/${entryId}/history/`);
+        if (!response.ok) {
+            throw new Error('Failed to load history');
+        }
+        
+        const historyData = await response.json();
+        renderChangeHistory(historyData);
+        
+    } catch (error) {
+        console.error('Error loading history:', error);
+        document.getElementById('changeHistory').innerHTML = '<p class="text-muted">Error loading change history.</p>';
+    }
+}
+
+function renderChangeHistory(historyData) {
+    const container = document.getElementById('changeHistory');
+    
+    if (!historyData || historyData.length === 0) {
+        container.innerHTML = '<p class="text-muted">No change history available.</p>';
+        return;
+    }
+    
+    const historyHTML = historyData.map(item => {
+        const date = new Date(item.date).toLocaleString();
+        const actionIcon = item.type === '+' ? '➕' : (item.type === '-' ? '❌' : '✏️');
+        const actionColor = item.type === '+' ? 'success' : (item.type === '-' ? 'danger' : 'warning');
+        
+        return `
+            <div class="d-flex align-items-start mb-3">
+                <div class="timeline-icon bg-${actionColor} text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 30px; height: 30px; font-size: 12px;">
+                    ${actionIcon}
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <small class="text-muted">${item.model}</small>
+                            <div class="fw-medium">${item.changes}</div>
+                            <small class="text-muted">by ${item.user} • ${date}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <div class="timeline">
+            ${historyHTML}
+        </div>
+    `;
 }
 
 function getCookie(name) {
