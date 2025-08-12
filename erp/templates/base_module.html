@@ -79,6 +79,11 @@
     }
 
     async function checkAccess(moduleName) {
+      // CV Hub (Customer & Vendor Hub) has no permission restrictions - accessible to all users
+      if (moduleName === 'Customer & Vendor Hub' || moduleName === 'Customer &amp; Vendor Hub') {
+        return true;
+      }
+      
       const token = localStorage.getItem('accessToken');
       if (!token) { window.location = '/'; return false; }
       const res = await fetch('/api/auth/me/', { headers: { 'Authorization': `Bearer ${token}` } });
@@ -107,7 +112,7 @@
         if (a.getAttribute('href') === path) a.classList.add('active');
         else a.classList.remove('active');
       });
-      await checkAccess('{{ module }}');
+      await checkAccess('{{ module|safe }}');
     })();
 
     document.getElementById('logoutBtn').addEventListener('click', function () {
