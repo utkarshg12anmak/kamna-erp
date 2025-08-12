@@ -2375,3 +2375,15 @@ Not Found: /api/hr/employees/
 [12/Aug/2025 14:12:54] "GET /api/hr/positions/ HTTP/1.1" 404 23482
 [12/Aug/2025 14:12:54] "GET /api/hr/access-profiles/ HTTP/1.1" 404 23500
 [12/Aug/2025 14:12:54] "GET /api/hr/employees/ HTTP/1.1" 404 23482
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/signals.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 12, 2025 - 13:58:05
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
