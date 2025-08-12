@@ -45,6 +45,62 @@ class CvHubGSTRegistrationSerializer(serializers.ModelSerializer):
     class Meta: 
         model = CvHubGSTRegistration
         fields = ['id','entry','taxpayer_type','gstin','legal_name_of_business','trade_name','effective_date_of_registration','constitution_of_business','gstin_status','principal_place_of_business','business_activities','is_primary','status','created_by_username','updated_by_username']
+    
+    def validate(self, attrs):
+        gstin = attrs.get('gstin')
+        taxpayer_type = attrs.get('taxpayer_type')
+        
+        # Skip validation for unregistered taxpayers
+        if taxpayer_type == 'UNREGISTERED':
+            return attrs
+        
+        # Check for duplicate GSTIN with meaningful error message
+        if gstin:
+            gstin = gstin.strip().upper()
+            attrs['gstin'] = gstin  # Normalize the GSTIN
+            
+            # Check if GSTIN already exists (excluding current instance for updates)
+            existing_gst = CvHubGSTRegistration.objects.filter(gstin=gstin)
+            if self.instance:
+                existing_gst = existing_gst.exclude(pk=self.instance.pk)
+            
+            if existing_gst.exists():
+                existing_entry = existing_gst.first().entry
+                raise serializers.ValidationError({
+                    'gstin': f'GSTIN {gstin} is already registered to {existing_entry.legal_name}'
+                })
+        
+        return attrs
+    
+    def create(self, validated_data):
+        try:
+            return super().create(validated_data)
+        except Exception as e:
+            # If we get a database integrity error, try to provide a meaningful message
+            if 'unique_gstin_when_not_null' in str(e) or 'gstin' in str(e).lower():
+                gstin = validated_data.get('gstin')
+                if gstin:
+                    existing_gst = CvHubGSTRegistration.objects.filter(gstin=gstin).first()
+                    if existing_gst:
+                        raise serializers.ValidationError({
+                            'gstin': f'GSTIN {gstin} is already registered to {existing_gst.entry.legal_name}'
+                        })
+            raise serializers.ValidationError({'gstin': 'GSTIN already exists in the system'})
+    
+    def update(self, instance, validated_data):
+        try:
+            return super().update(instance, validated_data)
+        except Exception as e:
+            # If we get a database integrity error, try to provide a meaningful message
+            if 'unique_gstin_when_not_null' in str(e) or 'gstin' in str(e).lower():
+                gstin = validated_data.get('gstin')
+                if gstin:
+                    existing_gst = CvHubGSTRegistration.objects.filter(gstin=gstin).exclude(pk=instance.pk).first()
+                    if existing_gst:
+                        raise serializers.ValidationError({
+                            'gstin': f'GSTIN {gstin} is already registered to {existing_gst.entry.legal_name}'
+                        })
+            raise serializers.ValidationError({'gstin': 'GSTIN already exists in the system'})
 
 class CvHubEntrySerializer(serializers.ModelSerializer):
     commerce_label = serializers.SerializerMethodField(read_only=True)

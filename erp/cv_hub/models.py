@@ -72,7 +72,7 @@ class CvHubGSTStatus(models.TextChoices):
 class CvHubGSTRegistration(models.Model):
     entry = models.ForeignKey(CvHubEntry, on_delete=models.CASCADE, related_name='registrations')
     taxpayer_type = models.CharField(max_length=20, choices=CvHubTaxpayerType.choices, default=CvHubTaxpayerType.UNREGISTERED)
-    gstin = models.CharField(max_length=15, null=True, blank=True, unique=True)  # Made unique
+    gstin = models.CharField(max_length=15, null=True, blank=True)  # Uniqueness handled by constraint and signals
     # Business details
     legal_name_of_business = models.CharField(max_length=200)
     trade_name = models.CharField(max_length=200, blank=True)
@@ -88,13 +88,6 @@ class CvHubGSTRegistration(models.Model):
     history = HistoricalRecords()
     class Meta:
         indexes = [models.Index(fields=['gstin']), models.Index(fields=['taxpayer_type','gstin_status'])]
-        constraints = [
-            models.UniqueConstraint(
-                fields=['gstin'], 
-                condition=models.Q(gstin__isnull=False) & ~models.Q(gstin=''),
-                name='unique_gstin_when_not_null'
-            )
-        ]
     def __str__(self): return self.gstin or f"UNREG:{self.entry_id}"
 
 # ---- Addresses ----
