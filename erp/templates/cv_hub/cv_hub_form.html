@@ -109,7 +109,7 @@
               </div>
               <div class="col-md-6">
                 <label for="website" class="form-label">Website</label>
-                <input type="url" class="form-control" id="website">
+                <input type="text" class="form-control" id="website" placeholder="e.g., www.example.com or https://www.example.com">
               </div>
               <div class="col-md-6">
                 <label for="tags" class="form-label">Tags</label>
@@ -592,12 +592,18 @@ function loadContactsTab() {
 }
 
 async function saveEntry() {
+    // Normalize website URL - add https:// if no protocol is provided
+    let websiteValue = document.getElementById('website').value.trim();
+    if (websiteValue && !websiteValue.match(/^https?:\/\//)) {
+        websiteValue = 'https://' + websiteValue;
+    }
+    
     const formData = {
         legal_name: document.getElementById('legal_name').value,
         trade_name: document.getElementById('trade_name').value,
         constitution: document.getElementById('constitution').value,
         status: document.getElementById('status').value,
-        website: document.getElementById('website').value,
+        website: websiteValue,
         tags: document.getElementById('tags').value,
         is_customer: document.getElementById('is_customer').checked,
         is_supplier: document.getElementById('is_supplier').checked,
