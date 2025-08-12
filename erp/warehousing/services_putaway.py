@@ -59,41 +59,72 @@ def post_actions(warehouse: Warehouse, actions: list, user, reason_map: dict | N
     """Post a list of actions atomically with strong idempotency.
     Idempotency: merged action set -> canonical fingerprint JSON -> sha1 digest (16 hex) -> ref 'putaway:<digest>'.
     A unique (warehouse, ref_id) PutawayBatch row is created first; IntegrityError => duplicate (no ledger rows written).
-    Client can force separate batch via batch_ref_id starting with 'override:'."""
+    Client can force separate batch via batch_ref_id starting with 'override:' or 'client:'."""
     if not actions:
         return {'posted_count': 0, 'batch_ref_id': None, 'duplicate': False, 'detail': 'No actions'}
-    # Canonical merge
+    
+    # Canonical merge - ensure deterministic ordering
     temp_merged: dict[tuple, Decimal] = {}
     for a in actions:
         key = (a['type'], a['item'], a['source_bin'], a.get('target_location'))
         temp_merged[key] = temp_merged.get(key, Decimal('0')) + Decimal(str(a['qty']))
+    
+    # Remove zero-quantity actions after merging
+    merged = {k: v for k, v in temp_merged.items() if v > 0}
+    if not merged:
+        return {'posted_count': 0, 'batch_ref_id': None, 'duplicate': False, 'detail': 'No valid actions after merging'}
+    
+    # Generate fingerprint for deduplication
     fingerprint_list = [
         {'type': k[0], 'item': k[1], 'src': k[2], 'tgt': k[3], 'qty': str(qty)}
-        for k, qty in temp_merged.items()
+        for k, qty in merged.items()
     ]
     fingerprint_list.sort(key=lambda d: (d['type'], d['item'], d['src'], d['tgt']))
     fingerprint_raw = json.dumps(fingerprint_list, separators=(',', ':'))
     digest = hashlib.sha1(fingerprint_raw.encode()).hexdigest()[:16]
     digest_ref = f"putaway:{digest}"
-    if batch_ref_id and batch_ref_id.startswith('override:'):
-        effective_ref = batch_ref_id
+    
+    # Determine effective ref_id with improved logic
+    if batch_ref_id:
+        if batch_ref_id.startswith(('override:', 'client:')):
+            # Client-provided or override key - use as-is for separate batching
+            effective_ref = batch_ref_id
+        else:
+            # Unknown format - log warning and use digest-based deduplication
+            logger.warning("putaway.post_actions ignoring unrecognized batch_ref_id format=%s; using digest_ref=%s", batch_ref_id, digest_ref)
+            effective_ref = digest_ref
     else:
-        if batch_ref_id and batch_ref_id != digest_ref:
-            logger.warning("putaway.post_actions ignoring client batch_ref_id=%s; using digest_ref=%s", batch_ref_id, digest_ref)
+        # No client key - use digest-based deduplication
         effective_ref = digest_ref
+    
     batch_ref_id = effective_ref
-    # Attempt to claim batch via PutawayBatch insert
-    try:
-        PutawayBatch.objects.create(warehouse=warehouse, ref_id=batch_ref_id, fingerprint=fingerprint_raw, created_by=user)
-        claimed = True
-    except IntegrityError:
-        # Already exists -> treat as duplicate (no further ledger rows)
-        logger.info("putaway.post_actions duplicate batch_ref_id=%s", batch_ref_id)
-        return {'posted_count': 0, 'batch_ref_id': batch_ref_id, 'duplicate': True}
-    merged = temp_merged
-    # Lock sources to serialize qty checks
+    
+    # Attempt to claim batch via PutawayBatch insert with retry logic
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            PutawayBatch.objects.create(warehouse=warehouse, ref_id=batch_ref_id, fingerprint=fingerprint_raw, created_by=user)
+            break  # Success - batch claimed
+        except IntegrityError:
+            # Already exists -> treat as duplicate (no further ledger rows)
+            logger.info("putaway.post_actions duplicate batch_ref_id=%s (attempt %d)", batch_ref_id, attempt + 1)
+            return {'posted_count': 0, 'batch_ref_id': batch_ref_id, 'duplicate': True}
+        except Exception as e:
+            # Other database errors - retry with exponential backoff
+            if attempt < max_retries - 1:
+                import time
+                time.sleep(0.1 * (2 ** attempt))  # 0.1s, 0.2s, 0.4s
+                logger.warning("putaway.post_actions batch creation failed (attempt %d): %s", attempt + 1, str(e))
+                continue
+            else:
+                # Final attempt failed
+                logger.error("putaway.post_actions batch creation failed after %d attempts: %s", max_retries, str(e))
+                raise PutawayBatchGuard(f"Failed to create batch after {max_retries} attempts: {str(e)}")
+    
+    # Lock sources to serialize qty checks and prevent race conditions
     source_ids = {src_id for (_atype, _item_id, src_id, _tgt_id) in merged.keys()}
     if source_ids:
+        # Use select_for_update with nowait=False to ensure proper locking
         list(Location.objects.select_for_update().filter(id__in=source_ids).only('id'))
     # Validate availability & action semantics
     totals_by_bin_item: dict[tuple, Decimal] = {}

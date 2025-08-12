@@ -191,3 +191,54 @@ class PutawayConcurrencyTests(TransactionTestCase):
         ref = successes[0]['batch_ref_id']
         lost_rows = StockLedger.objects.filter(warehouse=self.wh, ref_model='PUTAWAY', ref_id=ref, movement_type=MovementType.PUTAWAY_LOST)
         self.assertEqual(lost_rows.count(), 2)
+
+    def test_client_idempotency_key_prevents_duplicates(self):
+        """Test that client-provided idempotency keys prevent duplicate postings"""
+        actions = [{'type':'LOST','item':self.item.id,'source_bin':self.return_bin.id,'qty':Decimal('3')}]
+        client_key = 'client:test-session-123:12345'
+        
+        # First request with client key
+        first = post_actions(self.wh, actions, user=self.user, reason_map=None, batch_ref_id=client_key)
+        self.assertEqual(first['posted_count'], 1)
+        self.assertEqual(first['batch_ref_id'], client_key)
+        
+        # Second request with same client key should be treated as duplicate
+        second = post_actions(self.wh, actions, user=self.user, reason_map=None, batch_ref_id=client_key)
+        self.assertEqual(second['posted_count'], 0)
+        self.assertTrue(second.get('duplicate'))
+        self.assertEqual(second['batch_ref_id'], client_key)
+        
+        # Verify only one set of ledger entries exists
+        rows = StockLedger.objects.filter(warehouse=self.wh, ref_model='PUTAWAY', ref_id=client_key, movement_type=MovementType.PUTAWAY_LOST)
+        self.assertEqual(rows.count(), 2)
+
+    def test_concurrent_lost_with_client_keys(self):
+        """Test concurrent requests with same client idempotency key"""
+        actions = [{'type':'LOST','item':self.item.id,'source_bin':self.return_bin.id,'qty':Decimal('2')}]
+        client_key = 'client:concurrent-test:98765'
+        results = []
+        import threading
+        
+        def worker():
+            from .services_putaway import post_actions
+            res = post_actions(self.wh, actions, user=self.user, reason_map=None, batch_ref_id=client_key)
+            results.append(res)
+        
+        threads = [threading.Thread(target=worker) for _ in range(5)]
+        for t in threads: t.start()
+        for t in threads: t.join()
+        
+        successes = [r for r in results if r['posted_count'] == 1]
+        duplicates = [r for r in results if r.get('duplicate')]
+        
+        # Should have exactly one success and the rest duplicates
+        self.assertEqual(len(successes), 1, f"Expected exactly one success, got {results}")
+        self.assertTrue(len(duplicates) >= 4)
+        
+        # Verify all results have the same ref_id
+        for result in results:
+            self.assertEqual(result['batch_ref_id'], client_key)
+        
+        # Verify only one set of ledger entries exists
+        lost_rows = StockLedger.objects.filter(warehouse=self.wh, ref_model='PUTAWAY', ref_id=client_key, movement_type=MovementType.PUTAWAY_LOST)
+        self.assertEqual(lost_rows.count(), 2)

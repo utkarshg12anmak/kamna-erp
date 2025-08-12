@@ -253,6 +253,14 @@
     });
   }
 
+  // Generate client-side idempotency key for the current cart
+  function generateIdempotencyKey(){
+    // Create a stable key based on cart contents + timestamp window (to ensure uniqueness per user session)
+    const cartFingerprint = cart.map(a => `${a.type}:${a.item}:${a.source_bin}:${a.target_location||''}:${a.qty}`).sort().join('|');
+    const timeWindow = Math.floor(Date.now() / 10000); // 10-second window
+    return `client:${btoa(cartFingerprint).substring(0,20)}:${timeWindow}`;
+  }
+
   // Rename confirm function to avoid shadowing window.confirm()
   async function confirmPutaway(){
     if(inFlight) return; // prevent double click
@@ -264,7 +272,15 @@
     const btn = document.getElementById('confirmBtn');
     btn.disabled = true; btn.textContent = 'Posting…';
     try{
-      const res = await fetch(`/api/warehousing/warehouses/${whId}/putaway/confirm/`, { method:'POST', headers, body: JSON.stringify({ actions: cart }) });
+      const idempotencyKey = generateIdempotencyKey();
+      const res = await fetch(`/api/warehousing/warehouses/${whId}/putaway/confirm/`, { 
+        method:'POST', 
+        headers, 
+        body: JSON.stringify({ 
+          actions: cart,
+          idempotency_key: idempotencyKey
+        }) 
+      });
       if(!res.ok){ const err = await res.json().catch(()=>({detail:'Unknown error'})); throw new Error(err.detail||'Failed'); }
       const data = await res.json();
       notify(`Posted ${data.posted_count} action group(s). Ref: ${data.batch_ref_id || 'n/a'}`,'success');
