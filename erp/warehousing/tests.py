@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 from catalog.models import Brand, Category, UoM, TaxRate, Item
@@ -153,3 +153,41 @@ class InternalMoveTests(TestCase):
         line2 = InternalMoveLine(item_id=self.item.id, source_location_id=self.src.id, target_location_id=other_loc.id, qty=Decimal('1'))
         with self.assertRaises(Exception):
             post_internal_move(self.user, [line2], batch_ref_id='im-crosswh-1')
+
+
+class PutawayConcurrencyTests(TransactionTestCase):
+    reset_sequences = True
+    def setUp(self):
+        from django.db import connection
+        User = get_user_model()
+        self.user = User.objects.create(username='concurrent', is_staff=True)
+        self.brand = Brand.objects.create(name='B')
+        self.root = Category.objects.create(name='RootC')
+        self.child = Category.objects.create(name='ChildC', parent=self.root)
+        self.uom = UoM.objects.create(code='EA', name='Each', ratio_to_base=1, base=True)
+        self.tax = TaxRate.objects.create(name='GST0', percent=0)
+        self.item = Item.objects.create(name='CItem', product_type='GOODS', brand=self.brand, category=self.child, uom=self.uom, tax_rate=self.tax, status='ACTIVE')
+        self.wh = Warehouse.objects.create(code='W4', name='WH4', status='ACTIVE', gstin='27ABCDE1234F1Z8', address_line1='', address_line2='', city='X', state='Y', pincode='123456', country='India', latitude=0, longitude=0)
+        self.return_bin = Location.objects.get(warehouse=self.wh, type=LocationType.VIRTUAL, subtype=VirtualSubtype.RETURN)
+        StockLedger.objects.create(warehouse=self.wh, location=self.return_bin, item=self.item, qty_delta=Decimal('20'), movement_type=MovementType.TRANSFER, ref_model='SEED')
+        # Ensure commit so spawned threads can see data
+        connection.commit()
+
+    def test_concurrent_lost_single_pair(self):
+        actions = [{'type':'LOST','item':self.item.id,'source_bin':self.return_bin.id,'qty':Decimal('5')}]
+        results = []
+        import threading
+        def worker():
+            from .services_putaway import post_actions
+            res = post_actions(self.wh, actions, user=self.user, reason_map=None, batch_ref_id=None)
+            results.append(res)
+        threads = [threading.Thread(target=worker) for _ in range(5)]
+        for t in threads: t.start()
+        for t in threads: t.join()
+        successes = [r for r in results if r['posted_count'] == 1]
+        duplicates = [r for r in results if r.get('duplicate')]
+        self.assertEqual(len(successes), 1, f"Expected exactly one success, got {results}")
+        self.assertTrue(len(duplicates) >= 4)
+        ref = successes[0]['batch_ref_id']
+        lost_rows = StockLedger.objects.filter(warehouse=self.wh, ref_model='PUTAWAY', ref_id=ref, movement_type=MovementType.PUTAWAY_LOST)
+        self.assertEqual(lost_rows.count(), 2)

@@ -147,7 +147,17 @@ def putaway_confirm(request, pk: int):
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
     actions = ser.validated_data.get("actions", [])
     idempotency_key = ser.validated_data.get("idempotency_key") or None
-    # Optional double-confirm for LOST can be handled in UI; backend remains strict on validation
+    # Defensive: collapse any duplicate identical actions client-side did not merge (extra safety)
+    collapsed = {}
+    for a in actions:
+        key = (a['type'], a['item'], a['source_bin'], a.get('target_location'))
+        collapsed[key] = collapsed.get(key, Decimal('0')) + a['qty']
+    normalized_actions = []
+    for (t,i,s,tgt), qty in collapsed.items():
+        d = {'type':t,'item':i,'source_bin':s,'qty':qty}
+        if t=='PUTAWAY': d['target_location']=tgt
+        normalized_actions.append(d)
+    actions = normalized_actions
     try:
         result = post_actions(
             warehouse=wh,

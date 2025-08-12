@@ -55,6 +55,18 @@ class Command(BaseCommand):
             {'type':'LOST','item':item.id,'source_bin':recv.id,'qty':Decimal('2')},
         ], user=user, reason_map={'RETURN':'return putaway','RECEIVE':'receive putaway'})
         self.stdout.write(self.style.SUCCESS(f"Posted actions: {result}"))
+        # Attempt duplicate posting with same action set (no explicit idempotency key)
+        dup = post_actions(wh, [
+            {'type':'PUTAWAY','item':item.id,'source_bin':rbin.id,'qty':Decimal('3'),'target_location':ploc.id},
+            {'type':'LOST','item':item.id,'source_bin':recv.id,'qty':Decimal('2')},
+        ], user=user, reason_map={'RETURN':'return putaway','RECEIVE':'receive putaway'})
+        self.stdout.write(self.style.WARNING(f"Duplicate attempt result: {dup}"))
+        # Count ledger rows for that batch_ref_id
+        ref = result['batch_ref_id']
+        pairs = StockLedger.objects.filter(warehouse=wh, ref_model='PUTAWAY', ref_id=ref)
+        self.stdout.write(f"Ledger rows for ref {ref}: {pairs.count()}")
+        lost_rows = pairs.filter(movement_type=MovementType.PUTAWAY_LOST)
+        self.stdout.write(f"LOST movement rows: {lost_rows.count()} (should be 2)")
         # Validate balances
         def bal(loc):
             from django.db.models import Sum

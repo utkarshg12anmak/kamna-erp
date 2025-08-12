@@ -276,3 +276,25 @@ class AdjustmentRequest(models.Model):
 
     def __str__(self):
         return self.number or f"AR? ({self.type})"
+
+
+class PutawayBatch(models.Model):
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT, related_name="putaway_batches")
+    ref_id = models.CharField(max_length=50)
+    fingerprint = models.TextField(help_text="Canonical JSON of merged actions used to compute digest")
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="putaway_batches_created")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["warehouse", "ref_id"], name="uq_putaway_batch_ref_per_wh")
+        ]
+        indexes = [
+            models.Index(fields=["warehouse", "ref_id"]),
+            models.Index(fields=["created_at"]),
+        ]
+        verbose_name = "Putaway Batch"
+        verbose_name_plural = "Putaway Batches"
+
+    def __str__(self):
+        return f"{self.warehouse_id}:{self.ref_id}"  # concise
