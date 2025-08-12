@@ -103,6 +103,13 @@
             <p class="text-muted">No contacts found.</p>
           </div>
         </div>
+
+        <div class="card-like mt-3">
+          <h6 class="mb-3">Change History</h6>
+          <div id="changeHistory">
+            <p class="text-muted">Loading change history...</p>
+          </div>
+        </div>
       </div>
 
       <div class="col-md-4">
@@ -117,9 +124,17 @@
               <span class="text-muted">Created:</span>
               <span id="createdAt">—</span>
             </div>
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Created By:</span>
+              <span id="createdBy">—</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
               <span class="text-muted">Last Updated:</span>
               <span id="updatedAt">—</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Updated By:</span>
+              <span id="updatedBy">—</span>
             </div>
           </div>
         </div>
@@ -269,17 +284,40 @@
       </div>
       <div class="modal-body">
         <form id="addContactForm">
-          <div class="mb-3">
-            <label for="contact_full_name" class="form-label">Full Name</label>
-            <input type="text" class="form-control" id="contact_full_name" required>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="contact_first_name" class="form-label">First Name *</label>
+              <input type="text" class="form-control" id="contact_first_name" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="contact_last_name" class="form-label">Last Name</label>
+              <input type="text" class="form-control" id="contact_last_name">
+            </div>
           </div>
           <div class="mb-3">
             <label for="contact_designation" class="form-label">Designation</label>
-            <input type="text" class="form-control" id="contact_designation">
+            <select class="form-select" id="contact_designation">
+              <option value="CEO">Chief Executive Officer</option>
+              <option value="CFO">Chief Financial Officer</option>
+              <option value="CTO">Chief Technology Officer</option>
+              <option value="MANAGER">Manager</option>
+              <option value="ASSISTANT_MANAGER">Assistant Manager</option>
+              <option value="EXECUTIVE">Executive</option>
+              <option value="SENIOR_EXECUTIVE">Senior Executive</option>
+              <option value="ACCOUNTANT">Accountant</option>
+              <option value="SALES_MANAGER">Sales Manager</option>
+              <option value="PURCHASE_MANAGER">Purchase Manager</option>
+              <option value="DIRECTOR">Director</option>
+              <option value="PARTNER">Partner</option>
+              <option value="PROPRIETOR">Proprietor</option>
+              <option value="OTHER" selected>Other</option>
+            </select>
           </div>
           <div class="mb-3">
-            <label for="contact_phone" class="form-label">Phone</label>
-            <input type="tel" class="form-control" id="contact_phone" required>
+            <label for="contact_phone" class="form-label">Phone * (8-10 digits)</label>
+            <input type="tel" class="form-control" id="contact_phone" required maxlength="10" pattern="[0-9]{8,10}">
+            <div class="form-text">Enter 8-10 digits only</div>
+          </div>
           </div>
           <div class="mb-3">
             <label for="contact_email" class="form-label">Email</label>
@@ -397,9 +435,11 @@ function renderEntryData() {
         document.getElementById('tags').textContent = entryData.tags;
     }
     
-    // Dates
+    // Dates and user tracking
     document.getElementById('createdAt').textContent = new Date(entryData.created_at).toLocaleDateString();
     document.getElementById('updatedAt').textContent = new Date(entryData.updated_at).toLocaleDateString();
+    document.getElementById('createdBy').textContent = entryData.created_by_username || '—';
+    document.getElementById('updatedBy').textContent = entryData.updated_by_username || '—';
     
     // Primary GSTIN
     const primaryReg = entryData.registrations.find(reg => reg.is_primary);
@@ -411,6 +451,7 @@ function renderEntryData() {
     renderContacts();
     renderDefaultAddresses();
     renderPrimaryContact();
+    loadChangeHistory();
 }
 
 function renderGSTRegistrations() {
@@ -749,20 +790,36 @@ async function saveAddress() {
 }
 
 async function saveContact() {
+    const firstName = document.getElementById('contact_first_name').value.trim();
+    const lastName = document.getElementById('contact_last_name').value.trim();
+    const phone = document.getElementById('contact_phone').value.trim();
+    
+    // Basic validation
+    if (!firstName) {
+        alert('First name is required');
+        return;
+    }
+    
+    if (!phone) {
+        alert('Phone number is required');
+        return;
+    }
+    
+    // Phone validation (8-10 digits)
+    if (!/^[0-9]{8,10}$/.test(phone)) {
+        alert('Phone number must be 8-10 digits');
+        return;
+    }
+    
     const data = {
         entry: entryId,
-        full_name: document.getElementById('contact_full_name').value,
+        first_name: firstName,
+        last_name: lastName,
         designation: document.getElementById('contact_designation').value,
-        phone: document.getElementById('contact_phone').value,
+        phone: phone,
         email: document.getElementById('contact_email').value,
         is_primary: document.getElementById('contact_is_primary').checked,
     };
-    
-    // Basic validation
-    if (!data.full_name.trim() || !data.phone.trim()) {
-        alert('Full name and phone are required');
-        return;
-    }
     
     try {
         const response = await fetch('/api/cv_hub/contacts/', {
@@ -785,5 +842,59 @@ async function saveContact() {
         console.error('Error saving contact:', error);
         alert('Error saving contact');
     }
+}
+
+async function loadChangeHistory() {
+    try {
+        const response = await fetch(`/api/cv_hub/entries/${entryId}/history/`);
+        if (!response.ok) {
+            throw new Error('Failed to load history');
+        }
+        
+        const historyData = await response.json();
+        renderChangeHistory(historyData);
+        
+    } catch (error) {
+        console.error('Error loading history:', error);
+        document.getElementById('changeHistory').innerHTML = '<p class="text-muted">Error loading change history.</p>';
+    }
+}
+
+function renderChangeHistory(historyData) {
+    const container = document.getElementById('changeHistory');
+    
+    if (!historyData || historyData.length === 0) {
+        container.innerHTML = '<p class="text-muted">No change history available.</p>';
+        return;
+    }
+    
+    const historyHTML = historyData.map(item => {
+        const date = new Date(item.date).toLocaleString();
+        const actionIcon = item.type === '+' ? '➕' : (item.type === '-' ? '❌' : '✏️');
+        const actionColor = item.type === '+' ? 'success' : (item.type === '-' ? 'danger' : 'warning');
+        
+        return `
+            <div class="d-flex align-items-start mb-3">
+                <div class="timeline-icon bg-${actionColor} text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 30px; height: 30px; font-size: 12px;">
+                    ${actionIcon}
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <small class="text-muted">${item.model}</small>
+                            <div class="fw-medium">${item.changes}</div>
+                            <small class="text-muted">by ${item.user} • ${date}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <div class="timeline">
+            ${historyHTML}
+        </div>
+    `;
 }
 </script>

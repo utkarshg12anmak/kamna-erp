@@ -83,6 +83,8 @@ class CvHubGSTRegistration(models.Model):
     business_activities = models.TextField(blank=True)
     is_primary = models.BooleanField(default=False)
     status = models.CharField(max_length=20, choices=CvHubGSTStatus.choices, default=CvHubGSTStatus.ACTIVE)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='cv_hub_gst_created')
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='cv_hub_gst_updated')
     history = HistoricalRecords()
     class Meta:
         indexes = [models.Index(fields=['gstin']), models.Index(fields=['taxpayer_type','gstin_status'])]
@@ -113,13 +115,46 @@ class CvHubAddress(models.Model):
         indexes = [models.Index(fields=['state','city'])]
 
 # ---- Contacts ----
-_phone_norm = RegexValidator(r'^[0-9+\-\s]{8,20}$','Invalid phone')
+_phone_norm = RegexValidator(r'^[0-9+\-\s]{8,10}$','Phone number must be 8-10 digits')
+
+class CvHubDesignation(models.TextChoices):
+    CEO = 'CEO', 'Chief Executive Officer'
+    CFO = 'CFO', 'Chief Financial Officer'
+    CTO = 'CTO', 'Chief Technology Officer'
+    MANAGER = 'MANAGER', 'Manager'
+    ASSISTANT_MANAGER = 'ASSISTANT_MANAGER', 'Assistant Manager'
+    EXECUTIVE = 'EXECUTIVE', 'Executive'
+    SENIOR_EXECUTIVE = 'SENIOR_EXECUTIVE', 'Senior Executive'
+    ACCOUNTANT = 'ACCOUNTANT', 'Accountant'
+    SALES_MANAGER = 'SALES_MANAGER', 'Sales Manager'
+    PURCHASE_MANAGER = 'PURCHASE_MANAGER', 'Purchase Manager'
+    DIRECTOR = 'DIRECTOR', 'Director'
+    PARTNER = 'PARTNER', 'Partner'
+    PROPRIETOR = 'PROPRIETOR', 'Proprietor'
+    OTHER = 'OTHER', 'Other'
+
 class CvHubContact(models.Model):
     entry = models.ForeignKey(CvHubEntry, on_delete=models.CASCADE, related_name='contacts')
-    full_name = models.CharField(max_length=150)
-    designation = models.CharField(max_length=120, blank=True)
-    phone = models.CharField(max_length=20, unique=True, validators=[_phone_norm])  # globally unique
+    full_name = models.CharField(max_length=150)  # Keep temporarily for migration
+    first_name = models.CharField(max_length=75, blank=True)
+    last_name = models.CharField(max_length=75, blank=True)
+    designation = models.CharField(max_length=20, choices=CvHubDesignation.choices, default=CvHubDesignation.OTHER, blank=True)
+    phone = models.CharField(max_length=15, unique=True, validators=[_phone_norm])  # globally unique
     email = models.EmailField(blank=True)
     is_primary = models.BooleanField(default=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='cv_hub_contact_created')
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='cv_hub_contact_updated')
     history = HistoricalRecords()
+    
+    def save(self, *args, **kwargs):
+        # Auto-populate first_name and last_name from full_name if not set
+        if self.full_name and not self.first_name and not self.last_name:
+            name_parts = self.full_name.strip().split()
+            self.first_name = name_parts[0] if name_parts else ''
+            self.last_name = ' '.join(name_parts[1:]) if len(name_parts) > 1 else ''
+        # Auto-populate full_name from first_name and last_name if not set
+        elif self.first_name and not self.full_name:
+            self.full_name = f"{self.first_name} {self.last_name}".strip()
+        super().save(*args, **kwargs)
+    
     def __str__(self): return f"{self.full_name} ({self.entry_id})"

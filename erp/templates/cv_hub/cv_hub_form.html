@@ -291,17 +291,40 @@
       </div>
       <div class="modal-body">
         <form id="addContactForm">
-          <div class="mb-3">
-            <label for="contact_full_name" class="form-label">Full Name</label>
-            <input type="text" class="form-control" id="contact_full_name" required>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="contact_first_name" class="form-label">First Name *</label>
+              <input type="text" class="form-control" id="contact_first_name" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="contact_last_name" class="form-label">Last Name</label>
+              <input type="text" class="form-control" id="contact_last_name">
+            </div>
           </div>
           <div class="mb-3">
             <label for="contact_designation" class="form-label">Designation</label>
-            <input type="text" class="form-control" id="contact_designation">
+            <select class="form-select" id="contact_designation">
+              <option value="CEO">Chief Executive Officer</option>
+              <option value="CFO">Chief Financial Officer</option>
+              <option value="CTO">Chief Technology Officer</option>
+              <option value="MANAGER">Manager</option>
+              <option value="ASSISTANT_MANAGER">Assistant Manager</option>
+              <option value="EXECUTIVE">Executive</option>
+              <option value="SENIOR_EXECUTIVE">Senior Executive</option>
+              <option value="ACCOUNTANT">Accountant</option>
+              <option value="SALES_MANAGER">Sales Manager</option>
+              <option value="PURCHASE_MANAGER">Purchase Manager</option>
+              <option value="DIRECTOR">Director</option>
+              <option value="PARTNER">Partner</option>
+              <option value="PROPRIETOR">Proprietor</option>
+              <option value="OTHER" selected>Other</option>
+            </select>
           </div>
           <div class="mb-3">
-            <label for="contact_phone" class="form-label">Phone</label>
-            <input type="tel" class="form-control" id="contact_phone" required>
+            <label for="contact_phone" class="form-label">Phone * (8-10 digits)</label>
+            <input type="tel" class="form-control" id="contact_phone" required maxlength="10" pattern="[0-9]{8,10}">
+            <div class="form-text">Enter 8-10 digits only</div>
+          </div>
           </div>
           <div class="mb-3">
             <label for="contact_email" class="form-label">Email</label>
@@ -516,17 +539,36 @@ function loadContactsTab() {
     container.innerHTML = entryData.contacts.map(contact => `
         <div class="border rounded p-3 mb-2">
             <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label small">Full Name</label>
-                    <input type="text" class="form-control" value="${contact.full_name}">
+                <div class="col-md-3">
+                    <label class="form-label small">First Name</label>
+                    <input type="text" class="form-control" value="${contact.first_name || ''}">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label class="form-label small">Last Name</label>
+                    <input type="text" class="form-control" value="${contact.last_name || ''}">
+                </div>
+                <div class="col-md-3">
                     <label class="form-label small">Designation</label>
-                    <input type="text" class="form-control" value="${contact.designation || ''}">
+                    <select class="form-select">
+                        <option value="CEO" ${contact.designation === 'CEO' ? 'selected' : ''}>CEO</option>
+                        <option value="CFO" ${contact.designation === 'CFO' ? 'selected' : ''}>CFO</option>
+                        <option value="CTO" ${contact.designation === 'CTO' ? 'selected' : ''}>CTO</option>
+                        <option value="MANAGER" ${contact.designation === 'MANAGER' ? 'selected' : ''}>Manager</option>
+                        <option value="ASSISTANT_MANAGER" ${contact.designation === 'ASSISTANT_MANAGER' ? 'selected' : ''}>Assistant Manager</option>
+                        <option value="EXECUTIVE" ${contact.designation === 'EXECUTIVE' ? 'selected' : ''}>Executive</option>
+                        <option value="SENIOR_EXECUTIVE" ${contact.designation === 'SENIOR_EXECUTIVE' ? 'selected' : ''}>Senior Executive</option>
+                        <option value="ACCOUNTANT" ${contact.designation === 'ACCOUNTANT' ? 'selected' : ''}>Accountant</option>
+                        <option value="SALES_MANAGER" ${contact.designation === 'SALES_MANAGER' ? 'selected' : ''}>Sales Manager</option>
+                        <option value="PURCHASE_MANAGER" ${contact.designation === 'PURCHASE_MANAGER' ? 'selected' : ''}>Purchase Manager</option>
+                        <option value="DIRECTOR" ${contact.designation === 'DIRECTOR' ? 'selected' : ''}>Director</option>
+                        <option value="PARTNER" ${contact.designation === 'PARTNER' ? 'selected' : ''}>Partner</option>
+                        <option value="PROPRIETOR" ${contact.designation === 'PROPRIETOR' ? 'selected' : ''}>Proprietor</option>
+                        <option value="OTHER" ${contact.designation === 'OTHER' || !contact.designation ? 'selected' : ''}>Other</option>
+                    </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label small">Phone</label>
-                    <input type="tel" class="form-control" value="${contact.phone}">
+                    <input type="tel" class="form-control" value="${contact.phone}" maxlength="10" pattern="[0-9]{8,10}">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label small">Email</label>
@@ -753,20 +795,36 @@ async function saveAddress() {
 }
 
 async function saveContact() {
+    const firstName = document.getElementById('contact_first_name').value.trim();
+    const lastName = document.getElementById('contact_last_name').value.trim();
+    const phone = document.getElementById('contact_phone').value.trim();
+    
+    // Basic validation
+    if (!firstName) {
+        alert('First name is required');
+        return;
+    }
+    
+    if (!phone) {
+        alert('Phone number is required');
+        return;
+    }
+    
+    // Phone validation (8-10 digits)
+    if (!/^[0-9]{8,10}$/.test(phone)) {
+        alert('Phone number must be 8-10 digits');
+        return;
+    }
+    
     const data = {
         entry: entryId,
-        full_name: document.getElementById('contact_full_name').value,
+        first_name: firstName,
+        last_name: lastName,
         designation: document.getElementById('contact_designation').value,
-        phone: document.getElementById('contact_phone').value,
+        phone: phone,
         email: document.getElementById('contact_email').value,
         is_primary: document.getElementById('contact_is_primary').checked,
     };
-    
-    // Basic validation
-    if (!data.full_name.trim() || !data.phone.trim()) {
-        alert('Full name and phone are required');
-        return;
-    }
     
     try {
         const response = await fetch('/api/cv_hub/contacts/', {

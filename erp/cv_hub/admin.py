@@ -33,7 +33,7 @@ class CvHubAddressInline(admin.TabularInline):
 class CvHubContactInline(admin.TabularInline):
     model = CvHubContact
     extra = 0
-    fields = ['full_name', 'designation', 'phone', 'email', 'is_primary']
+    fields = ['first_name', 'last_name', 'designation', 'phone', 'email', 'is_primary']
 
 @admin.register(CvHubEntry)
 class CvHubEntryAdmin(admin.ModelAdmin):
@@ -108,6 +108,6 @@ class CvHubAddressAdmin(admin.ModelAdmin):
 @admin.register(CvHubContact)
 class CvHubContactAdmin(admin.ModelAdmin):
     list_display = ['full_name', 'entry', 'designation', 'phone', 'email', 'is_primary']
-    list_filter = ['is_primary']
-    search_fields = ['full_name', 'phone', 'email', 'entry__legal_name']
-    ordering = ['entry__legal_name', 'full_name']
+    list_filter = ['is_primary', 'designation']
+    search_fields = ['first_name', 'last_name', 'phone', 'email', 'entry__legal_name']
+    ordering = ['entry__legal_name', 'first_name', 'last_name']
