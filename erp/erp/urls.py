@@ -102,9 +102,13 @@ urlpatterns = [
     path("app/cv_hub", module_cv_hub, name="module_cv_hub"),
     path("app/cv_hub/", module_cv_hub, name="module_cv_hub_slash"),
     path("app/cv_hub/entries", cv_hub_entries, name="cv_hub_entries"),
+    path("app/cv_hub/entries/", cv_hub_entries, name="cv_hub_entries_slash"),
     path("app/cv_hub/entries/new", cv_hub_entries_new, name="cv_hub_entries_new"),
+    path("app/cv_hub/entries/new/", cv_hub_entries_new, name="cv_hub_entries_new_slash"),
     path("app/cv_hub/entries/<int:id>", cv_hub_entry_view, name="cv_hub_entry_view"),
+    path("app/cv_hub/entries/<int:id>/", cv_hub_entry_view, name="cv_hub_entry_view_slash"),
     path("app/cv_hub/entries/<int:id>/edit", cv_hub_entry_edit, name="cv_hub_entry_edit"),
+    path("app/cv_hub/entries/<int:id>/edit/", cv_hub_entry_edit, name="cv_hub_entry_edit_slash"),
     path("app/warehousing/w/<str:code>/internal-move", warehouse_internal_move_rows, name="warehouse_internal_move_rows"),
 ]
 

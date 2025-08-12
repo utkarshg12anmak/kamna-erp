@@ -302,7 +302,7 @@ def cv_hub_entries(request):
 
 
 def cv_hub_entries_new(request):
-    return render_module(request, "Customer & Vendor Hub", cv_hub_menu("/app/cv_hub/entries"), "cv_hub/cv_hub_quick_create.html")
+    return render_module(request, "Customer & Vendor Hub", cv_hub_menu("/app/cv_hub/entries"), "cv_hub/cv_hub_list.html")
 
 
 def cv_hub_entry_view(request, id: int):

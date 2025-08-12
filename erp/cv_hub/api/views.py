@@ -1,7 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from ..models import (CvHubEntry, CvHubGSTRegistration, CvHubAddress, CvHubContact,
@@ -10,7 +9,6 @@ from .serializers import (CvHubEntrySerializer, CvHubEntryDetailSerializer, CvHu
                           CvHubAddressSerializer, CvHubContactSerializer, CvHubStateSerializer, CvHubCitySerializer)
 
 class CvHubEntryViewSet(viewsets.ModelViewSet):
-    permission_classes=[IsAuthenticated]
     queryset = CvHubEntry.objects.all().prefetch_related('registrations','addresses','contacts')
     filter_backends=[DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields={'status':['exact'],'constitution':['exact'],'is_customer':['exact'],'is_supplier':['exact'],'is_vendor':['exact'],'is_logistics':['exact'],'for_sales':['exact'],'for_purchase':['exact'],'addresses__state':['exact'],'addresses__city':['exact'],'registrations__taxpayer_type':['exact']}
@@ -44,7 +42,6 @@ class CvHubEntryViewSet(viewsets.ModelViewSet):
         })
 
 class CvHubGSTRegistrationViewSet(viewsets.ModelViewSet):
-    permission_classes=[IsAuthenticated]
     queryset = CvHubGSTRegistration.objects.select_related('entry')
     serializer_class = CvHubGSTRegistrationSerializer
     filter_backends=[DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -52,7 +49,6 @@ class CvHubGSTRegistrationViewSet(viewsets.ModelViewSet):
     search_fields=['gstin','legal_name_of_business','trade_name']
 
 class CvHubAddressViewSet(viewsets.ModelViewSet):
-    permission_classes=[IsAuthenticated]
     queryset = CvHubAddress.objects.select_related('entry','state','city')
     serializer_class = CvHubAddressSerializer
     filter_backends=[DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -60,7 +56,6 @@ class CvHubAddressViewSet(viewsets.ModelViewSet):
     search_fields=['line1','line2','pincode']
 
 class CvHubContactViewSet(viewsets.ModelViewSet):
-    permission_classes=[IsAuthenticated]
     queryset = CvHubContact.objects.select_related('entry')
     serializer_class = CvHubContactSerializer
     filter_backends=[DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -68,12 +63,10 @@ class CvHubContactViewSet(viewsets.ModelViewSet):
     search_fields=['full_name','phone','email']
 
 class CvHubStateViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes=[IsAuthenticated]
     queryset = CvHubState.objects.all().order_by('name')
     serializer_class = CvHubStateSerializer
 
 class CvHubCityViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes=[IsAuthenticated]
     serializer_class = CvHubCitySerializer
     def get_queryset(self):
         qs = CvHubCity.objects.all().order_by('name')
