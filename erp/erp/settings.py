@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     "catalog",
     "warehousing",
     "customer_vendor_hub",
-    "hr",
 ]
 
 MIDDLEWARE = [
