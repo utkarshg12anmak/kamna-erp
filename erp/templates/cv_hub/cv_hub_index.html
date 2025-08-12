@@ -1,0 +1,279 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h5 mb-0">Customer & Vendor Hub</h2>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#quickCreateModal">Quick Create</button>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card-like text-center">
+        <h3 class="h4 text-primary mb-1" id="totalEntries">—</h3>
+        <p class="small text-muted mb-0">Total Entries</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card-like text-center">
+        <h3 class="h4 text-success mb-1" id="activeCustomers">—</h3>
+        <p class="small text-muted mb-0">Active Customers</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card-like text-center">
+        <h3 class="h4 text-info mb-1" id="activeSuppliers">—</h3>
+        <p class="small text-muted mb-0">Active Suppliers</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card-like text-center">
+        <h3 class="h4 text-warning mb-1" id="gstRegistered">—</h3>
+        <p class="small text-muted mb-0">GST Registered</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="card-like">
+        <h6 class="mb-3">Quick Actions</h6>
+        <div class="d-grid gap-2">
+          <a href="/app/cv_hub/entries" class="btn btn-outline-primary">View All Entries</a>
+          <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#quickCreateModal">Create New Entry</button>
+          <a href="/app/cv_hub/entries?for_sales=true" class="btn btn-outline-success">View Customers</a>
+          <a href="/app/cv_hub/entries?for_purchase=true" class="btn btn-outline-info">View Suppliers</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card-like">
+        <h6 class="mb-3">Recent Activity</h6>
+        <div id="recentActivity">
+          <div class="text-center py-3">
+            <div class="spinner-border spinner-border-sm text-muted" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Include the Quick Create Modal from the list template -->
+<div class="modal fade" id="quickCreateModal" tabindex="-1" aria-labelledby="quickCreateModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="quickCreateModalLabel">Quick Create Entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-3">Create a new customer or vendor entry with basic information.</p>
+        <form id="quickCreateForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="legal_name" class="form-label">Legal Name *</label>
+              <input type="text" class="form-control" id="legal_name" required>
+            </div>
+            <div class="col-md-6">
+              <label for="trade_name" class="form-label">Trade Name</label>
+              <input type="text" class="form-control" id="trade_name">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Roles *</label>
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="is_customer">
+                  <label class="form-check-label" for="is_customer">Customer</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="is_supplier">
+                  <label class="form-check-label" for="is_supplier">Supplier</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Usage *</label>
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="for_sales">
+                  <label class="form-check-label" for="for_sales">For Sales</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="for_purchase">
+                  <label class="form-check-label" for="for_purchase">For Purchase</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveQuickCreate">Create Entry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardStats();
+    loadRecentActivity();
+    setupQuickCreateModal();
+});
+
+async function loadDashboardStats() {
+    try {
+        // Load various statistics
+        const [totalResponse, customersResponse, suppliersResponse, gstResponse] = await Promise.all([
+            fetch('/api/cv_hub/entries/'),
+            fetch('/api/cv_hub/entries/?is_customer=true&status=ACTIVE'),
+            fetch('/api/cv_hub/entries/?is_supplier=true&status=ACTIVE'),
+            fetch('/api/cv_hub/entries/?registrations__taxpayer_type=REGULAR')
+        ]);
+        
+        const totalData = await totalResponse.json();
+        const customersData = await customersResponse.json();
+        const suppliersData = await suppliersResponse.json();
+        const gstData = await gstResponse.json();
+        
+        document.getElementById('totalEntries').textContent = totalData.count || 0;
+        document.getElementById('activeCustomers').textContent = customersData.count || 0;
+        document.getElementById('activeSuppliers').textContent = suppliersData.count || 0;
+        document.getElementById('gstRegistered').textContent = gstData.count || 0;
+        
+    } catch (error) {
+        console.error('Error loading dashboard stats:', error);
+    }
+}
+
+async function loadRecentActivity() {
+    try {
+        const response = await fetch('/api/cv_hub/entries/?ordering=-updated_at&page_size=5');
+        const data = await response.json();
+        const entries = data.results || [];
+        
+        const activityHTML = entries.length > 0 ? entries.map(entry => `
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                <div>
+                    <strong class="d-block">${entry.legal_name}</strong>
+                    <small class="text-muted">${entry.commerce_label} • ${entry.status}</small>
+                </div>
+                <small class="text-muted">${new Date(entry.updated_at).toLocaleDateString()}</small>
+            </div>
+        `).join('') : '<p class="text-muted text-center py-3">No recent activity</p>';
+        
+        document.getElementById('recentActivity').innerHTML = activityHTML;
+        
+    } catch (error) {
+        console.error('Error loading recent activity:', error);
+        document.getElementById('recentActivity').innerHTML = '<p class="text-danger text-center py-3">Error loading recent activity</p>';
+    }
+}
+
+function setupQuickCreateModal() {
+    document.getElementById('saveQuickCreate').addEventListener('click', async function() {
+        const legal_name = document.getElementById('legal_name').value.trim();
+        const trade_name = document.getElementById('trade_name').value.trim();
+        const is_customer = document.getElementById('is_customer').checked;
+        const is_supplier = document.getElementById('is_supplier').checked;
+        const for_sales = document.getElementById('for_sales').checked;
+        const for_purchase = document.getElementById('for_purchase').checked;
+        
+        // Basic validation
+        if (!legal_name) {
+            alert('Legal name is required');
+            return;
+        }
+        
+        if (!(is_customer || is_supplier)) {
+            alert('Select at least one role');
+            return;
+        }
+        
+        if (!(for_sales || for_purchase)) {
+            alert('Select at least one usage');
+            return;
+        }
+        
+        try {
+            this.disabled = true;
+            
+            const response = await fetch('/api/cv_hub/entries/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({
+                    legal_name,
+                    trade_name,
+                    is_customer,
+                    is_supplier,
+                    is_vendor: false,
+                    is_logistics: false,
+                    for_sales,
+                    for_purchase,
+                }),
+            });
+            
+            if (response.ok) {
+                const entry = await response.json();
+                bootstrap.Modal.getInstance(document.getElementById('quickCreateModal')).hide();
+                
+                // Reset form
+                document.getElementById('quickCreateForm').reset();
+                
+                // Refresh stats
+                loadDashboardStats();
+                loadRecentActivity();
+                
+                // Show success message
+                showToast('Entry created successfully!', 'success');
+                
+                // Redirect to the entry list or detail page
+                setTimeout(() => {
+                    window.location.href = `/app/cv_hub/entries/${entry.id}`;
+                }, 1000);
+            } else {
+                const errorData = await response.json();
+                console.error('Error creating entry:', errorData);
+                alert('Error creating entry. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error creating entry:', error);
+            alert('Error creating entry. Please try again.');
+        } finally {
+            this.disabled = false;
+        }
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 4000);
+}
+</script>

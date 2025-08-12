@@ -49,6 +49,17 @@
           </div>
         </div>
       </div>
+      <div class="col-12 col-sm-6 col-lg-4" data-group="CvHub">
+        <div class="module-card">
+          <div class="d-flex align-items-center gap-2 mb-1"><span class="icon">🏢</span><h2 class="title">Customer & Vendor Hub</h2></div>
+          <div class="divider"></div>
+          <p class="desc mb-3">Manage customers, suppliers and vendors.</p>
+          <div class="d-flex gap-2">
+            <a class="btn btn-primary btn-sm" href="/app/cv_hub/entries">Enter</a>
+            <button class="btn btn-outline-primary btn-sm" onclick="openQuickCreateModal()">Add</button>
+          </div>
+        </div>
+      </div>
       <div class="col-12 col-sm-6 col-lg-4" data-group="Manufacturing">
         <a class="card-link" href="/app/manufacturing">
           <div class="module-card">
@@ -98,6 +109,12 @@
       localStorage.removeItem('refreshToken');
       window.location = '/';
     });
+    
+    function openQuickCreateModal() {
+      // For now, redirect to the CV Hub entries page
+      // In a full implementation, you'd open a modal here
+      window.location.href = '/app/cv_hub/entries/new';
+    }
   </script>
 </body>
 </html>

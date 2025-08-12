@@ -278,3 +278,36 @@ def module_sales(request):
 def module_finance(request):
     menu = [{"label": "Dashboard", "href": "/app/finance", "active": True}]
     return render_module(request, "Finance", menu, "finance_index.html")
+
+
+# CV Hub module
+
+def cv_hub_menu(active_href):
+    items = [
+        {"label": "Dashboard", "href": "/app/cv_hub"},
+        {"label": "Entries", "href": "/app/cv_hub/entries"},
+        {"label": "Quick Create", "href": "/app/cv_hub/entries/new", "modal": True},
+    ]
+    for it in items:
+        it["active"] = (it["href"] == active_href)
+    return items
+
+
+def module_cv_hub(request):
+    return render_module(request, "Customer & Vendor Hub", cv_hub_menu("/app/cv_hub"), "cv_hub/cv_hub_index.html")
+
+
+def cv_hub_entries(request):
+    return render_module(request, "Customer & Vendor Hub", cv_hub_menu("/app/cv_hub/entries"), "cv_hub/cv_hub_list.html")
+
+
+def cv_hub_entries_new(request):
+    return render_module(request, "Customer & Vendor Hub", cv_hub_menu("/app/cv_hub/entries"), "cv_hub/cv_hub_quick_create.html")
+
+
+def cv_hub_entry_view(request, id: int):
+    return render_module(request, "Customer & Vendor Hub", cv_hub_menu("/app/cv_hub/entries"), "cv_hub/cv_hub_view.html")
+
+
+def cv_hub_entry_edit(request, id: int):
+    return render_module(request, "Customer & Vendor Hub", cv_hub_menu("/app/cv_hub/entries"), "cv_hub/cv_hub_form.html")

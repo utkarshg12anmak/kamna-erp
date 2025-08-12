@@ -1,0 +1,443 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center gap-2">
+      <a href="/app/cv_hub/entries" class="btn btn-outline-secondary btn-sm">← Back to List</a>
+      <h2 class="h5 mb-0" id="entryTitle">Entry Details</h2>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-outline-primary btn-sm" id="editBtn">Edit</button>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Actions
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#" id="viewSummaryBtn">View Summary</a></li>
+          <li><a class="dropdown-item" href="#" id="duplicateBtn">Duplicate Entry</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item text-danger" href="#" id="deactivateBtn">Deactivate</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="loadingState" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div id="errorState" class="d-none">
+    <div class="alert alert-danger">
+      <h6>Error Loading Entry</h6>
+      <p class="mb-0">The entry could not be loaded. Please try again or contact support.</p>
+    </div>
+  </div>
+
+  <div id="mainContent" class="d-none">
+    <div class="row g-3">
+      <div class="col-md-8">
+        <div class="card-like mb-3">
+          <h6 class="mb-3">Basic Information</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Legal Name</label>
+              <p class="mb-0" id="legalName">—</p>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Trade Name</label>
+              <p class="mb-0" id="tradeName">—</p>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Constitution</label>
+              <p class="mb-0" id="constitution">—</p>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Status</label>
+              <p class="mb-0"><span id="status" class="badge">—</span></p>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Roles</label>
+              <p class="mb-0" id="roles">—</p>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Usage</label>
+              <p class="mb-0"><span id="usage" class="badge">—</span></p>
+            </div>
+            <div class="col-12" id="websiteContainer" style="display: none;">
+              <label class="form-label small text-muted">Website</label>
+              <p class="mb-0"><a id="website" href="#" target="_blank">—</a></p>
+            </div>
+            <div class="col-12" id="tagsContainer" style="display: none;">
+              <label class="form-label small text-muted">Tags</label>
+              <p class="mb-0" id="tags">—</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-like mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">GST Registrations</h6>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addGstBtn">Add Registration</button>
+          </div>
+          <div id="gstRegistrations">
+            <p class="text-muted">No GST registrations found.</p>
+          </div>
+        </div>
+
+        <div class="card-like mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Addresses</h6>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addAddressBtn">Add Address</button>
+          </div>
+          <div id="addresses">
+            <p class="text-muted">No addresses found.</p>
+          </div>
+        </div>
+
+        <div class="card-like">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Contacts</h6>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addContactBtn">Add Contact</button>
+          </div>
+          <div id="contacts">
+            <p class="text-muted">No contacts found.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card-like mb-3">
+          <h6 class="mb-3">Quick Info</h6>
+          <div class="small">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Primary GSTIN:</span>
+              <code class="small" id="primaryGstin">—</code>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Created:</span>
+              <span id="createdAt">—</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Last Updated:</span>
+              <span id="updatedAt">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-like mb-3">
+          <h6 class="mb-3">Default Addresses</h6>
+          <div class="small">
+            <div class="mb-3">
+              <label class="form-label small text-muted">Billing Address</label>
+              <div id="defaultBilling" class="small">—</div>
+            </div>
+            <div>
+              <label class="form-label small text-muted">Shipping Address</label>
+              <div id="defaultShipping" class="small">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-like">
+          <h6 class="mb-3">Primary Contact</h6>
+          <div id="primaryContact" class="small">
+            <p class="text-muted">No primary contact set.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let entryId = null;
+let entryData = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get entry ID from URL
+    const pathParts = window.location.pathname.split('/');
+    entryId = pathParts[pathParts.length - 1];
+    
+    if (entryId && !isNaN(entryId)) {
+        loadEntryData();
+    } else {
+        showError();
+    }
+    
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    document.getElementById('editBtn').addEventListener('click', function() {
+        window.location.href = `/app/cv_hub/entries/${entryId}/edit`;
+    });
+    
+    document.getElementById('viewSummaryBtn').addEventListener('click', viewSummary);
+    document.getElementById('duplicateBtn').addEventListener('click', duplicateEntry);
+    document.getElementById('deactivateBtn').addEventListener('click', deactivateEntry);
+}
+
+async function loadEntryData() {
+    try {
+        const response = await fetch(`/api/cv_hub/entries/${entryId}/`);
+        if (!response.ok) {
+            throw new Error('Failed to load entry');
+        }
+        
+        entryData = await response.json();
+        renderEntryData();
+        
+    } catch (error) {
+        console.error('Error loading entry:', error);
+        showError();
+    }
+}
+
+function renderEntryData() {
+    document.getElementById('loadingState').classList.add('d-none');
+    document.getElementById('mainContent').classList.remove('d-none');
+    
+    // Basic information
+    document.getElementById('entryTitle').textContent = entryData.legal_name;
+    document.getElementById('legalName').textContent = entryData.legal_name;
+    document.getElementById('tradeName').textContent = entryData.trade_name || '—';
+    document.getElementById('constitution').textContent = entryData.constitution;
+    
+    const statusBadge = document.getElementById('status');
+    statusBadge.textContent = entryData.status;
+    statusBadge.className = `badge bg-${entryData.status === 'ACTIVE' ? 'success' : 'warning'}`;
+    
+    // Roles
+    const roles = [];
+    if (entryData.is_customer) roles.push('Customer');
+    if (entryData.is_supplier) roles.push('Supplier');
+    if (entryData.is_vendor) roles.push('Vendor');
+    if (entryData.is_logistics) roles.push('Logistics');
+    document.getElementById('roles').textContent = roles.join(', ') || '—';
+    
+    // Usage
+    const usageBadge = document.getElementById('usage');
+    usageBadge.textContent = entryData.commerce_label;
+    usageBadge.className = 'badge bg-info';
+    
+    // Website
+    if (entryData.website) {
+        document.getElementById('websiteContainer').style.display = 'block';
+        const websiteLink = document.getElementById('website');
+        websiteLink.href = entryData.website;
+        websiteLink.textContent = entryData.website;
+    }
+    
+    // Tags
+    if (entryData.tags) {
+        document.getElementById('tagsContainer').style.display = 'block';
+        document.getElementById('tags').textContent = entryData.tags;
+    }
+    
+    // Dates
+    document.getElementById('createdAt').textContent = new Date(entryData.created_at).toLocaleDateString();
+    document.getElementById('updatedAt').textContent = new Date(entryData.updated_at).toLocaleDateString();
+    
+    // Primary GSTIN
+    const primaryReg = entryData.registrations.find(reg => reg.is_primary);
+    document.getElementById('primaryGstin').textContent = primaryReg?.gstin || '—';
+    
+    // Render sections
+    renderGSTRegistrations();
+    renderAddresses();
+    renderContacts();
+    renderDefaultAddresses();
+    renderPrimaryContact();
+}
+
+function renderGSTRegistrations() {
+    const container = document.getElementById('gstRegistrations');
+    
+    if (!entryData.registrations || entryData.registrations.length === 0) {
+        container.innerHTML = '<p class="text-muted">No GST registrations found.</p>';
+        return;
+    }
+    
+    container.innerHTML = entryData.registrations.map(reg => `
+        <div class="border rounded p-3 mb-2 ${reg.is_primary ? 'border-primary bg-light' : ''}">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <small class="text-muted">GSTIN</small>
+                    <div><code class="small">${reg.gstin || 'Unregistered'}</code></div>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted">Type</small>
+                    <div>${reg.taxpayer_type}</div>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted">Status</small>
+                    <div>
+                        ${reg.is_primary ? '<span class="badge bg-primary me-1">Primary</span>' : ''}
+                        <span class="badge bg-${reg.status === 'ACTIVE' ? 'success' : 'warning'}">${reg.status}</span>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <small class="text-muted">Business Name</small>
+                    <div>${reg.legal_name_of_business}</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderAddresses() {
+    const container = document.getElementById('addresses');
+    
+    if (!entryData.addresses || entryData.addresses.length === 0) {
+        container.innerHTML = '<p class="text-muted">No addresses found.</p>';
+        return;
+    }
+    
+    container.innerHTML = entryData.addresses.map(addr => `
+        <div class="border rounded p-3 mb-2">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <small class="text-muted">Type</small>
+                    <div>${addr.type}</div>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">Location</small>
+                    <div>${addr.city_name}, ${addr.state_name}</div>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">Pincode</small>
+                    <div>${addr.pincode}</div>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">Defaults</small>
+                    <div>
+                        ${addr.is_default_billing ? '<span class="badge bg-primary me-1">Billing</span>' : ''}
+                        ${addr.is_default_shipping ? '<span class="badge bg-secondary">Shipping</span>' : ''}
+                    </div>
+                </div>
+                <div class="col-12">
+                    <small class="text-muted">Address</small>
+                    <div>${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderContacts() {
+    const container = document.getElementById('contacts');
+    
+    if (!entryData.contacts || entryData.contacts.length === 0) {
+        container.innerHTML = '<p class="text-muted">No contacts found.</p>';
+        return;
+    }
+    
+    container.innerHTML = entryData.contacts.map(contact => `
+        <div class="border rounded p-3 mb-2 ${contact.is_primary ? 'border-primary bg-light' : ''}">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <small class="text-muted">Name</small>
+                    <div><strong>${contact.full_name}</strong></div>
+                    ${contact.designation ? `<small class="text-muted">${contact.designation}</small>` : ''}
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted">Phone</small>
+                    <div><a href="tel:${contact.phone}">${contact.phone}</a></div>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted">Email & Status</small>
+                    <div>
+                        ${contact.email ? `<a href="mailto:${contact.email}">${contact.email}</a><br>` : ''}
+                        ${contact.is_primary ? '<span class="badge bg-primary">Primary</span>' : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderDefaultAddresses() {
+    const billing = entryData.addresses.find(addr => addr.is_default_billing);
+    const shipping = entryData.addresses.find(addr => addr.is_default_shipping);
+    
+    document.getElementById('defaultBilling').innerHTML = billing ? 
+        `${billing.line1}<br>${billing.city_name}, ${billing.state_name} ${billing.pincode}` : '—';
+    
+    document.getElementById('defaultShipping').innerHTML = shipping ? 
+        `${shipping.line1}<br>${shipping.city_name}, ${shipping.state_name} ${shipping.pincode}` : '—';
+}
+
+function renderPrimaryContact() {
+    const contact = entryData.contacts.find(c => c.is_primary);
+    
+    document.getElementById('primaryContact').innerHTML = contact ? `
+        <div><strong>${contact.full_name}</strong></div>
+        ${contact.designation ? `<div class="text-muted">${contact.designation}</div>` : ''}
+        <div><a href="tel:${contact.phone}">${contact.phone}</a></div>
+        ${contact.email ? `<div><a href="mailto:${contact.email}">${contact.email}</a></div>` : ''}
+    ` : '<p class="text-muted">No primary contact set.</p>';
+}
+
+function showError() {
+    document.getElementById('loadingState').classList.add('d-none');
+    document.getElementById('errorState').classList.remove('d-none');
+}
+
+async function viewSummary() {
+    try {
+        const response = await fetch(`/api/cv_hub/entries/${entryId}/summary/`);
+        const summary = await response.json();
+        
+        alert(`Summary for ${entryData.legal_name}:\n\nCommerce: ${summary.commerce_label}\nPrimary GSTIN: ${summary.primary_gstin || 'None'}\nBilling: ${summary.billing ? summary.billing.line1 : 'Not set'}\nShipping: ${summary.shipping ? summary.shipping.line1 : 'Not set'}`);
+    } catch (error) {
+        console.error('Error loading summary:', error);
+        alert('Error loading summary');
+    }
+}
+
+function duplicateEntry() {
+    if (confirm('Create a duplicate of this entry?')) {
+        // In a full implementation, you'd open a modal or redirect to create form with pre-filled data
+        alert('Duplicate feature not yet implemented');
+    }
+}
+
+async function deactivateEntry() {
+    if (confirm('Are you sure you want to deactivate this entry?')) {
+        try {
+            const response = await fetch(`/api/cv_hub/entries/${entryId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ status: 'INACTIVE' }),
+            });
+            
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error deactivating entry');
+            }
+        } catch (error) {
+            console.error('Error deactivating entry:', error);
+            alert('Error deactivating entry');
+        }
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>

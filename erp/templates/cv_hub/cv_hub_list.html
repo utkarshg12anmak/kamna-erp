@@ -1,0 +1,782 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h5 mb-0">Customer & Vendor Entries</h2>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#quickCreateModal">Quick Create</button>
+  </div>
+  
+  <div class="card-like mb-3">
+    <div class="row g-2">
+      <div class="col-md-3">
+        <input id="q" class="form-control form-control-sm" placeholder="Search name, GSTIN, phone...">
+      </div>
+      <div class="col-md-2">
+        <select id="state" class="form-select form-select-sm">
+          <option value="">State</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select id="city" class="form-select form-select-sm">
+          <option value="">City</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select id="constitution" class="form-select form-select-sm">
+          <option value="">Constitution</option>
+          <option value="INDIVIDUAL">Individual</option>
+          <option value="PROPRIETORSHIP">Proprietorship</option>
+          <option value="PARTNERSHIP">Partnership</option>
+          <option value="PVTLTD">Private Limited</option>
+          <option value="LLP">LLP</option>
+          <option value="TRUST">Trust</option>
+          <option value="GOVT">Government</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2 align-items-center flex-wrap">
+        <div class="btn-group btn-group-sm" role="group" aria-label="Status">
+          <button type="button" data-status="" class="btn btn-outline-secondary active" id="st_all">All</button>
+          <button type="button" data-status="ACTIVE" class="btn btn-outline-secondary" id="st_active">Active</button>
+          <button type="button" data-status="INACTIVE" class="btn btn-outline-secondary" id="st_inactive">Inactive</button>
+        </div>
+        <button id="clearFilters" class="btn btn-outline-secondary btn-sm" type="button">Clear</button>
+      </div>
+    </div>
+    
+    <div class="row g-2 mt-2">
+      <div class="col-md-6 d-flex gap-2 align-items-center flex-wrap">
+        <label class="small text-muted me-2">Roles:</label>
+        <div class="form-check form-check-inline">
+          <input id="f_customer" class="form-check-input" type="checkbox">
+          <label class="form-check-label" for="f_customer">Customer</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input id="f_supplier" class="form-check-input" type="checkbox">
+          <label class="form-check-label" for="f_supplier">Supplier</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input id="f_vendor" class="form-check-input" type="checkbox">
+          <label class="form-check-label" for="f_vendor">Vendor</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input id="f_logistics" class="form-check-input" type="checkbox">
+          <label class="form-check-label" for="f_logistics">Logistics</label>
+        </div>
+      </div>
+      <div class="col-md-6 d-flex gap-2 align-items-center flex-wrap">
+        <label class="small text-muted me-2">Usage:</label>
+        <div class="form-check form-check-inline">
+          <input id="f_sales" class="form-check-input" type="checkbox">
+          <label class="form-check-label" for="f_sales">For Sales</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input id="f_purchase" class="form-check-input" type="checkbox">
+          <label class="form-check-label" for="f_purchase">For Purchase</label>
+        </div>
+        <select id="taxpayer_type" class="form-select form-select-sm" style="width: auto;">
+          <option value="">GST Category</option>
+          <option value="REGULAR">Regular</option>
+          <option value="COMPOSITION">Composition</option>
+          <option value="CASUAL">Casual</option>
+          <option value="UNREGISTERED">Unregistered</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-like">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Trade Name</th>
+            <th>Roles</th>
+            <th>Usage</th>
+            <th>Primary GSTIN</th>
+            <th>State/City</th>
+            <th>Status</th>
+            <th>Updated</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div id="pager" class="d-flex justify-content-between align-items-center mt-2">
+      <div id="pageInfo" class="small text-muted"></div>
+      <div class="btn-group btn-group-sm">
+        <button id="prevPage" class="btn btn-outline-secondary" type="button">Previous</button>
+        <button id="nextPage" class="btn btn-outline-secondary" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="emptyState" class="text-center py-5 d-none">
+    <h6 class="text-muted">No entries found</h6>
+    <p class="text-muted">Try adjusting your filters or <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#quickCreateModal">create a new entry</button></p>
+  </div>
+
+  <div id="loadingState" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Create Modal -->
+<div class="modal fade" id="quickCreateModal" tabindex="-1" aria-labelledby="quickCreateModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="quickCreateModalLabel">Quick Create Entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="quickCreateForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="gstin" class="form-label">GSTIN</label>
+              <input type="text" class="form-control" id="gstin" maxlength="15" placeholder="15-digit GSTIN">
+              <div class="form-text">Leave empty for unregistered taxpayer</div>
+            </div>
+            <div class="col-md-6">
+              <label for="taxpayer_type_modal" class="form-label">GST Category</label>
+              <select class="form-select" id="taxpayer_type_modal" required>
+                <option value="UNREGISTERED">Unregistered</option>
+                <option value="REGULAR">Regular</option>
+                <option value="COMPOSITION">Composition</option>
+                <option value="CASUAL">Casual</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="legal_name" class="form-label">Legal Name *</label>
+              <input type="text" class="form-control" id="legal_name" required>
+            </div>
+            <div class="col-md-6">
+              <label for="trade_name" class="form-label">Trade Name</label>
+              <input type="text" class="form-control" id="trade_name">
+            </div>
+            <div class="col-md-6">
+              <label for="constitution_modal" class="form-label">Constitution</label>
+              <select class="form-select" id="constitution_modal">
+                <option value="INDIVIDUAL">Individual</option>
+                <option value="PROPRIETORSHIP">Proprietorship</option>
+                <option value="PARTNERSHIP">Partnership</option>
+                <option value="PVTLTD">Private Limited</option>
+                <option value="LLP">LLP</option>
+                <option value="TRUST">Trust</option>
+                <option value="GOVT">Government</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Roles *</label>
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="is_customer">
+                  <label class="form-check-label" for="is_customer">Customer</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="is_supplier">
+                  <label class="form-check-label" for="is_supplier">Supplier</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="is_vendor">
+                  <label class="form-check-label" for="is_vendor">Vendor</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="is_logistics">
+                  <label class="form-check-label" for="is_logistics">Logistics</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Usage *</label>
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="for_sales">
+                  <label class="form-check-label" for="for_sales">For Sales</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="for_purchase">
+                  <label class="form-check-label" for="for_purchase">For Purchase</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="contact_name" class="form-label">Contact Name</label>
+              <input type="text" class="form-control" id="contact_name">
+            </div>
+            <div class="col-md-6">
+              <label for="contact_phone" class="form-label">Contact Phone</label>
+              <input type="tel" class="form-control" id="contact_phone">
+            </div>
+            <div class="col-md-6">
+              <label for="contact_email" class="form-label">Contact Email</label>
+              <input type="email" class="form-control" id="contact_email">
+            </div>
+            <div class="col-md-6">
+              <label for="address_state" class="form-label">State</label>
+              <select class="form-select" id="address_state">
+                <option value="">Select State</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="address_city" class="form-label">City</label>
+              <select class="form-select" id="address_city">
+                <option value="">Select City</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="address_line1" class="form-label">Address Line 1</label>
+              <input type="text" class="form-control" id="address_line1">
+            </div>
+            <div class="col-md-3">
+              <label for="address_line2" class="form-label">Address Line 2</label>
+              <input type="text" class="form-control" id="address_line2">
+            </div>
+            <div class="col-md-3">
+              <label for="address_pincode" class="form-label">Pincode</label>
+              <input type="text" class="form-control" id="address_pincode">
+            </div>
+            <div class="col-12">
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="is_default_billing" checked>
+                  <label class="form-check-label" for="is_default_billing">Default Billing</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="is_default_shipping" checked>
+                  <label class="form-check-label" for="is_default_shipping">Default Shipping</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveQuickCreate">Create Entry</button>
+        <button type="button" class="btn btn-outline-primary" id="saveAndEditFull" style="display: none;">Create & Edit Full</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// CV Hub List JavaScript
+let currentPage = 1;
+let currentFilters = {};
+let statesData = [];
+let citiesData = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadStates();
+    loadData();
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    // Filter controls
+    document.getElementById('q').addEventListener('input', debounce(applyFilters, 300));
+    document.getElementById('state').addEventListener('change', function() {
+        loadCities(this.value);
+        applyFilters();
+    });
+    document.getElementById('city').addEventListener('change', applyFilters);
+    document.getElementById('constitution').addEventListener('change', applyFilters);
+    document.getElementById('taxpayer_type').addEventListener('change', applyFilters);
+    
+    // Status buttons
+    document.querySelectorAll('[data-status]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            applyFilters();
+        });
+    });
+    
+    // Role and usage checkboxes
+    ['f_customer', 'f_supplier', 'f_vendor', 'f_logistics', 'f_sales', 'f_purchase'].forEach(id => {
+        document.getElementById(id).addEventListener('change', applyFilters);
+    });
+    
+    // Clear filters
+    document.getElementById('clearFilters').addEventListener('click', clearFilters);
+    
+    // Pagination
+    document.getElementById('prevPage').addEventListener('click', () => changePage(currentPage - 1));
+    document.getElementById('nextPage').addEventListener('click', () => changePage(currentPage + 1));
+    
+    // Quick create modal
+    setupQuickCreateModal();
+}
+
+function setupQuickCreateModal() {
+    const modal = document.getElementById('quickCreateModal');
+    const form = document.getElementById('quickCreateForm');
+    const gstinInput = document.getElementById('gstin');
+    const taxpayerTypeSelect = document.getElementById('taxpayer_type_modal');
+    const addressStateSelect = document.getElementById('address_state');
+    
+    // Load states for address
+    loadStatesForModal();
+    
+    // GSTIN and taxpayer type interaction
+    gstinInput.addEventListener('input', function() {
+        if (this.value.length === 15) {
+            taxpayerTypeSelect.value = 'REGULAR';
+        } else if (this.value.length === 0) {
+            taxpayerTypeSelect.value = 'UNREGISTERED';
+        }
+    });
+    
+    taxpayerTypeSelect.addEventListener('change', function() {
+        if (this.value === 'UNREGISTERED') {
+            gstinInput.value = '';
+            gstinInput.disabled = true;
+        } else {
+            gstinInput.disabled = false;
+        }
+    });
+    
+    // State/city cascade for address
+    addressStateSelect.addEventListener('change', function() {
+        loadCitiesForModal(this.value);
+    });
+    
+    // Save buttons
+    document.getElementById('saveQuickCreate').addEventListener('click', saveQuickCreate);
+    document.getElementById('saveAndEditFull').addEventListener('click', saveAndEditFull);
+}
+
+async function loadStates() {
+    try {
+        const response = await fetch('/api/cv_hub/states/');
+        const data = await response.json();
+        statesData = data.results || data;
+        
+        const stateSelect = document.getElementById('state');
+        stateSelect.innerHTML = '<option value="">State</option>';
+        statesData.forEach(state => {
+            stateSelect.innerHTML += `<option value="${state.id}">${state.name}</option>`;
+        });
+    } catch (error) {
+        console.error('Error loading states:', error);
+    }
+}
+
+async function loadStatesForModal() {
+    const addressStateSelect = document.getElementById('address_state');
+    addressStateSelect.innerHTML = '<option value="">Select State</option>';
+    statesData.forEach(state => {
+        addressStateSelect.innerHTML += `<option value="${state.id}">${state.name}</option>`;
+    });
+}
+
+async function loadCities(stateId) {
+    if (!stateId) {
+        document.getElementById('city').innerHTML = '<option value="">City</option>';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/cv_hub/cities/?state=${stateId}`);
+        const data = await response.json();
+        citiesData = data.results || data;
+        
+        const citySelect = document.getElementById('city');
+        citySelect.innerHTML = '<option value="">City</option>';
+        citiesData.forEach(city => {
+            citySelect.innerHTML += `<option value="${city.id}">${city.name}</option>`;
+        });
+    } catch (error) {
+        console.error('Error loading cities:', error);
+    }
+}
+
+async function loadCitiesForModal(stateId) {
+    const addressCitySelect = document.getElementById('address_city');
+    addressCitySelect.innerHTML = '<option value="">Select City</option>';
+    
+    if (!stateId) return;
+    
+    try {
+        const response = await fetch(`/api/cv_hub/cities/?state=${stateId}`);
+        const data = await response.json();
+        const cities = data.results || data;
+        cities.forEach(city => {
+            addressCitySelect.innerHTML += `<option value="${city.id}">${city.name}</option>`;
+        });
+    } catch (error) {
+        console.error('Error loading cities for modal:', error);
+    }
+}
+
+function applyFilters() {
+    currentPage = 1;
+    buildFilters();
+    loadData();
+}
+
+function buildFilters() {
+    currentFilters = {
+        search: document.getElementById('q').value,
+        status: document.querySelector('[data-status].active').dataset.status,
+        state: document.getElementById('state').value,
+        city: document.getElementById('city').value,
+        constitution: document.getElementById('constitution').value,
+        taxpayer_type: document.getElementById('taxpayer_type').value,
+        is_customer: document.getElementById('f_customer').checked,
+        is_supplier: document.getElementById('f_supplier').checked,
+        is_vendor: document.getElementById('f_vendor').checked,
+        is_logistics: document.getElementById('f_logistics').checked,
+        for_sales: document.getElementById('f_sales').checked,
+        for_purchase: document.getElementById('f_purchase').checked,
+    };
+}
+
+async function loadData() {
+    document.getElementById('loadingState').classList.remove('d-none');
+    document.getElementById('emptyState').classList.add('d-none');
+    
+    try {
+        const params = new URLSearchParams();
+        params.set('page', currentPage);
+        
+        Object.entries(currentFilters).forEach(([key, value]) => {
+            if (value) {
+                if (key === 'search') {
+                    params.set('search', value);
+                } else if (key === 'state') {
+                    params.set('addresses__state', value);
+                } else if (key === 'city') {
+                    params.set('addresses__city', value);
+                } else if (key === 'taxpayer_type') {
+                    params.set('registrations__taxpayer_type', value);
+                } else {
+                    params.set(key, value);
+                }
+            }
+        });
+        
+        const response = await fetch(`/api/cv_hub/entries/?${params}`);
+        const data = await response.json();
+        
+        renderTable(data.results);
+        renderPagination(data);
+        
+    } catch (error) {
+        console.error('Error loading data:', error);
+        document.getElementById('rows').innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error loading data</td></tr>';
+    } finally {
+        document.getElementById('loadingState').classList.add('d-none');
+    }
+}
+
+function renderTable(entries) {
+    const tbody = document.getElementById('rows');
+    
+    if (!entries || entries.length === 0) {
+        tbody.innerHTML = '';
+        document.getElementById('emptyState').classList.remove('d-none');
+        return;
+    }
+    
+    tbody.innerHTML = entries.map(entry => {
+        const roles = [];
+        if (entry.is_customer) roles.push('Customer');
+        if (entry.is_supplier) roles.push('Supplier');
+        if (entry.is_vendor) roles.push('Vendor');
+        if (entry.is_logistics) roles.push('Logistics');
+        
+        const defaultBilling = entry.addresses?.find(addr => addr.is_default_billing);
+        const location = defaultBilling ? `${defaultBilling.city_name}, ${defaultBilling.state_name}` : '—';
+        
+        const primaryGstin = entry.registrations?.find(reg => reg.is_primary)?.gstin || '—';
+        
+        return `
+            <tr>
+                <td><strong>${entry.legal_name}</strong></td>
+                <td>${entry.trade_name || '—'}</td>
+                <td><span class="badge bg-secondary">${roles.join(', ') || '—'}</span></td>
+                <td><span class="badge bg-info">${entry.commerce_label}</span></td>
+                <td><code class="small">${primaryGstin}</code></td>
+                <td>${location}</td>
+                <td><span class="badge bg-${entry.status === 'ACTIVE' ? 'success' : 'warning'}">${entry.status}</span></td>
+                <td><small class="text-muted">${new Date(entry.updated_at).toLocaleDateString()}</small></td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="/app/cv_hub/entries/${entry.id}" class="btn btn-outline-primary">View</a>
+                        <a href="/app/cv_hub/entries/${entry.id}/edit" class="btn btn-outline-secondary">Edit</a>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderPagination(data) {
+    const pageInfo = document.getElementById('pageInfo');
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+    
+    pageInfo.textContent = `Page ${currentPage} • ${data.count} total entries`;
+    prevBtn.disabled = !data.previous;
+    nextBtn.disabled = !data.next;
+}
+
+function changePage(page) {
+    if (page < 1) return;
+    currentPage = page;
+    loadData();
+}
+
+function clearFilters() {
+    document.getElementById('q').value = '';
+    document.getElementById('state').value = '';
+    document.getElementById('city').value = '';
+    document.getElementById('constitution').value = '';
+    document.getElementById('taxpayer_type').value = '';
+    
+    document.querySelectorAll('[data-status]').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('st_all').classList.add('active');
+    
+    ['f_customer', 'f_supplier', 'f_vendor', 'f_logistics', 'f_sales', 'f_purchase'].forEach(id => {
+        document.getElementById(id).checked = false;
+    });
+    
+    applyFilters();
+}
+
+async function saveQuickCreate() {
+    const formData = collectQuickCreateData();
+    if (!validateQuickCreateData(formData)) return;
+    
+    try {
+        document.getElementById('saveQuickCreate').disabled = true;
+        const result = await createEntryFromQuickForm(formData);
+        
+        bootstrap.Modal.getInstance(document.getElementById('quickCreateModal')).hide();
+        loadData(); // Refresh the list
+        
+        // Show success message
+        showToast('Entry created successfully!', 'success');
+        
+    } catch (error) {
+        console.error('Error creating entry:', error);
+        showToast('Error creating entry. Please try again.', 'error');
+    } finally {
+        document.getElementById('saveQuickCreate').disabled = false;
+    }
+}
+
+async function saveAndEditFull() {
+    const formData = collectQuickCreateData();
+    if (!validateQuickCreateData(formData)) return;
+    
+    try {
+        document.getElementById('saveAndEditFull').disabled = true;
+        const result = await createEntryFromQuickForm(formData);
+        
+        // Redirect to full edit form
+        window.location.href = `/app/cv_hub/entries/${result.id}/edit`;
+        
+    } catch (error) {
+        console.error('Error creating entry:', error);
+        showToast('Error creating entry. Please try again.', 'error');
+        document.getElementById('saveAndEditFull').disabled = false;
+    }
+}
+
+function collectQuickCreateData() {
+    return {
+        legal_name: document.getElementById('legal_name').value,
+        trade_name: document.getElementById('trade_name').value,
+        constitution: document.getElementById('constitution_modal').value,
+        is_customer: document.getElementById('is_customer').checked,
+        is_supplier: document.getElementById('is_supplier').checked,
+        is_vendor: document.getElementById('is_vendor').checked,
+        is_logistics: document.getElementById('is_logistics').checked,
+        for_sales: document.getElementById('for_sales').checked,
+        for_purchase: document.getElementById('for_purchase').checked,
+        gstin: document.getElementById('gstin').value,
+        taxpayer_type: document.getElementById('taxpayer_type_modal').value,
+        contact_name: document.getElementById('contact_name').value,
+        contact_phone: document.getElementById('contact_phone').value,
+        contact_email: document.getElementById('contact_email').value,
+        address_state: document.getElementById('address_state').value,
+        address_city: document.getElementById('address_city').value,
+        address_line1: document.getElementById('address_line1').value,
+        address_line2: document.getElementById('address_line2').value,
+        address_pincode: document.getElementById('address_pincode').value,
+        is_default_billing: document.getElementById('is_default_billing').checked,
+        is_default_shipping: document.getElementById('is_default_shipping').checked,
+    };
+}
+
+function validateQuickCreateData(data) {
+    if (!data.legal_name.trim()) {
+        showToast('Legal name is required', 'error');
+        return false;
+    }
+    
+    if (!(data.is_customer || data.is_supplier || data.is_vendor || data.is_logistics)) {
+        showToast('Select at least one role', 'error');
+        return false;
+    }
+    
+    if (!(data.for_sales || data.for_purchase)) {
+        showToast('Select at least one usage (For Sales / For Purchase)', 'error');
+        return false;
+    }
+    
+    if (data.taxpayer_type !== 'UNREGISTERED' && data.gstin && data.gstin.length !== 15) {
+        showToast('GSTIN must be 15 characters for registered taxpayers', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+async function createEntryFromQuickForm(data) {
+    // Create the entry first
+    const entryData = {
+        legal_name: data.legal_name,
+        trade_name: data.trade_name,
+        constitution: data.constitution,
+        is_customer: data.is_customer,
+        is_supplier: data.is_supplier,
+        is_vendor: data.is_vendor,
+        is_logistics: data.is_logistics,
+        for_sales: data.for_sales,
+        for_purchase: data.for_purchase,
+    };
+    
+    const entryResponse = await fetch('/api/cv_hub/entries/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify(entryData),
+    });
+    
+    if (!entryResponse.ok) {
+        throw new Error('Failed to create entry');
+    }
+    
+    const entry = await entryResponse.json();
+    
+    // Create GST registration if needed
+    if (data.gstin || data.taxpayer_type === 'UNREGISTERED') {
+        const gstData = {
+            entry: entry.id,
+            taxpayer_type: data.taxpayer_type,
+            gstin: data.gstin,
+            legal_name_of_business: data.legal_name,
+            trade_name: data.trade_name,
+            is_primary: true,
+        };
+        
+        await fetch('/api/cv_hub/registrations/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(gstData),
+        });
+    }
+    
+    // Create address if provided
+    if (data.address_state && data.address_city && data.address_line1) {
+        const addressData = {
+            entry: entry.id,
+            type: 'BILLING',
+            line1: data.address_line1,
+            line2: data.address_line2,
+            pincode: data.address_pincode,
+            state: data.address_state,
+            city: data.address_city,
+            is_default_billing: data.is_default_billing,
+            is_default_shipping: data.is_default_shipping,
+        };
+        
+        await fetch('/api/cv_hub/addresses/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(addressData),
+        });
+    }
+    
+    // Create contact if provided
+    if (data.contact_name && data.contact_phone) {
+        const contactData = {
+            entry: entry.id,
+            full_name: data.contact_name,
+            phone: data.contact_phone,
+            email: data.contact_email,
+            is_primary: true,
+        };
+        
+        await fetch('/api/cv_hub/contacts/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(contactData),
+        });
+    }
+    
+    return entry;
+}
+
+// Utility functions
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showToast(message, type = 'info') {
+    // Simple toast implementation - you can replace with your preferred toast library
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 4000);
+}
+</script>

@@ -1,0 +1,457 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center gap-2">
+      <a href="/app/cv_hub/entries" class="btn btn-outline-secondary btn-sm">← Back to List</a>
+      <h2 class="h5 mb-0">Edit Entry</h2>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-outline-secondary btn-sm" id="cancelBtn">Cancel</button>
+      <button type="button" class="btn btn-primary btn-sm" id="saveBtn">Save Changes</button>
+    </div>
+  </div>
+
+  <div id="loadingState" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div id="mainContent" class="d-none">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs mb-3" id="formTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab">Summary</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="gst-tab" data-bs-toggle="tab" data-bs-target="#gst" type="button" role="tab">GST Registrations</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="addresses-tab" data-bs-toggle="tab" data-bs-target="#addresses" type="button" role="tab">Addresses</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="contacts-tab" data-bs-toggle="tab" data-bs-target="#contacts" type="button" role="tab">Contacts</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">History</button>
+      </li>
+    </ul>
+
+    <!-- Tab content -->
+    <div class="tab-content" id="formTabContent">
+      <!-- Summary Tab -->
+      <div class="tab-pane fade show active" id="summary" role="tabpanel">
+        <form id="summaryForm">
+          <div class="card-like">
+            <h6 class="mb-3">Basic Information</h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="legal_name" class="form-label">Legal Name *</label>
+                <input type="text" class="form-control" id="legal_name" required>
+              </div>
+              <div class="col-md-6">
+                <label for="trade_name" class="form-label">Trade Name</label>
+                <input type="text" class="form-control" id="trade_name">
+              </div>
+              <div class="col-md-6">
+                <label for="constitution" class="form-label">Constitution</label>
+                <select class="form-select" id="constitution">
+                  <option value="INDIVIDUAL">Individual</option>
+                  <option value="PROPRIETORSHIP">Proprietorship</option>
+                  <option value="PARTNERSHIP">Partnership</option>
+                  <option value="PVTLTD">Private Limited</option>
+                  <option value="LLP">LLP</option>
+                  <option value="TRUST">Trust</option>
+                  <option value="GOVT">Government</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status">
+                  <option value="ACTIVE">Active</option>
+                  <option value="INACTIVE">Inactive</option>
+                  <option value="BLACKLISTED">Blacklisted</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Roles *</label>
+                <div class="d-flex gap-3 mt-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="is_customer">
+                    <label class="form-check-label" for="is_customer">Customer</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="is_supplier">
+                    <label class="form-check-label" for="is_supplier">Supplier</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="is_vendor">
+                    <label class="form-check-label" for="is_vendor">Vendor</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="is_logistics">
+                    <label class="form-check-label" for="is_logistics">Logistics</label>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Usage *</label>
+                <div class="d-flex gap-3 mt-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="for_sales">
+                    <label class="form-check-label" for="for_sales">For Sales</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="for_purchase">
+                    <label class="form-check-label" for="for_purchase">For Purchase</label>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="website" class="form-label">Website</label>
+                <input type="url" class="form-control" id="website">
+              </div>
+              <div class="col-md-6">
+                <label for="tags" class="form-label">Tags</label>
+                <input type="text" class="form-control" id="tags" placeholder="Comma separated tags">
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- GST Tab -->
+      <div class="tab-pane fade" id="gst" role="tabpanel">
+        <div class="card-like">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">GST Registrations</h6>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addGstBtn">Add Registration</button>
+          </div>
+          <div id="gstList">
+            <p class="text-muted">Loading GST registrations...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Addresses Tab -->
+      <div class="tab-pane fade" id="addresses" role="tabpanel">
+        <div class="card-like">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Addresses</h6>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addAddressBtn">Add Address</button>
+          </div>
+          <div id="addressList">
+            <p class="text-muted">Loading addresses...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contacts Tab -->
+      <div class="tab-pane fade" id="contacts" role="tabpanel">
+        <div class="card-like">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Contacts</h6>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addContactBtn">Add Contact</button>
+          </div>
+          <div id="contactList">
+            <p class="text-muted">Loading contacts...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Tab -->
+      <div class="tab-pane fade" id="history" role="tabpanel">
+        <div class="card-like">
+          <h6 class="mb-3">Change History</h6>
+          <p class="text-muted">History tracking will be available in a future update.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let entryId = null;
+let entryData = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get entry ID from URL
+    const pathParts = window.location.pathname.split('/');
+    entryId = pathParts[pathParts.length - 2]; // /edit is the last part
+    
+    if (entryId && !isNaN(entryId)) {
+        loadEntryData();
+    } else {
+        alert('Invalid entry ID');
+        window.location.href = '/app/cv_hub/entries';
+    }
+    
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    document.getElementById('saveBtn').addEventListener('click', saveEntry);
+    document.getElementById('cancelBtn').addEventListener('click', function() {
+        if (confirm('Discard changes and go back?')) {
+            window.location.href = `/app/cv_hub/entries/${entryId}`;
+        }
+    });
+}
+
+async function loadEntryData() {
+    try {
+        const response = await fetch(`/api/cv_hub/entries/${entryId}/`);
+        if (!response.ok) {
+            throw new Error('Failed to load entry');
+        }
+        
+        entryData = await response.json();
+        populateForm();
+        
+    } catch (error) {
+        console.error('Error loading entry:', error);
+        alert('Error loading entry data');
+        window.location.href = '/app/cv_hub/entries';
+    }
+}
+
+function populateForm() {
+    document.getElementById('loadingState').classList.add('d-none');
+    document.getElementById('mainContent').classList.remove('d-none');
+    
+    // Populate summary form
+    document.getElementById('legal_name').value = entryData.legal_name;
+    document.getElementById('trade_name').value = entryData.trade_name || '';
+    document.getElementById('constitution').value = entryData.constitution;
+    document.getElementById('status').value = entryData.status;
+    document.getElementById('website').value = entryData.website || '';
+    document.getElementById('tags').value = entryData.tags || '';
+    
+    // Populate checkboxes
+    document.getElementById('is_customer').checked = entryData.is_customer;
+    document.getElementById('is_supplier').checked = entryData.is_supplier;
+    document.getElementById('is_vendor').checked = entryData.is_vendor;
+    document.getElementById('is_logistics').checked = entryData.is_logistics;
+    document.getElementById('for_sales').checked = entryData.for_sales;
+    document.getElementById('for_purchase').checked = entryData.for_purchase;
+    
+    // Load other tabs when they're clicked
+    document.getElementById('gst-tab').addEventListener('click', loadGSTTab);
+    document.getElementById('addresses-tab').addEventListener('click', loadAddressesTab);
+    document.getElementById('contacts-tab').addEventListener('click', loadContactsTab);
+}
+
+function loadGSTTab() {
+    const container = document.getElementById('gstList');
+    
+    if (!entryData.registrations || entryData.registrations.length === 0) {
+        container.innerHTML = '<p class="text-muted">No GST registrations. Click "Add Registration" to create one.</p>';
+        return;
+    }
+    
+    container.innerHTML = entryData.registrations.map(reg => `
+        <div class="border rounded p-3 mb-2">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label small">GSTIN</label>
+                    <input type="text" class="form-control" value="${reg.gstin || ''}" maxlength="15">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">Taxpayer Type</label>
+                    <select class="form-select">
+                        <option value="REGULAR" ${reg.taxpayer_type === 'REGULAR' ? 'selected' : ''}>Regular</option>
+                        <option value="COMPOSITION" ${reg.taxpayer_type === 'COMPOSITION' ? 'selected' : ''}>Composition</option>
+                        <option value="CASUAL" ${reg.taxpayer_type === 'CASUAL' ? 'selected' : ''}>Casual</option>
+                        <option value="UNREGISTERED" ${reg.taxpayer_type === 'UNREGISTERED' ? 'selected' : ''}>Unregistered</option>
+                        <option value="OTHER" ${reg.taxpayer_type === 'OTHER' ? 'selected' : ''}>Other</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" ${reg.is_primary ? 'checked' : ''}>
+                        <label class="form-check-label">Primary</label>
+                    </div>
+                    <button type="button" class="btn btn-outline-danger btn-sm">Remove</button>
+                </div>
+                <div class="col-12">
+                    <label class="form-label small">Legal Name of Business</label>
+                    <input type="text" class="form-control" value="${reg.legal_name_of_business}">
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadAddressesTab() {
+    const container = document.getElementById('addressList');
+    
+    if (!entryData.addresses || entryData.addresses.length === 0) {
+        container.innerHTML = '<p class="text-muted">No addresses. Click "Add Address" to create one.</p>';
+        return;
+    }
+    
+    container.innerHTML = entryData.addresses.map(addr => `
+        <div class="border rounded p-3 mb-2">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small">Type</label>
+                    <select class="form-select">
+                        <option value="REGISTERED" ${addr.type === 'REGISTERED' ? 'selected' : ''}>Registered Office</option>
+                        <option value="BILLING" ${addr.type === 'BILLING' ? 'selected' : ''}>Billing</option>
+                        <option value="SHIPPING" ${addr.type === 'SHIPPING' ? 'selected' : ''}>Shipping</option>
+                        <option value="PLANT" ${addr.type === 'PLANT' ? 'selected' : ''}>Plant/Factory</option>
+                        <option value="OTHER" ${addr.type === 'OTHER' ? 'selected' : ''}>Other</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">State</label>
+                    <input type="text" class="form-control" value="${addr.state_name}" readonly>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">City</label>
+                    <input type="text" class="form-control" value="${addr.city_name}" readonly>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Pincode</label>
+                    <input type="text" class="form-control" value="${addr.pincode}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small">Address Line 1</label>
+                    <input type="text" class="form-control" value="${addr.line1}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small">Address Line 2</label>
+                    <input type="text" class="form-control" value="${addr.line2 || ''}">
+                </div>
+                <div class="col-12">
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" ${addr.is_default_billing ? 'checked' : ''}>
+                            <label class="form-check-label">Default Billing</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" ${addr.is_default_shipping ? 'checked' : ''}>
+                            <label class="form-check-label">Default Shipping</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger btn-sm ms-auto">Remove</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadContactsTab() {
+    const container = document.getElementById('contactList');
+    
+    if (!entryData.contacts || entryData.contacts.length === 0) {
+        container.innerHTML = '<p class="text-muted">No contacts. Click "Add Contact" to create one.</p>';
+        return;
+    }
+    
+    container.innerHTML = entryData.contacts.map(contact => `
+        <div class="border rounded p-3 mb-2">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label small">Full Name</label>
+                    <input type="text" class="form-control" value="${contact.full_name}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">Designation</label>
+                    <input type="text" class="form-control" value="${contact.designation || ''}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">Phone</label>
+                    <input type="tel" class="form-control" value="${contact.phone}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small">Email</label>
+                    <input type="email" class="form-control" value="${contact.email || ''}">
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" ${contact.is_primary ? 'checked' : ''}>
+                        <label class="form-check-label">Primary Contact</label>
+                    </div>
+                    <button type="button" class="btn btn-outline-danger btn-sm">Remove</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function saveEntry() {
+    const formData = {
+        legal_name: document.getElementById('legal_name').value,
+        trade_name: document.getElementById('trade_name').value,
+        constitution: document.getElementById('constitution').value,
+        status: document.getElementById('status').value,
+        website: document.getElementById('website').value,
+        tags: document.getElementById('tags').value,
+        is_customer: document.getElementById('is_customer').checked,
+        is_supplier: document.getElementById('is_supplier').checked,
+        is_vendor: document.getElementById('is_vendor').checked,
+        is_logistics: document.getElementById('is_logistics').checked,
+        for_sales: document.getElementById('for_sales').checked,
+        for_purchase: document.getElementById('for_purchase').checked,
+    };
+    
+    // Basic validation
+    if (!formData.legal_name.trim()) {
+        alert('Legal name is required');
+        return;
+    }
+    
+    if (!(formData.is_customer || formData.is_supplier || formData.is_vendor || formData.is_logistics)) {
+        alert('Select at least one role');
+        return;
+    }
+    
+    if (!(formData.for_sales || formData.for_purchase)) {
+        alert('Select at least one usage (For Sales / For Purchase)');
+        return;
+    }
+    
+    try {
+        document.getElementById('saveBtn').disabled = true;
+        
+        const response = await fetch(`/api/cv_hub/entries/${entryId}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(formData),
+        });
+        
+        if (response.ok) {
+            // Redirect to view page
+            window.location.href = `/app/cv_hub/entries/${entryId}`;
+        } else {
+            const errorData = await response.json();
+            console.error('Error saving entry:', errorData);
+            alert('Error saving entry. Please check the form and try again.');
+        }
+    } catch (error) {
+        console.error('Error saving entry:', error);
+        alert('Error saving entry. Please try again.');
+    } finally {
+        document.getElementById('saveBtn').disabled = false;
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
