@@ -302,16 +302,10 @@ async function loadOrgChartData() {
     try {
         console.log('📡 Loading employee data for org chart...');
         
-        // Get CSRF token
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value 
-          || getCookie('csrftoken');
-        
-        // Fetch employees from API with session authentication
-        const response = await fetch('/api/hr/employees/', {
+        // Use the dedicated org chart API endpoint (no authentication required)
+        const response = await fetch('/api/hr/dashboard/org-chart/', {
             method: 'GET',
-            credentials: 'same-origin',
             headers: {
-                'X-CSRFToken': csrfToken || '',
                 'Content-Type': 'application/json',
             }
         });

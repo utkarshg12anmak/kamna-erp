@@ -66,3 +66,37 @@ class HRDashboardUpcoming(APIView):
                 })
         
         return Response(sorted(items, key=lambda x: x['date']))
+
+class HRDashboardOrgChart(APIView):
+    permission_classes = [AllowAny]  # Allow access without authentication for org chart
+    
+    def get(self, request):
+        """
+        Return employee data formatted for organization chart display
+        """
+        employees = Employee.objects.filter(status=EmploymentStatus.ACTIVE).select_related(
+            'manager', 'position', 'org_unit'
+        ).only(
+            'id', 'first_name', 'last_name', 'emp_code', 'designation', 'department',
+            'manager', 'position__title', 'org_unit__name'
+        )
+        
+        employee_data = []
+        for emp in employees:
+            employee_data.append({
+                'id': emp.id,
+                'first_name': emp.first_name,
+                'last_name': emp.last_name,
+                'emp_code': emp.emp_code,
+                'designation': emp.designation,
+                'department': emp.department,
+                'manager': emp.manager.id if emp.manager else None,
+                'position': {
+                    'title': emp.position.title if emp.position else None
+                } if emp.position else None,
+                'org_unit': {
+                    'name': emp.org_unit.name if emp.org_unit else None
+                } if emp.org_unit else None
+            })
+        
+        return Response(employee_data)

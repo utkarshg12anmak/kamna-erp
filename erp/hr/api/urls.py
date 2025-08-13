@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 # Import views with error handling
 try:
     from .views import EmployeeViewSet, EmployeeDocumentViewSet, OrgUnitViewSet, PositionViewSet, AccessProfileViewSet
-    from .dashboard import HRDashboardSummary, HRDashboardUpcoming
+    from .dashboard import HRDashboardSummary, HRDashboardUpcoming, HRDashboardOrgChart
     views_imported = True
 except ImportError as e:
     print(f"Warning: Could not import HR API views: {e}")
@@ -23,6 +23,7 @@ if views_imported:
         path('', include(router.urls)),
         path('dashboard/summary/', HRDashboardSummary.as_view(), name='hr-dashboard-summary'),
         path('dashboard/upcoming/', HRDashboardUpcoming.as_view(), name='hr-dashboard-upcoming'),
+        path('dashboard/org-chart/', HRDashboardOrgChart.as_view(), name='hr-dashboard-org-chart'),
     ]
 else:
     # Fallback empty urlpatterns if imports fail
