@@ -447,14 +447,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function checkEditMode() {
   const path = window.location.pathname;
-  const matches = path.match(/\/employees\/(\d+)/);
-  if (matches) {
+  console.log('🔍 Checking edit mode for path:', path);
+  
+  // Check for edit URL pattern: /employees/{id}/edit
+  const editMatches = path.match(/\/employees\/(\d+)\/edit/);
+  
+  if (editMatches) {
     isEditMode = true;
-    employeeId = parseInt(matches[1]);
+    employeeId = parseInt(editMatches[1]);
     document.getElementById('employeeId').value = employeeId;
     document.getElementById('formTitle').textContent = 'Edit Employee';
     document.getElementById('breadcrumbTitle').textContent = 'Edit';
     document.getElementById('duplicateEmployee').style.display = 'block';
+    console.log('✅ Edit mode detected - Employee ID:', employeeId);
+  } else {
+    console.log('ℹ️ New employee mode detected');
   }
 }
 
@@ -577,6 +584,9 @@ async function loadEmployee() {
 }
 
 function populateForm(employee) {
+  // Set the hidden ID field for edit mode
+  document.getElementById('employeeId').value = employee.id || '';
+  
   // Personal info
   document.getElementById('firstName').value = employee.first_name || '';
   document.getElementById('lastName').value = employee.last_name || '';
@@ -1296,13 +1306,13 @@ async function simulateEmployeeSave(formData, isDraft) {
 
 // Real API save function
 async function saveEmployeeAPI(formData, isDraft) {
-  const url = window.location.pathname.includes('/edit/') 
-    ? '/api/hr/employees/' + document.getElementById('employeeId').value + '/'
+  const url = isEditMode 
+    ? '/api/hr/employees/' + employeeId + '/'
     : '/api/hr/employees/';
     
-  const method = window.location.pathname.includes('/edit/') ? 'PUT' : 'POST';
+  const method = isEditMode ? 'PUT' : 'POST';
   
-  console.log(`📡 API Request: ${method} ${url}`);
+  console.log(`📡 API Request: ${method} ${url} (Edit Mode: ${isEditMode})`);
   
   // Add CSRF token to FormData
   const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value 
