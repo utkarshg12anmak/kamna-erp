@@ -203,11 +203,13 @@ def employee_detail_api(request, employee_id):
                 # Parse JSON data for updates
                 data = json.loads(request.body)
                 
-                # Update fields if provided
+                # Update all available fields if provided
                 if 'first_name' in data:
                     employee.first_name = data['first_name']
                 if 'last_name' in data:
                     employee.last_name = data['last_name']
+                if 'emp_code' in data and data['emp_code']:
+                    employee.emp_code = data['emp_code']
                 if 'email' in data:
                     employee.email = data['email']
                 if 'phone' in data:
@@ -218,12 +220,72 @@ def employee_detail_api(request, employee_id):
                     employee.designation = data['designation']
                 if 'status' in data:
                     employee.status = data['status']
+                if 'gender' in data:
+                    employee.gender = data['gender']
+                
+                # Handle date fields
+                if 'birth_date' in data and data['birth_date']:
+                    from datetime import datetime
+                    try:
+                        employee.birth_date = datetime.strptime(data['birth_date'], '%Y-%m-%d').date()
+                    except ValueError:
+                        pass  # Skip invalid date formats
+                
+                if 'date_of_joining' in data and data['date_of_joining']:
+                    from datetime import datetime
+                    try:
+                        employee.date_of_joining = datetime.strptime(data['date_of_joining'], '%Y-%m-%d').date()
+                    except ValueError:
+                        pass  # Skip invalid date formats
+                
+                # Handle salary fields
+                if 'salary_amount' in data and data['salary_amount']:
+                    from decimal import Decimal, InvalidOperation
+                    try:
+                        employee.salary_amount = Decimal(str(data['salary_amount']))
+                    except (InvalidOperation, ValueError):
+                        pass  # Skip invalid salary amounts
+                
+                if 'salary_currency' in data:
+                    employee.salary_currency = data['salary_currency']
+                if 'salary_period' in data:
+                    employee.salary_period = data['salary_period']
+                
+                # Handle ID document fields
+                if 'aadhaar_last4' in data:
+                    employee.aadhaar_last4 = data['aadhaar_last4']
+                if 'pan_number' in data:
+                    employee.pan_number = data['pan_number']
+                
+                # Handle asset fields
+                if 'is_phone_assigned' in data:
+                    employee.is_phone_assigned = data['is_phone_assigned'] in ['true', True, '1', 1]
+                if 'company_assigned_phone_number' in data:
+                    employee.company_assigned_phone_number = data['company_assigned_phone_number']
+                if 'is_laptop_assigned' in data:
+                    employee.is_laptop_assigned = data['is_laptop_assigned'] in ['true', True, '1', 1]
+                if 'company_assigned_laptop' in data:
+                    employee.company_assigned_laptop = data['company_assigned_laptop']
+                
+                # Handle foreign key relationships (if IDs are provided)
+                if 'manager' in data and data['manager']:
+                    try:
+                        manager_employee = Employee.objects.get(id=int(data['manager']))
+                        employee.manager = manager_employee
+                    except (Employee.DoesNotExist, ValueError):
+                        pass  # Skip invalid manager ID
+                
+                # Handle org_unit, position, access_profile if models exist
+                # (These would need to be imported and handled based on your models)
                 
                 from django.utils import timezone
                 employee.updated_at = timezone.now()
                 employee.save()
                 
-                return JsonResponse({'message': 'Employee updated successfully'})
+                return JsonResponse({
+                    'message': 'Employee updated successfully',
+                    'updated_fields': list(data.keys())
+                })
                 
             except json.JSONDecodeError:
                 return JsonResponse({'error': 'Invalid JSON data'}, status=400)

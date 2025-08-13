@@ -1314,41 +1314,63 @@ async function saveEmployeeAPI(formData, isDraft) {
   
   console.log(`📡 API Request: ${method} ${url} (Edit Mode: ${isEditMode})`);
   
-  // Add CSRF token to FormData
+  // Get CSRF token
   const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value 
     || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
     || getCookie('csrftoken');
   
-  if (csrfToken) {
-    formData.append('csrfmiddlewaretoken', csrfToken);
-    console.log('✅ CSRF token added to request');
+  let requestBody;
+  let requestHeaders = {
+    'X-CSRFToken': csrfToken || '',
+  };
+  
+  if (isEditMode) {
+    // For PUT requests, convert FormData to JSON as backend expects JSON
+    const jsonData = {};
+    for (let [key, value] of formData.entries()) {
+      // Skip file uploads and CSRF token for JSON conversion
+      if (!(value instanceof File) && key !== 'csrfmiddlewaretoken') {
+        jsonData[key] = value;
+      }
+    }
+    
+    if (isDraft) {
+      jsonData.is_draft = 'true';
+    }
+    
+    requestBody = JSON.stringify(jsonData);
+    requestHeaders['Content-Type'] = 'application/json';
+    
+    console.log('📋 Sending JSON data for PUT request:', jsonData);
   } else {
-    console.warn('⚠️ No CSRF token found');
-  }
-  
-  // Add draft status to FormData
-  if (isDraft) {
-    formData.set('is_draft', 'true');
-  }
-  
-  // Log all form data being sent
-  console.log('📋 Sending form data:');
-  for (let [key, value] of formData.entries()) {
-    if (value instanceof File) {
-      console.log(`  ${key}: [File] ${value.name} (${value.size} bytes)`);
-    } else {
-      console.log(`  ${key}: ${value}`);
+    // For POST requests, send FormData as the backend expects it
+    if (csrfToken) {
+      formData.append('csrfmiddlewaretoken', csrfToken);
+      console.log('✅ CSRF token added to FormData');
+    }
+    
+    if (isDraft) {
+      formData.set('is_draft', 'true');
+    }
+    
+    requestBody = formData;
+    // Don't set Content-Type for FormData - let browser set it
+    
+    console.log('📋 Sending FormData for POST request:');
+    for (let [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`  ${key}: [File] ${value.name} (${value.size} bytes)`);
+      } else {
+        console.log(`  ${key}: ${value}`);
+      }
     }
   }
   
   try {
     const response = await fetch(url, {
       method: method,
-      body: formData,
-      headers: {
-        'X-CSRFToken': csrfToken || '',
-        // Don't set Content-Type - let browser set it for FormData
-      },
+      body: requestBody,
+      headers: requestHeaders,
       credentials: 'same-origin'  // Include cookies for authentication
     });
     
