@@ -173,25 +173,25 @@
     <div class="row">
         <div class="col-md-3">
             <div class="stat-card">
-                <div class="stat-number" id="totalEmployees">24</div>
+                <div class="stat-number" id="totalEmployees">-</div>
                 <div class="stat-label">Total Employees</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">
-                <div class="stat-number" id="totalManagers">8</div>
+                <div class="stat-number" id="totalManagers">-</div>
                 <div class="stat-label">Managers</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
-                <div class="stat-number" id="totalDepartments">5</div>
+                <div class="stat-number" id="totalDepartments">-</div>
                 <div class="stat-label">Departments</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);">
-                <div class="stat-number" id="avgTeamSize">3.2</div>
+                <div class="stat-number" id="avgTeamSize">-</div>
                 <div class="stat-label">Avg Team Size</div>
             </div>
         </div>
@@ -213,11 +213,7 @@
             <label class="form-label"><strong>Department Filter:</strong></label>
             <select class="form-select" id="departmentFilter" onchange="filterDepartment()">
                 <option value="">All Departments</option>
-                <option value="executive">Executive</option>
-                <option value="hr">Human Resources</option>
-                <option value="finance">Finance</option>
-                <option value="it">Information Technology</option>
-                <option value="sales">Sales & Marketing</option>
+                <!-- Department options will be populated dynamically -->
             </select>
         </div>
         <div class="col-md-4">
@@ -230,134 +226,12 @@
 
 <!-- Organizational Chart -->
 <div class="org-chart" id="orgChart">
-    <!-- CEO Level -->
-    <div class="org-level">
-        <div class="org-node ceo" data-department="executive" data-name="sarah wilson" data-position="ceo">
-            <div class="employee-photo">
-                <i class="fas fa-user-tie"></i>
-            </div>
-            <div class="employee-name">Sarah Wilson</div>
-            <div class="employee-title">Chief Executive Officer</div>
-            <div class="employee-department">Executive</div>
+    <!-- Dynamic content will be loaded here -->
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
-    </div>
-
-    <!-- Department Heads Level -->
-    <div class="org-level">
-        <div class="org-node manager" data-department="hr" data-name="michael chen" data-position="hr director">
-            <div class="employee-photo">
-                <i class="fas fa-user-friends"></i>
-            </div>
-            <div class="employee-name">Michael Chen</div>
-            <div class="employee-title">HR Director</div>
-            <div class="employee-department">Human Resources</div>
-        </div>
-        
-        <div class="org-node manager" data-department="finance" data-name="jessica taylor" data-position="cfo">
-            <div class="employee-photo">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="employee-name">Jessica Taylor</div>
-            <div class="employee-title">Chief Financial Officer</div>
-            <div class="employee-department">Finance</div>
-        </div>
-        
-        <div class="org-node manager" data-department="it" data-name="david kumar" data-position="cto">
-            <div class="employee-photo">
-                <i class="fas fa-laptop-code"></i>
-            </div>
-            <div class="employee-name">David Kumar</div>
-            <div class="employee-title">Chief Technology Officer</div>
-            <div class="employee-department">Information Technology</div>
-        </div>
-        
-        <div class="org-node manager" data-department="sales" data-name="emily rodriguez" data-position="sales director">
-            <div class="employee-photo">
-                <i class="fas fa-handshake"></i>
-            </div>
-            <div class="employee-name">Emily Rodriguez</div>
-            <div class="employee-title">Sales Director</div>
-            <div class="employee-department">Sales & Marketing</div>
-        </div>
-    </div>
-
-    <!-- Team Members Level -->
-    <div class="org-level">
-        <!-- HR Team -->
-        <div class="org-node employee" data-department="hr" data-name="robert johnson" data-position="hr specialist">
-            <div class="employee-photo">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="employee-name">Robert Johnson</div>
-            <div class="employee-title">HR Specialist</div>
-            <div class="employee-department">Human Resources</div>
-        </div>
-        
-        <div class="org-node employee" data-department="hr" data-name="lisa brown" data-position="recruiter">
-            <div class="employee-photo">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="employee-name">Lisa Brown</div>
-            <div class="employee-title">Recruiter</div>
-            <div class="employee-department">Human Resources</div>
-        </div>
-
-        <!-- Finance Team -->
-        <div class="org-node employee" data-department="finance" data-name="tom wilson" data-position="accountant">
-            <div class="employee-photo">
-                <i class="fas fa-calculator"></i>
-            </div>
-            <div class="employee-name">Tom Wilson</div>
-            <div class="employee-title">Senior Accountant</div>
-            <div class="employee-department">Finance</div>
-        </div>
-        
-        <div class="org-node employee" data-department="finance" data-name="maria garcia" data-position="analyst">
-            <div class="employee-photo">
-                <i class="fas fa-chart-bar"></i>
-            </div>
-            <div class="employee-name">Maria Garcia</div>
-            <div class="employee-title">Financial Analyst</div>
-            <div class="employee-department">Finance</div>
-        </div>
-
-        <!-- IT Team -->
-        <div class="org-node employee" data-department="it" data-name="james lee" data-position="developer">
-            <div class="employee-photo">
-                <i class="fas fa-code"></i>
-            </div>
-            <div class="employee-name">James Lee</div>
-            <div class="employee-title">Senior Developer</div>
-            <div class="employee-department">Information Technology</div>
-        </div>
-        
-        <div class="org-node employee" data-department="it" data-name="anna smith" data-position="designer">
-            <div class="employee-photo">
-                <i class="fas fa-palette"></i>
-            </div>
-            <div class="employee-name">Anna Smith</div>
-            <div class="employee-title">UI/UX Designer</div>
-            <div class="employee-department">Information Technology</div>
-        </div>
-
-        <!-- Sales Team -->
-        <div class="org-node employee" data-department="sales" data-name="chris martinez" data-position="sales rep">
-            <div class="employee-photo">
-                <i class="fas fa-phone"></i>
-            </div>
-            <div class="employee-name">Chris Martinez</div>
-            <div class="employee-title">Sales Representative</div>
-            <div class="employee-department">Sales & Marketing</div>
-        </div>
-        
-        <div class="org-node employee" data-department="sales" data-name="kelly davis" data-position="marketing manager">
-            <div class="employee-photo">
-                <i class="fas fa-bullhorn"></i>
-            </div>
-            <div class="employee-name">Kelly Davis</div>
-            <div class="employee-title">Marketing Manager</div>
-            <div class="employee-department">Sales & Marketing</div>
-        </div>
+        <p class="mt-2 text-muted">Loading organizational chart...</p>
     </div>
 </div>
 
@@ -418,8 +292,223 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeOrgChart() {
-    // Load organization data
-    updateStats();
+    // Load organization data from API
+    loadOrgChartData();
+}
+
+async function loadOrgChartData() {
+    try {
+        console.log('📡 Loading employee data for org chart...');
+        
+        // Fetch employees from API
+        const response = await fetch('/api/hr/employees/');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const employees = await response.json();
+        console.log(`✅ Loaded ${employees.length} employees`);
+        
+        // Build organizational hierarchy
+        const orgData = buildOrgHierarchy(employees);
+        
+        // Render org chart
+        renderOrgChart(orgData);
+        
+        // Update department filter options
+        updateDepartmentFilter(employees);
+        
+        // Update stats
+        updateStats();
+        
+    } catch (error) {
+        console.error('❌ Error loading org chart data:', error);
+        
+        // Fallback to show error message
+        const chartContainer = document.getElementById('orgChart');
+        chartContainer.innerHTML = `
+            <div class="alert alert-warning text-center">
+                <h5>⚠️ Unable to load organization data</h5>
+                <p>Error: ${error.message}</p>
+                <p class="mb-0">Please check your connection and try again.</p>
+            </div>
+        `;
+    }
+}
+
+function buildOrgHierarchy(employees) {
+    // Group employees by manager relationship
+    const employeeMap = new Map();
+    const managerMap = new Map();
+    
+    // First pass: create employee map
+    employees.forEach(emp => {
+        employeeMap.set(emp.id, emp);
+        if (emp.manager) {
+            if (!managerMap.has(emp.manager)) {
+                managerMap.set(emp.manager, []);
+            }
+            managerMap.get(emp.manager).push(emp);
+        }
+    });
+    
+    // Find root employees (no manager or manager not in system)
+    const roots = employees.filter(emp => 
+        !emp.manager || !employeeMap.has(emp.manager)
+    );
+    
+    console.log(`Found ${roots.length} root employees`);
+    
+    return {
+        employees: employeeMap,
+        managerMap: managerMap,
+        roots: roots
+    };
+}
+
+function renderOrgChart(orgData) {
+    const chartContainer = document.getElementById('orgChart');
+    
+    if (orgData.roots.length === 0) {
+        chartContainer.innerHTML = `
+            <div class="alert alert-info text-center">
+                <h5>ℹ️ No employees found</h5>
+                <p class="mb-0">Add employees to see the organizational chart.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let chartHTML = '';
+    
+    // Group employees by hierarchy level
+    const levels = organizeLevelsByHierarchy(orgData);
+    
+    levels.forEach((levelEmployees, levelIndex) => {
+        chartHTML += `<div class="org-level" data-level="${levelIndex}">`;
+        
+        levelEmployees.forEach(employee => {
+            const nodeClass = getEmployeeNodeClass(employee, orgData);
+            const department = employee.department || 'unassigned';
+            const fullName = `${employee.first_name} ${employee.last_name}`;
+            const position = employee.designation || employee.position?.title || 'Employee';
+            
+            chartHTML += `
+                <div class="org-node ${nodeClass}" 
+                     data-department="${department.toLowerCase()}" 
+                     data-name="${fullName.toLowerCase()}" 
+                     data-position="${position.toLowerCase()}"
+                     data-employee-id="${employee.id}">
+                    <div class="employee-photo">
+                        ${employee.profile_image ? 
+                            `<img src="${employee.profile_image}" alt="${fullName}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` :
+                            `<i class="fas fa-user"></i>`
+                        }
+                    </div>
+                    <div class="employee-name">${fullName}</div>
+                    <div class="employee-title">${position}</div>
+                    <div class="employee-department">${employee.department || 'Unassigned'}</div>
+                </div>
+            `;
+        });
+        
+        chartHTML += '</div>';
+    });
+    
+    chartContainer.innerHTML = chartHTML;
+    
+    // Re-attach event listeners
+    document.querySelectorAll('.org-node').forEach(node => {
+        node.addEventListener('click', function() {
+            showEmployeeDetails(this);
+        });
+    });
+    
+    console.log('✅ Org chart rendered successfully');
+}
+
+function organizeLevelsByHierarchy(orgData) {
+    const levels = [];
+    const processed = new Set();
+    
+    // Level 0: Root employees (CEO, top executives)
+    const ceoLevel = orgData.roots.filter(emp => 
+        !emp.manager && (
+            emp.designation?.toLowerCase().includes('ceo') ||
+            emp.designation?.toLowerCase().includes('chief') ||
+            emp.designation?.toLowerCase().includes('president') ||
+            emp.designation?.toLowerCase().includes('director')
+        )
+    );
+    
+    if (ceoLevel.length > 0) {
+        levels.push(ceoLevel);
+        ceoLevel.forEach(emp => processed.add(emp.id));
+    }
+    
+    // Level 1: Department heads and senior managers
+    const managerLevel = orgData.roots.filter(emp => 
+        !processed.has(emp.id) && (
+            orgData.managerMap.has(emp.id) || // Has direct reports
+            emp.designation?.toLowerCase().includes('manager') ||
+            emp.designation?.toLowerCase().includes('head') ||
+            emp.designation?.toLowerCase().includes('lead')
+        )
+    );
+    
+    if (managerLevel.length > 0) {
+        levels.push(managerLevel);
+        managerLevel.forEach(emp => processed.add(emp.id));
+    }
+    
+    // Level 2+: Everyone else
+    const remaining = orgData.roots.filter(emp => !processed.has(emp.id));
+    if (remaining.length > 0) {
+        levels.push(remaining);
+    }
+    
+    return levels;
+}
+
+function getEmployeeNodeClass(employee, orgData) {
+    const designation = employee.designation?.toLowerCase() || '';
+    
+    if (designation.includes('ceo') || designation.includes('chief') || designation.includes('president')) {
+        return 'ceo';
+    }
+    
+    if (orgData.managerMap.has(employee.id) || 
+        designation.includes('manager') || 
+        designation.includes('director') || 
+        designation.includes('head') || 
+        designation.includes('lead')) {
+        return 'manager';
+    }
+    
+    return 'employee';
+}
+
+function updateDepartmentFilter(employees) {
+    const departments = new Set();
+    employees.forEach(emp => {
+        if (emp.department) {
+            departments.add(emp.department);
+        }
+    });
+    
+    const departmentFilter = document.getElementById('departmentFilter');
+    
+    // Clear existing options (except "All Departments")
+    const options = departmentFilter.querySelectorAll('option:not(:first-child)');
+    options.forEach(option => option.remove());
+    
+    // Add departments from actual data
+    Array.from(departments).sort().forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.toLowerCase();
+        option.textContent = dept;
+        departmentFilter.appendChild(option);
+    });
 }
 
 function updateStats() {
@@ -561,20 +650,26 @@ function searchEmployee() {
 }
 
 function showEmployeeDetails(node) {
+    const employeeId = node.getAttribute('data-employee-id');
     const employeeData = {
         name: node.querySelector('.employee-name').textContent,
         title: node.querySelector('.employee-title').textContent,
         department: node.querySelector('.employee-department').textContent
     };
     
-    // Show employee details modal or redirect to employee page
-    if (window.notify) {
-        window.notify(
-            `Employee: ${employeeData.name}\nTitle: ${employeeData.title}\nDepartment: ${employeeData.department}`,
-            'info'
-        );
+    // Navigate to employee profile page if ID is available
+    if (employeeId) {
+        window.location.href = `/app/hr/employees/${employeeId}`;
     } else {
-        alert('Employee: ' + employeeData.name + '\nTitle: ' + employeeData.title + '\nDepartment: ' + employeeData.department);
+        // Fallback: show employee details in notification or modal
+        if (window.notify) {
+            window.notify(
+                `Employee: ${employeeData.name}\nTitle: ${employeeData.title}\nDepartment: ${employeeData.department}`,
+                'info'
+            );
+        } else {
+            alert('Employee: ' + employeeData.name + '\nTitle: ' + employeeData.title + '\nDepartment: ' + employeeData.department);
+        }
     }
 }
 </script>
