@@ -1,4 +1,7 @@
 <!-- HR Organizational Chart Content Template -->
+<!-- Hidden CSRF token for API requests -->
+{% csrf_token %}
+
 <style>
     .org-chart {
         background: #f8f9fa;
@@ -279,6 +282,22 @@
 </div>
 
 <script>
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize org chart
     initializeOrgChart();
@@ -300,13 +319,32 @@ async function loadOrgChartData() {
     try {
         console.log('📡 Loading employee data for org chart...');
         
-        // Fetch employees from API
-        const response = await fetch('/api/hr/employees/');
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value 
+          || getCookie('csrftoken');
+        
+        // Fetch employees from API with session authentication
+        const response = await fetch('/api/hr/employees/', {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRFToken': csrfToken || '',
+                'Content-Type': 'application/json',
+            }
+        });
+        
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const employees = await response.json();
+        
+        // Verify that employees is an array
+        if (!Array.isArray(employees)) {
+            console.error('❌ API returned non-array data:', employees);
+            throw new Error('Invalid data format: expected array of employees');
+        }
+        
         console.log(`✅ Loaded ${employees.length} employees`);
         
         // Build organizational hierarchy

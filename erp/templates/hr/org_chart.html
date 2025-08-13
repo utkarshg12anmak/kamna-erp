@@ -14,6 +14,9 @@
     </div>
 </div>
 
+<!-- Hidden CSRF token for API requests -->
+{% csrf_token %}
+
 <!-- Organization Statistics -->
 <div class="org-stats">
     <div class="row">
@@ -318,6 +321,13 @@ async function loadOrgChartData() {
         }
         
         const employees = await response.json();
+        
+        // Verify that employees is an array
+        if (!Array.isArray(employees)) {
+            console.error('❌ API returned non-array data:', employees);
+            throw new Error('Invalid data format: expected array of employees');
+        }
+        
         console.log(`✅ Loaded ${employees.length} employees`);
         
         // Build organizational hierarchy
