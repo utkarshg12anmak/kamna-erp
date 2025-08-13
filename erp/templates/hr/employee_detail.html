@@ -244,12 +244,10 @@ async function loadEmployeeDetails() {
     document.getElementById('loadingState').style.display = 'block';
     document.getElementById('errorState').style.display = 'none';
     
-    // Note: API temporarily disabled, using mock data
-    employeeData = await getMockEmployeeData(employeeId);
-    
-    // const response = await fetch(`/api/hr/employees/${employeeId}/`);
-    // if (!response.ok) throw new Error('Failed to fetch employee');
-    // employeeData = await response.json();
+    // Use real API to fetch employee data
+    const response = await fetch(`/api/hr/employees/${employeeId}/`);
+    if (!response.ok) throw new Error('Failed to fetch employee');
+    employeeData = await response.json();
     
     populateEmployeeDetails();
     loadDocuments();
