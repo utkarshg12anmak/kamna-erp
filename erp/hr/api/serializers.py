@@ -45,7 +45,7 @@ class EmployeeListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Employee
-        fields = ['id', 'emp_code', 'full_name', 'gender', 'email', 'phone', 'department', 'designation', 
+        fields = ['id', 'emp_code', 'first_name', 'last_name', 'full_name', 'gender', 'email', 'phone', 'department', 'designation', 
                  'date_of_joining', 'status', 'aadhaar_masked', 'pan_number', 'profile_image', 
                  'is_phone_assigned', 'is_laptop_assigned']
     

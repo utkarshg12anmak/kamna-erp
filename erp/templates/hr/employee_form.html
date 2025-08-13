@@ -489,60 +489,160 @@ async function loadFormData() {
 }
 
 async function loadOrgUnits() {
-  const response = await fetch('/api/hr/org-units/');
-  if (response.ok) {
-    const data = await response.json();
-    const select = document.getElementById('orgUnit');
-    (data.results || data).forEach(unit => {
-      const option = document.createElement('option');
-      option.value = unit.id;
-      option.textContent = unit.name;
-      select.appendChild(option);
+  try {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value 
+      || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      || getCookie('csrftoken');
+    
+    const response = await fetch('/api/hr/org-units/', {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: {
+        'X-CSRFToken': csrfToken || '',
+        'Content-Type': 'application/json',
+      }
     });
+    
+    if (response.ok) {
+      const data = await response.json();
+      const select = document.getElementById('orgUnit');
+      
+      // Clear existing options except the default one
+      select.innerHTML = '<option value="">Select Org Unit</option>';
+      
+      (data.results || data).forEach(unit => {
+        const option = document.createElement('option');
+        option.value = unit.id;
+        option.textContent = unit.name;
+        select.appendChild(option);
+      });
+      
+      console.log('✅ Org units loaded successfully:', (data.results || data).length, 'units');
+    } else {
+      console.error('❌ Failed to load org units:', response.status, response.statusText);
+    }
+  } catch (error) {
+    console.error('❌ Error loading org units:', error);
   }
 }
 
 async function loadPositions() {
-  const response = await fetch('/api/hr/positions/');
-  if (response.ok) {
-    const data = await response.json();
-    const select = document.getElementById('position');
-    (data.results || data).forEach(position => {
-      const option = document.createElement('option');
-      option.value = position.id;
-      option.textContent = position.title;
-      select.appendChild(option);
+  try {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value 
+      || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      || getCookie('csrftoken');
+    
+    const response = await fetch('/api/hr/positions/', {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: {
+        'X-CSRFToken': csrfToken || '',
+        'Content-Type': 'application/json',
+      }
     });
+    
+    if (response.ok) {
+      const data = await response.json();
+      const select = document.getElementById('position');
+      
+      // Clear existing options except the default one
+      select.innerHTML = '<option value="">Select Position</option>';
+      
+      (data.results || data).forEach(position => {
+        const option = document.createElement('option');
+        option.value = position.id;
+        option.textContent = position.title;
+        select.appendChild(option);
+      });
+      
+      console.log('✅ Positions loaded successfully:', (data.results || data).length, 'positions');
+    } else {
+      console.error('❌ Failed to load positions:', response.status, response.statusText);
+      // Don't show error to user unless it's critical
+      if (response.status === 403 || response.status === 401) {
+        console.warn('⚠️ Authentication required for positions API');
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error loading positions:', error);
   }
 }
 
 async function loadManagers() {
-  const response = await fetch('/api/hr/employees/?status=ACTIVE');
-  if (response.ok) {
-    const data = await response.json();
-    const select = document.getElementById('manager');
-    (data.results || data).forEach(emp => {
-      if (emp.id !== employeeId) { // Don't show self as manager option
-        const option = document.createElement('option');
-        option.value = emp.id;
-        option.textContent = `${emp.first_name} ${emp.last_name} (${emp.emp_code})`;
-        select.appendChild(option);
+  try {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value 
+      || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      || getCookie('csrftoken');
+    
+    const response = await fetch('/api/hr/employees/?status=ACTIVE', {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: {
+        'X-CSRFToken': csrfToken || '',
+        'Content-Type': 'application/json',
       }
     });
+    
+    if (response.ok) {
+      const data = await response.json();
+      const select = document.getElementById('manager');
+      
+      // Clear existing options except the default one
+      select.innerHTML = '<option value="">Select Manager</option>';
+      
+      (data.results || data).forEach(emp => {
+        if (emp.id !== employeeId) { // Don't show self as manager option
+          const option = document.createElement('option');
+          option.value = emp.id;
+          option.textContent = `${emp.first_name} ${emp.last_name} (${emp.emp_code})`;
+          select.appendChild(option);
+        }
+      });
+      
+      console.log('✅ Managers loaded successfully:', (data.results || data).length, 'managers');
+    } else {
+      console.error('❌ Failed to load managers:', response.status, response.statusText);
+    }
+  } catch (error) {
+    console.error('❌ Error loading managers:', error);
   }
 }
 
 async function loadAccessProfiles() {
-  const response = await fetch('/api/hr/access-profiles/');
-  if (response.ok) {
-    const data = await response.json();
-    const select = document.getElementById('accessProfile');
-    (data.results || data).forEach(profile => {
-      const option = document.createElement('option');
-      option.value = profile.id;
-      option.textContent = profile.name;
-      select.appendChild(option);
+  try {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value 
+      || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      || getCookie('csrftoken');
+    
+    const response = await fetch('/api/hr/access-profiles/', {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: {
+        'X-CSRFToken': csrfToken || '',
+        'Content-Type': 'application/json',
+      }
     });
+    
+    if (response.ok) {
+      const data = await response.json();
+      const select = document.getElementById('accessProfile');
+      
+      // Clear existing options except the default one
+      select.innerHTML = '<option value="">Select Access Profile</option>';
+      
+      (data.results || data).forEach(profile => {
+        const option = document.createElement('option');
+        option.value = profile.id;
+        option.textContent = profile.name;
+        select.appendChild(option);
+      });
+      
+      console.log('✅ Access profiles loaded successfully:', (data.results || data).length, 'profiles');
+    } else {
+      console.error('❌ Failed to load access profiles:', response.status, response.statusText);
+    }
+  } catch (error) {
+    console.error('❌ Error loading access profiles:', error);
   }
 }
 
