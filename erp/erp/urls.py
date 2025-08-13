@@ -76,7 +76,7 @@ urlpatterns = [
     path("", include("catalog.urls")),
     path("api/warehousing/", include("warehousing.urls")),
     path("api/cv_hub/", include("cv_hub.api.urls")),
-    # path("api/hr/", include("hr.api.urls")),  # Temporarily disabled due to circular import
+    path("api/hr/", include("hr.api.simple_urls")),  # Simplified HR API for testing
     path("api/auth/jwt/create/", TokenObtainPairView.as_view(), name="jwt-create"),
     path("api/auth/jwt/refresh/", TokenRefreshView.as_view(), name="jwt-refresh"),
     path("api/auth/me/", AuthMeView.as_view(), name="auth-me"),

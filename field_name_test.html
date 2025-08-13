@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Form Field Name Test</title>
+</head>
+<body>
+    <h2>Employee Form Field Name Verification</h2>
+    <form id="testForm">
+        <!-- Test the actual field names used in the employee form -->
+        <input type="text" id="firstName" name="first_name" value="John" placeholder="First Name">
+        <input type="text" id="lastName" name="last_name" value="Doe" placeholder="Last Name">
+        <input type="email" id="email" name="email" value="john@example.com" placeholder="Email">
+        <input type="tel" id="phone" name="phone" value="+91 9876543210" placeholder="Phone">
+        <input type="date" id="joiningDate" name="date_of_joining" value="2023-01-15" placeholder="Joining Date">
+        <button type="button" onclick="testFormData()">Test Form Data</button>
+    </form>
+
+    <div id="results"></div>
+
+    <script>
+        function testFormData() {
+            const form = document.getElementById('testForm');
+            const formData = new FormData(form);
+            
+            console.log('=== FORM DATA TEST ===');
+            
+            const results = document.getElementById('results');
+            let html = '<h3>Form Data Entries:</h3><ul>';
+            
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
+                html += `<li><strong>${key}:</strong> ${value}</li>`;
+            }
+            
+            html += '</ul>';
+            
+            // Test specific field access
+            html += '<h3>Specific Field Tests:</h3><ul>';
+            html += `<li>formData.get('first_name'): ${formData.get('first_name')}</li>`;
+            html += `<li>formData.get('last_name'): ${formData.get('last_name')}</li>`;
+            html += `<li>formData.get('email'): ${formData.get('email')}</li>`;
+            html += `<li>formData.get('phone'): ${formData.get('phone')}</li>`;
+            html += `<li>formData.get('date_of_joining'): ${formData.get('date_of_joining')}</li>`;
+            html += '</ul>';
+            
+            // Test validation logic
+            html += '<h3>Validation Tests:</h3><ul>';
+            const firstName = formData.get('first_name');
+            const phone = formData.get('phone');
+            const joiningDate = formData.get('date_of_joining');
+            
+            html += `<li>First name valid: ${firstName && firstName.trim() !== '' ? '✅ YES' : '❌ NO'}</li>`;
+            html += `<li>Phone valid: ${phone && phone.trim() !== '' ? '✅ YES' : '❌ NO'}</li>`;
+            html += `<li>Joining date valid: ${joiningDate ? '✅ YES' : '❌ NO'}</li>`;
+            html += '</ul>';
+            
+            results.innerHTML = html;
+        }
+        
+        // Auto-run test on page load
+        window.onload = function() {
+            testFormData();
+        };
+    </script>
+</body>
+</html>

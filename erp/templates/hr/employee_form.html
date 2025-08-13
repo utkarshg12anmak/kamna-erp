@@ -19,6 +19,7 @@
 
   <!-- Form Container -->
   <form id="employeeForm" class="row g-3">
+    {% csrf_token %}
     <input type="hidden" id="employeeId" name="id">
     
     <!-- Left Column - Main Info -->
@@ -377,12 +378,67 @@
 </template>
 
 <script>
+// COMPREHENSIVE ERROR DETECTION SYSTEM
+(function() {
+  console.log('🔍 ERROR DETECTION SYSTEM INITIALIZED');
+  
+  // Override console.error to capture all errors
+  const originalError = console.error;
+  console.error = function(...args) {
+    originalError.apply(console, ['❌ CAPTURED ERROR:', ...args]);
+    document.body.insertAdjacentHTML('beforeend', 
+      `<div style="position:fixed;bottom:10px;right:10px;background:red;color:white;padding:5px;z-index:9999;max-width:300px;font-size:12px;">
+        ERROR: ${args.join(' ')}
+      </div>`
+    );
+  };
+  
+  // Global error handler
+  window.addEventListener('error', function(e) {
+    console.error('Global Error:', e.error?.message || e.message, 'at', e.filename + ':' + e.lineno);
+  });
+  
+  // Unhandled promise rejection handler
+  window.addEventListener('unhandledrejection', function(e) {
+    console.error('Unhandled Promise Rejection:', e.reason);
+  });
+  
+  // Function to check element existence with detailed logging
+  window.debugElementCheck = function(selector, expectedCount = 1) {
+    const elements = document.querySelectorAll(selector);
+    console.log(`🔍 Element Check: "${selector}" - Found: ${elements.length}, Expected: ${expectedCount}`);
+    if (elements.length !== expectedCount) {
+      console.error(`Element mismatch for "${selector}". Found ${elements.length}, expected ${expectedCount}`);
+    }
+    return elements;
+  };
+  
+  // Function to log button click attempts
+  window.logButtonClick = function(buttonId, event) {
+    console.log(`🖱️ Button clicked: ${buttonId}`, {
+      event: event,
+      target: event.target,
+      currentTarget: event.currentTarget,
+      preventDefault: event.preventDefault ? 'available' : 'missing',
+      stopPropagation: event.stopPropagation ? 'available' : 'missing'
+    });
+  };
+})();
+
 let isEditMode = false;
 let employeeId = null;
 let originalData = {};
 
 // Initialize form
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('📄 DOMContentLoaded fired - Starting element checks');
+  
+  // Immediate element checks
+  debugElementCheck('#employeeForm', 1);
+  debugElementCheck('#saveAsDraft', 1);
+  debugElementCheck('button[type="submit"]', 1);
+  debugElementCheck('form#employeeForm', 1);
+  
   checkEditMode();
   loadFormData();
   setupEventListeners();
@@ -587,9 +643,8 @@ function displayFieldChanges(changes) {
 }
 
 function setupEventListeners() {
-  // Form submission
-  document.getElementById('employeeForm').addEventListener('submit', handleSubmit);
-  document.getElementById('saveAsDraft').addEventListener('click', () => handleSubmit(null, true));
+  // Note: Form submission handlers are set up in DOMContentLoaded below
+  // to avoid conflicts with saveEmployee function
   
   // Real-time validation
   document.getElementById('firstName').addEventListener('input', updateSummary);
@@ -941,7 +996,413 @@ function previewProfileImage(event) {
 
 // Utility function
 function showToast(message, type = 'info') {
-  // Implementation depends on your toast system
-  console.log(`${type.toUpperCase()}: ${message}`);
+  // Try to use existing notification system or create a simple alert
+  if (window.notify) {
+    window.notify(message, type);
+  } else if (window.showToast) {
+    window.showToast(message, type);
+  } else {
+    // Fallback to alert and console
+    console.log(`${type.toUpperCase()}: ${message}`);
+    
+    // Create a simple toast notification
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.remove();
+      }
+    }, 3000);
+  }
+}
+
+// Form submission handlers
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('📋 Setting up form submission handlers...');
+  
+  const form = document.getElementById('employeeForm');
+  const saveButton = document.querySelector('button[form="employeeForm"]');
+  const saveAsDraftButton = document.getElementById('saveAsDraft');
+  
+  // Enhanced element existence checking
+  console.log('🔍 Form element check:', form ? 'FOUND' : 'NOT FOUND');
+  console.log('🔍 Save button check:', saveButton ? 'FOUND' : 'NOT FOUND');
+  console.log('🔍 Save as Draft button check:', saveAsDraftButton ? 'FOUND' : 'NOT FOUND');
+  
+  if (!form) {
+    console.error('❌ CRITICAL: Form element #employeeForm not found!');
+    return;
+  }
+  
+  if (!saveButton) {
+    console.error('❌ WARNING: Save button not found! Looking for alternatives...');
+    const allSubmitButtons = document.querySelectorAll('button[type="submit"]');
+    console.log('🔍 All submit buttons found:', allSubmitButtons.length);
+    allSubmitButtons.forEach((btn, idx) => {
+      console.log(`  Button ${idx}:`, btn.textContent.trim(), btn.getAttribute('form'));
+    });
+  }
+  
+  if (!saveAsDraftButton) {
+    console.error('❌ WARNING: Save as Draft button not found!');
+  }
+  
+  // Enhanced form submission handler
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      console.log('📝 FORM SUBMIT EVENT TRIGGERED');
+      logButtonClick('form-submit', e);
+      e.preventDefault();
+      console.log('✅ Default prevented, calling saveEmployee(false)');
+      
+      try {
+        saveEmployee(false);
+      } catch (error) {
+        console.error('❌ Error in saveEmployee:', error);
+      }
+    });
+    console.log('✅ Form submit listener attached');
+  }
+  
+  // Enhanced save as draft handler
+  if (saveAsDraftButton) {
+    saveAsDraftButton.addEventListener('click', function(e) {
+      console.log('💾 SAVE AS DRAFT BUTTON CLICKED');
+      logButtonClick('save-as-draft', e);
+      e.preventDefault();
+      console.log('✅ Default prevented, calling saveEmployee(true)');
+      
+      try {
+        saveEmployee(true);
+      } catch (error) {
+        console.error('❌ Error in saveEmployee draft:', error);
+      }
+    });
+    console.log('✅ Save as Draft listener attached');
+  }
+  
+  // Enhanced save button handler (backup)
+  if (saveButton) {
+    saveButton.addEventListener('click', function(e) {
+      console.log('💾 SAVE BUTTON CLICKED DIRECTLY');
+      logButtonClick('save-button', e);
+      e.preventDefault();
+      console.log('✅ Default prevented, calling saveEmployee(false)');
+      
+      try {
+        saveEmployee(false);
+      } catch (error) {
+        console.error('❌ Error in saveEmployee:', error);
+      }
+    });
+    console.log('✅ Save button listener attached');
+  }
+  
+  // Additional debugging - monitor all click events on buttons
+  document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'BUTTON') {
+      console.log('🖱️ Button clicked:', {
+        id: e.target.id,
+        type: e.target.type,
+        form: e.target.getAttribute('form'),
+        text: e.target.textContent.trim(),
+        classes: e.target.className
+      });
+    }
+  }, true);
+  
+  console.log('📋 Form submission handlers setup complete');
+  
+  // Add visual indicator that debugging is active
+  const debugIndicator = document.createElement('div');
+  debugIndicator.innerHTML = `
+    <div style="position: fixed; top: 10px; left: 10px; background: #28a745; color: white; padding: 8px 12px; border-radius: 4px; z-index: 9999; font-size: 12px; font-family: monospace;">
+      🔍 DEBUG MODE ACTIVE
+      <button onclick="window.testSaveEmployee()" style="margin-left: 10px; background: white; color: #28a745; border: none; padding: 2px 6px; border-radius: 2px; cursor: pointer; font-size: 11px;">
+        Test Save
+      </button>
+    </div>
+  `;
+  document.body.appendChild(debugIndicator);
+  
+  // Add global test function
+  window.testSaveEmployee = function() {
+    console.log('🧪 MANUAL TEST: Triggering saveEmployee function...');
+    try {
+      saveEmployee(false);
+    } catch (error) {
+      console.error('❌ Manual test error:', error);
+    }
+  };
+  
+  // Log page readiness
+  console.log('🚀 PAGE FULLY LOADED AND DEBUGGING ACTIVE');
+});
+
+async function saveEmployee(isDraft = false) {
+  console.log(`💾 SAVE EMPLOYEE FUNCTION CALLED - isDraft: ${isDraft}`);
+  
+  try {
+    const form = document.getElementById('employeeForm');
+    
+    if (!form) {
+      console.error('❌ CRITICAL ERROR: Form not found in saveEmployee!');
+      showToast('Error: Form not found', 'error');
+      return;
+    }
+    
+    console.log('✅ Form found, proceeding with save...');
+    
+    // Validate form if not saving as draft
+    if (!isDraft) {
+      console.log('🔍 Validating form (not draft)...');
+      if (!validateForm()) {
+        console.log('❌ Form validation failed');
+        showValidationErrors();
+        showToast('Please fix the validation errors before saving', 'error');
+        return;
+      }
+      console.log('✅ Form validation passed');
+    } else {
+      console.log('⏭️ Skipping validation (draft mode)');
+    }
+    
+    const formData = new FormData(form);
+    
+    // Add draft status
+    if (isDraft) {
+      formData.append('is_draft', 'true');
+    }
+    
+    // Debug: Log all form data entries
+    console.log('📋 Form data prepared, entries:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`  ${key}: ${value}`);
+    }
+    console.log(`📊 Total entries: ${Array.from(formData.entries()).length}`);
+    
+    // Show loading state
+    const saveButton = isDraft ? 
+      document.getElementById('saveAsDraft') : 
+      document.querySelector('button[form="employeeForm"]');
+    
+    const originalText = saveButton ? saveButton.textContent : 'Save Employee';
+    console.log('🔄 Setting loading state on button:', saveButton ? saveButton.id : 'button not found');
+    
+    if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    }
+    
+    console.log('📡 Starting save process...');
+    
+    // Use real API instead of simulation
+    await saveEmployeeAPI(formData, isDraft);
+    
+    console.log('✅ Save completed successfully');
+    
+    // Show success message
+    const message = isDraft ? 
+      'Employee saved as draft successfully!' : 
+      'Employee saved successfully!';
+    
+    showToast(message, 'success');
+    
+    // Redirect to employee list after successful save (not draft)
+    if (!isDraft) {
+      console.log('🔄 Redirecting to employee list...');
+      setTimeout(() => {
+        window.location.href = '/app/hr/employees';
+      }, 1500);
+    }
+    
+  } catch (error) {
+    console.error('❌ SAVE ERROR:', error);
+    console.error('Error stack:', error.stack);
+    showToast('Error saving employee: ' + error.message, 'error');
+  } finally {
+    // Restore button state
+    const saveButton = isDraft ? 
+      document.getElementById('saveAsDraft') : 
+      document.querySelector('button[form="employeeForm"]');
+      
+    if (saveButton) {
+      console.log('🔄 Restoring button state');
+      saveButton.disabled = false;
+      saveButton.textContent = saveButton === document.getElementById('saveAsDraft') ? 'Save as Draft' : 'Save Employee';
+    }
+  }
+}
+
+async function simulateEmployeeSave(formData, isDraft) {
+  // Simulate API call with validation
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // Basic validation - using correct field names from Django model
+      const firstName = formData.get('first_name');  // Fixed: was 'firstName'
+      const lastName = formData.get('last_name');    // Fixed: was 'lastName'
+      const email = formData.get('email');
+      const phone = formData.get('phone');
+      const joiningDate = formData.get('date_of_joining');
+      
+      console.log('🔍 Form data validation:', {
+        firstName: firstName || 'MISSING',
+        lastName: lastName || 'MISSING', 
+        email: email || 'MISSING',
+        phone: phone || 'MISSING',
+        joiningDate: joiningDate || 'MISSING'
+      });
+      
+      if (!isDraft) {
+        if (!firstName || firstName.trim() === '') {
+          reject(new Error('First name is required'));
+          return;
+        }
+        
+        if (!phone || phone.trim() === '') {
+          reject(new Error('Phone number is required'));
+          return;
+        }
+        
+        if (!joiningDate) {
+          reject(new Error('Date of joining is required'));
+          return;
+        }
+        
+        if (email && !validateEmail(email)) {
+          reject(new Error('Please enter a valid email address'));
+          return;
+        }
+      }
+      
+      // Simulate successful save
+      console.log('✅ Validation passed, employee data to save:', Object.fromEntries(formData));
+      resolve({ 
+        success: true, 
+        message: isDraft ? 'Employee saved as draft successfully' : 'Employee saved successfully',
+        id: Math.floor(Math.random() * 1000) + 1
+      });
+    }, 1000); // Simulate network delay
+  });
+}
+
+// Real API save function
+async function saveEmployeeAPI(formData, isDraft) {
+  const url = window.location.pathname.includes('/edit/') 
+    ? '/api/hr/employees/' + document.getElementById('employeeId').value + '/'
+    : '/api/hr/employees/';
+    
+  const method = window.location.pathname.includes('/edit/') ? 'PUT' : 'POST';
+  
+  console.log(`📡 API Request: ${method} ${url}`);
+  
+  // Add CSRF token to FormData
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value 
+    || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+    || getCookie('csrftoken');
+  
+  if (csrfToken) {
+    formData.append('csrfmiddlewaretoken', csrfToken);
+    console.log('✅ CSRF token added to request');
+  } else {
+    console.warn('⚠️ No CSRF token found');
+  }
+  
+  // Add draft status to FormData
+  if (isDraft) {
+    formData.set('is_draft', 'true');
+  }
+  
+  // Log all form data being sent
+  console.log('📋 Sending form data:');
+  for (let [key, value] of formData.entries()) {
+    if (value instanceof File) {
+      console.log(`  ${key}: [File] ${value.name} (${value.size} bytes)`);
+    } else {
+      console.log(`  ${key}: ${value}`);
+    }
+  }
+  
+  try {
+    const response = await fetch(url, {
+      method: method,
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrfToken || '',
+        // Don't set Content-Type - let browser set it for FormData
+      },
+      credentials: 'same-origin'  // Include cookies for authentication
+    });
+    
+    console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+    
+    if (!response.ok) {
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        console.error('❌ API Error Data:', errorData);
+        
+        // Handle validation errors
+        if (response.status === 400 && errorData) {
+          const errorMessages = [];
+          for (const [field, messages] of Object.entries(errorData)) {
+            if (Array.isArray(messages)) {
+              errorMessages.push(`${field}: ${messages.join(', ')}`);
+            } else {
+              errorMessages.push(`${field}: ${messages}`);
+            }
+          }
+          errorMessage = errorMessages.join('; ');
+        } else if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (parseError) {
+        console.error('❌ Could not parse error response:', parseError);
+        errorMessage = `Server returned ${response.status}. Please check the server logs.`;
+      }
+      
+      throw new Error(errorMessage);
+    }
+    
+    const result = await response.json();
+    console.log('✅ API Response:', result);
+    return result;
+    
+  } catch (networkError) {
+    console.error('❌ Network Error:', networkError);
+    
+    if (networkError.name === 'TypeError' && networkError.message.includes('fetch')) {
+      throw new Error('Network error: Could not connect to server. Please check if the server is running.');
+    }
+    
+    throw networkError;
+  }
+}
+
+// Helper function to get CSRF cookie
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
 }
 </script>

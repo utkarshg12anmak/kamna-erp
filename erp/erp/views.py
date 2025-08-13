@@ -348,4 +348,4 @@ def hr_employee_edit(request, id: int):
 
 
 def hr_org_chart(request):
-    return render_module(request, "HR & Employees", hr_menu("/app/hr/org-chart"), "hr/org_chart.html")
+    return render_module(request, "HR & Employees", hr_menu("/app/hr/org-chart"), "hr/org_chart_content.html")
