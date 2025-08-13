@@ -1130,31 +1130,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }, true);
   
   console.log('📋 Form submission handlers setup complete');
-  
-  // Add visual indicator that debugging is active
-  const debugIndicator = document.createElement('div');
-  debugIndicator.innerHTML = `
-    <div style="position: fixed; top: 10px; left: 10px; background: #28a745; color: white; padding: 8px 12px; border-radius: 4px; z-index: 9999; font-size: 12px; font-family: monospace;">
-      🔍 DEBUG MODE ACTIVE
-      <button onclick="window.testSaveEmployee()" style="margin-left: 10px; background: white; color: #28a745; border: none; padding: 2px 6px; border-radius: 2px; cursor: pointer; font-size: 11px;">
-        Test Save
-      </button>
-    </div>
-  `;
-  document.body.appendChild(debugIndicator);
-  
-  // Add global test function
-  window.testSaveEmployee = function() {
-    console.log('🧪 MANUAL TEST: Triggering saveEmployee function...');
-    try {
-      saveEmployee(false);
-    } catch (error) {
-      console.error('❌ Manual test error:', error);
-    }
-  };
-  
-  // Log page readiness
-  console.log('🚀 PAGE FULLY LOADED AND DEBUGGING ACTIVE');
 });
 
 async function saveEmployee(isDraft = false) {
