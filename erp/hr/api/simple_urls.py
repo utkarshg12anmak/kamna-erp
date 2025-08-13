@@ -4,8 +4,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
 
-@csrf_exempt
-@require_http_methods(["GET", "POST"])
+@csrf_exempt  
+@require_http_methods(["GET", "POST", "DELETE"])
 def employees_api(request):
     """Simple employee API endpoint that actually returns database data"""
     
@@ -57,6 +57,29 @@ def employees_api(request):
             return JsonResponse(data, status=201)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+    
+    elif request.method == "DELETE":
+        # Delete all employees endpoint
+        try:
+            from hr.models import Employee
+            
+            current_count = Employee.objects.count()
+            if current_count > 0:
+                deleted_count, _ = Employee.objects.all().delete()
+                return JsonResponse({
+                    'message': f'Successfully deleted {deleted_count} employees',
+                    'deleted_count': deleted_count,
+                    'remaining_count': Employee.objects.count()
+                }, status=200)
+            else:
+                return JsonResponse({
+                    'message': 'No employees found to delete',
+                    'deleted_count': 0,
+                    'remaining_count': 0
+                }, status=200)
+                
+        except Exception as e:
+            return JsonResponse({'error': f'Delete error: {str(e)}'}, status=500)
 
 urlpatterns = [
     path('employees/', employees_api, name='employees-api'),

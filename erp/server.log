@@ -552,3 +552,199 @@ Not Found: /api/hr/dashboard/summary/
 Not Found: /api/hr/org-units/
 [13/Aug/2025 01:53:23] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
 [13/Aug/2025 01:53:23] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:31] "GET /app/hr/org-chart HTTP/1.1" 200 25779
+[13/Aug/2025 01:53:32] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:53:32] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:53:32] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:54:22] "GET /app/hr/employees/1 HTTP/1.1" 200 24884
+[13/Aug/2025 01:54:35] "GET /app HTTP/1.1" 200 6535
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/api/simple_urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 13, 2025 - 01:17:22
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/api/simple_urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 13, 2025 - 01:57:04
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+[13/Aug/2025 01:57:52] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 01:57:52] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23807
+[13/Aug/2025 01:57:52] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23778
+[13/Aug/2025 01:57:52] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:57:52] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:57:52] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:57:53] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:57:53] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:57:53] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:46] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:58:46] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:58:46] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:47] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:58:47] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:58:47] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:47] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:58:47] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:58:47] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:49] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 01:58:49] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23778
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 01:58:49] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23807
+[13/Aug/2025 01:58:49] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:49] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:49] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:51] "GET /app/hr/org-chart HTTP/1.1" 200 25779
+[13/Aug/2025 01:58:52] "GET /app/hr/employees/new HTTP/1.1" 200 59387
+Not Found: /api/hr/org-units/
+Not Found: /api/hr/positions/
+[13/Aug/2025 01:58:52] "GET /api/hr/positions/ HTTP/1.1" 404 23754
+Not Found: /api/hr/access-profiles/
+[13/Aug/2025 01:58:52] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:58:52] "GET /api/hr/access-profiles/ HTTP/1.1" 404 23772
+[13/Aug/2025 01:58:52] "GET /api/hr/employees/?status=ACTIVE HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:52] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:54] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:58:54] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:58:54] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:55] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 01:58:55] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23778
+[13/Aug/2025 01:58:55] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23807
+[13/Aug/2025 01:58:55] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:55] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:55] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:55] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 01:58:55] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23807
+[13/Aug/2025 01:58:55] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23778
+[13/Aug/2025 01:58:55] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:55] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:55] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:56] "GET /app HTTP/1.1" 200 6535
+[13/Aug/2025 01:58:58] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 01:58:58] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23778
+[13/Aug/2025 01:58:58] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23807
+[13/Aug/2025 01:58:58] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:58] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:58] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:58:59] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:58:59] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:58:59] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:59:14] "GET /app HTTP/1.1" 200 6535
+[13/Aug/2025 01:59:17] "GET /admin/ HTTP/1.1" 200 22759
+[13/Aug/2025 01:59:17] "GET /static/admin/css/dark_mode.css HTTP/1.1" 304 0
+[13/Aug/2025 01:59:17] "GET /static/admin/css/base.css HTTP/1.1" 304 0
+[13/Aug/2025 01:59:17] "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 304 0
+[13/Aug/2025 01:59:17] "GET /static/admin/css/responsive.css HTTP/1.1" 304 0
+[13/Aug/2025 01:59:17] "GET /static/admin/js/theme.js HTTP/1.1" 304 0
+[13/Aug/2025 01:59:17] "GET /static/admin/css/dashboard.css HTTP/1.1" 304 0
+[13/Aug/2025 01:59:17] "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 304 0
+[13/Aug/2025 01:59:17] "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 304 0
+[13/Aug/2025 01:59:17] "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 304 0
+[13/Aug/2025 01:59:17] "GET /static/admin/img/icon-viewlink.svg HTTP/1.1" 304 0
+[13/Aug/2025 01:59:27] "GET /admin/hr/employee/ HTTP/1.1" 200 35164
+[13/Aug/2025 01:59:27] "GET /static/admin/css/changelists.css HTTP/1.1" 304 0
+[13/Aug/2025 01:59:27] "GET /static/admin/js/jquery.init.js HTTP/1.1" 304 0
+[13/Aug/2025 01:59:27] "GET /static/admin/js/core.js HTTP/1.1" 304 0
+[13/Aug/2025 01:59:27] "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 304 0
+[13/Aug/2025 01:59:27] "GET /static/admin/js/prepopulate.js HTTP/1.1" 304 0
+[13/Aug/2025 01:59:27] "GET /static/admin/js/actions.js HTTP/1.1" 304 0
+[13/Aug/2025 01:59:27] "GET /static/admin/js/urlify.js HTTP/1.1" 304 0
+[13/Aug/2025 01:59:27] "GET /static/admin/img/search.svg HTTP/1.1" 304 0
+[13/Aug/2025 01:59:27] "GET /static/admin/js/filters.js HTTP/1.1" 304 0
+[13/Aug/2025 01:59:27] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[13/Aug/2025 01:59:27] "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 304 0
+[13/Aug/2025 01:59:36] "POST /admin/hr/employee/ HTTP/1.1" 200 23396
+[13/Aug/2025 01:59:36] "GET /static/admin/js/cancel.js HTTP/1.1" 200 884
+[13/Aug/2025 01:59:40] "POST /admin/hr/employee/ HTTP/1.1" 302 0
+[13/Aug/2025 01:59:40] "GET /admin/hr/employee/ HTTP/1.1" 200 21957
+[13/Aug/2025 01:59:40] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[13/Aug/2025 01:59:40] "GET /static/admin/img/icon-yes.svg HTTP/1.1" 304 0
+[13/Aug/2025 01:59:43] "GET / HTTP/1.1" 200 2849
+[13/Aug/2025 01:59:46] "POST /api/auth/jwt/create/ HTTP/1.1" 200 489
+[13/Aug/2025 01:59:46] "GET /app HTTP/1.1" 200 6535
+[13/Aug/2025 01:59:49] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 01:59:49] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23807
+[13/Aug/2025 01:59:49] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23778
+[13/Aug/2025 01:59:49] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2
+[13/Aug/2025 01:59:49] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2
+[13/Aug/2025 01:59:49] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2
+[13/Aug/2025 01:59:50] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:59:50] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:59:50] "GET /api/hr/employees/ HTTP/1.1" 200 2
+[13/Aug/2025 01:59:53] "GET /app/hr/org-chart HTTP/1.1" 200 25779
+[13/Aug/2025 01:59:54] "GET /app/hr/employees/new HTTP/1.1" 200 59387
+Not Found: /api/hr/org-units/
+Not Found: /api/hr/access-profiles/
+[13/Aug/2025 01:59:54] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+Not Found: /api/hr/positions/
+[13/Aug/2025 01:59:54] "GET /api/hr/employees/?status=ACTIVE HTTP/1.1" 200 2
+[13/Aug/2025 01:59:54] "GET /api/hr/positions/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:59:54] "GET /api/hr/access-profiles/ HTTP/1.1" 404 23772
+[13/Aug/2025 01:59:54] "GET /api/hr/employees/ HTTP/1.1" 200 2
+[13/Aug/2025 02:00:04] "POST /api/hr/employees/ HTTP/1.1" 201 119
+[13/Aug/2025 02:00:06] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 02:00:06] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 02:00:06] "GET /api/hr/employees/ HTTP/1.1" 200 2
+[13/Aug/2025 02:00:15] "GET /app HTTP/1.1" 200 6535
+[13/Aug/2025 02:00:17] "GET /admin/ HTTP/1.1" 200 24291
+[13/Aug/2025 02:00:21] "GET /app/catalog HTTP/1.1" 200 6777
+[13/Aug/2025 02:00:21] "GET /api/auth/me/ HTTP/1.1" 200 181
+[13/Aug/2025 02:00:22] "GET /app HTTP/1.1" 200 6535
+[13/Aug/2025 02:00:23] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 02:00:23] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23778
+[13/Aug/2025 02:00:23] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23807
+[13/Aug/2025 02:00:23] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2
+[13/Aug/2025 02:00:23] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2
+[13/Aug/2025 02:00:23] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2
+[13/Aug/2025 02:00:26] "GET /admin/hr/employee/ HTTP/1.1" 200 21817
+[13/Aug/2025 02:00:26] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[13/Aug/2025 02:00:27] "GET /admin/hr/employee/ HTTP/1.1" 200 21817
+[13/Aug/2025 02:00:27] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[13/Aug/2025 02:00:28] "GET /admin/hr/employee/ HTTP/1.1" 200 21817
+[13/Aug/2025 02:00:28] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[13/Aug/2025 02:00:28] "GET /admin/hr/employee/ HTTP/1.1" 200 21817
+[13/Aug/2025 02:00:28] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[13/Aug/2025 02:00:30] "GET /app/hr/employees/new HTTP/1.1" 200 59387
+Not Found: /api/hr/org-units/
+[13/Aug/2025 02:00:30] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+Not Found: /api/hr/positions/
+Not Found: /api/hr/access-profiles/
+[13/Aug/2025 02:00:30] "GET /api/hr/employees/?status=ACTIVE HTTP/1.1" 200 2
+[13/Aug/2025 02:00:30] "GET /api/hr/positions/ HTTP/1.1" 404 23754
+[13/Aug/2025 02:00:30] "GET /api/hr/access-profiles/ HTTP/1.1" 404 23772
+[13/Aug/2025 02:00:30] "GET /api/hr/employees/ HTTP/1.1" 200 2
