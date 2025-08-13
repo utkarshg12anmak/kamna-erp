@@ -1212,3 +1212,11 @@ Not Found: /api/hr/org-units/
 [13/Aug/2025 04:06:02] "GET /api/hr/employees/ HTTP/1.1" 200 2155
 [13/Aug/2025 04:06:02] "GET /api/hr/employees/18/ HTTP/1.1" 200 762
 [13/Aug/2025 04:06:02] "GET /api/hr/employees/18/ HTTP/1.1" 200 762
+[13/Aug/2025 04:06:26] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:06:26] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:06:26] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:06:27] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:06:27] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:06:27] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
