@@ -43,20 +43,86 @@ def employees_api(request):
             return JsonResponse({'error': f'Database error: {str(e)}'}, status=500)
     
     elif request.method == "POST":
-        # For testing, just return success
+        # Actually create employee in database
         try:
+            from hr.models import Employee
+            from django.utils import timezone
+            from datetime import datetime
+            
             # Get form data
-            data = {
-                'id': 1,
-                'first_name': request.POST.get('first_name', ''),
-                'last_name': request.POST.get('last_name', ''),
-                'email': request.POST.get('email', ''),
-                'emp_code': request.POST.get('employee_id', ''),
-                'is_draft': request.POST.get('is_draft', False)
+            first_name = request.POST.get('first_name', '').strip()
+            last_name = request.POST.get('last_name', '').strip()
+            email = request.POST.get('email', '').strip()
+            emp_code = request.POST.get('emp_code', '') or request.POST.get('employee_id', '')
+            is_draft = request.POST.get('is_draft', 'false').lower() == 'true'
+            
+            # Basic validation
+            if not first_name or not last_name or not email:
+                return JsonResponse({
+                    'error': 'First name, last name, and email are required'
+                }, status=400)
+            
+            # Generate employee code if not provided
+            if not emp_code:
+                # Get the next employee number
+                last_emp = Employee.objects.filter(emp_code__startswith='EMP-2025-').order_by('emp_code').last()
+                if last_emp and last_emp.emp_code:
+                    try:
+                        last_num = int(last_emp.emp_code.split('-')[-1])
+                        next_num = last_num + 1
+                    except:
+                        next_num = 1
+                else:
+                    next_num = 1
+                emp_code = f"EMP-2025-{next_num:04d}"
+            
+            # Create the employee
+            employee = Employee.objects.create(
+                emp_code=emp_code,
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                phone=request.POST.get('phone', ''),
+                department=request.POST.get('department', ''),
+                designation=request.POST.get('designation', ''),
+                gender=request.POST.get('gender', 'OTHER'),
+                birth_date=None,  # Can be added later
+                status='DRAFT' if is_draft else 'ACTIVE',
+                date_of_joining=timezone.now().date(),
+                salary_amount=0,
+                salary_currency='USD',
+                salary_period='MONTHLY',
+                is_phone_assigned=False,
+                is_laptop_assigned=False,
+                created_at=timezone.now(),
+                updated_at=timezone.now()
+            )
+            
+            # Return the created employee data
+            employee_data = {
+                'id': employee.id,
+                'emp_code': employee.emp_code,
+                'first_name': employee.first_name,
+                'last_name': employee.last_name,
+                'email': employee.email,
+                'phone': employee.phone or '',
+                'department': employee.department or '',
+                'designation': employee.designation or '',
+                'status': employee.status,
+                'gender': employee.gender or '',
+                'date_of_joining': employee.date_of_joining.isoformat() if employee.date_of_joining else '',
+                'is_phone_assigned': employee.is_phone_assigned,
+                'is_laptop_assigned': employee.is_laptop_assigned,
+                'profile_image': None,
+                'manager_name': '',
+                'created_at': employee.created_at.isoformat() if employee.created_at else '',
+                'is_draft': is_draft
             }
-            return JsonResponse(data, status=201)
+            
+            return JsonResponse(employee_data, status=201)
+            
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': f'Creation error: {str(e)}'}, status=400)
     
     elif request.method == "DELETE":
         # Delete all employees endpoint

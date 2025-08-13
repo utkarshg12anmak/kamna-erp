@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Form Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-result {
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button:hover { background: #0056b3; }
+        
+        .form-test {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        
+        .form-test input, .form-test select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .employee-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+        
+        .employee-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            background: white;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Employee Form Real Data Verification</h1>
+        <p>This tool verifies that the employee form actually saves data to the database.</p>
+        
+        <div id="status" class="test-result info">
+            Ready to test employee creation...
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📊 Current Database Status</h2>
+        <button onclick="checkDatabase()">🔄 Check Database</button>
+        <button onclick="clearDatabase()">🗑️ Clear All Employees</button>
+        <button onclick="loadEmployees()">📋 Load Employee List</button>
+        
+        <div id="dbStatus" class="test-result" style="display: none;"></div>
+        <div id="employeeList" class="employee-list" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>📝 Test Employee Creation</h2>
+        <div class="form-test">
+            <h3>Create Test Employee</h3>
+            <label>First Name:</label>
+            <input type="text" id="firstName" value="John" />
+            
+            <label>Last Name:</label>
+            <input type="text" id="lastName" value="Doe" />
+            
+            <label>Email:</label>
+            <input type="email" id="email" value="john.doe@test.com" />
+            
+            <label>Department:</label>
+            <input type="text" id="department" value="Testing" />
+            
+            <label>Designation:</label>
+            <input type="text" id="designation" value="Test Engineer" />
+            
+            <label>Save as Draft:</label>
+            <select id="isDraft">
+                <option value="false">No - Active Employee</option>
+                <option value="true">Yes - Save as Draft</option>
+            </select>
+            
+            <div style="margin-top: 20px;">
+                <button onclick="createEmployee()">💾 Create Employee</button>
+                <button onclick="createEmployeeAndVerify()">🔍 Create & Verify</button>
+            </div>
+        </div>
+        
+        <div id="createResult" class="test-result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/hr';
+        
+        async function checkDatabase() {
+            try {
+                showStatus('Checking database...', 'info');
+                
+                const response = await fetch(`${API_BASE}/employees/`);
+                if (response.ok) {
+                    const employees = await response.json();
+                    const count = employees.length;
+                    
+                    const statusText = `Database Status: ${count} employees found`;
+                    showDbStatus(statusText, count > 0 ? 'info' : 'warning');
+                    
+                    if (count > 0) {
+                        showDbStatus(statusText + '\\n\\nRecent employees:\\n' + 
+                            employees.slice(-3).map(emp => 
+                                `- ${emp.emp_code}: ${emp.first_name} ${emp.last_name} (${emp.email})`
+                            ).join('\\n'), 'info');
+                    }
+                } else {
+                    showDbStatus('Error checking database: HTTP ' + response.status, 'error');
+                }
+            } catch (error) {
+                showDbStatus('Database check failed: ' + error.message, 'error');
+            }
+        }
+        
+        async function clearDatabase() {
+            if (!confirm('Delete all employees from database?')) return;
+            
+            try {
+                showStatus('Clearing database...', 'info');
+                
+                const response = await fetch(`${API_BASE}/employees/`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showDbStatus(`Cleared database: ${result.message}`, 'success');
+                } else {
+                    showDbStatus('Clear failed: HTTP ' + response.status, 'error');
+                }
+            } catch (error) {
+                showDbStatus('Clear failed: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadEmployees() {
+            try {
+                showStatus('Loading employees...', 'info');
+                
+                const response = await fetch(`${API_BASE}/employees/`);
+                if (response.ok) {
+                    const employees = await response.json();
+                    
+                    const listDiv = document.getElementById('employeeList');
+                    if (employees.length === 0) {
+                        listDiv.innerHTML = '<p>No employees found</p>';
+                    } else {
+                        listDiv.innerHTML = employees.map(emp => `
+                            <div class="employee-item">
+                                <strong>${emp.emp_code}</strong>: ${emp.first_name} ${emp.last_name}<br>
+                                <small>Email: ${emp.email} | Status: ${emp.status} | Created: ${new Date(emp.created_at).toLocaleString()}</small>
+                            </div>
+                        `).join('');
+                    }
+                    listDiv.style.display = 'block';
+                    
+                    showDbStatus(`Loaded ${employees.length} employees`, 'info');
+                } else {
+                    showDbStatus('Failed to load employees: HTTP ' + response.status, 'error');
+                }
+            } catch (error) {
+                showDbStatus('Load failed: ' + error.message, 'error');
+            }
+        }
+        
+        async function createEmployee() {
+            try {
+                showStatus('Creating employee...', 'info');
+                
+                const formData = new FormData();
+                formData.append('first_name', document.getElementById('firstName').value);
+                formData.append('last_name', document.getElementById('lastName').value);
+                formData.append('email', document.getElementById('email').value);
+                formData.append('department', document.getElementById('department').value);
+                formData.append('designation', document.getElementById('designation').value);
+                formData.append('is_draft', document.getElementById('isDraft').value);
+                
+                const response = await fetch(`${API_BASE}/employees/`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showCreateResult(`✅ Employee Created Successfully!
+                    
+ID: ${result.id}
+Employee Code: ${result.emp_code}
+Name: ${result.first_name} ${result.last_name}
+Email: ${result.email}
+Status: ${result.status}
+Created: ${new Date(result.created_at).toLocaleString()}`, 'success');
+                } else {
+                    const error = await response.json();
+                    showCreateResult(`❌ Creation Failed: ${error.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showCreateResult(`❌ Creation Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function createEmployeeAndVerify() {
+            await createEmployee();
+            setTimeout(async () => {
+                await checkDatabase();
+                await loadEmployees();
+            }, 1000);
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `test-result ${type}`;
+        }
+        
+        function showDbStatus(message, type) {
+            const statusDiv = document.getElementById('dbStatus');
+            statusDiv.textContent = message;
+            statusDiv.className = `test-result ${type}`;
+            statusDiv.style.display = 'block';
+        }
+        
+        function showCreateResult(message, type) {
+            const resultDiv = document.getElementById('createResult');
+            resultDiv.textContent = message;
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.style.display = 'block';
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkDatabase();
+        });
+    </script>
+</body>
+</html>
