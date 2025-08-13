@@ -1220,3 +1220,206 @@ Not Found: /api/hr/dashboard/summary/
 [13/Aug/2025 04:06:27] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
 [13/Aug/2025 04:06:27] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
 [13/Aug/2025 04:06:27] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:31] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:07:31] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:07:31] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:07:31] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:31] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:31] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:32] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:07:32] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:07:32] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:07:32] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:32] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:32] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:32] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:07:32] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:07:32] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:07:32] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:32] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:32] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:32] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:07:33] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:07:33] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:33] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:07:33] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:07:33] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:33] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:07:33] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:07:33] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:07:33] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:33] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:33] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:33] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:07:33] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:07:33] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:07:33] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:33] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:33] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:33] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:07:33] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:07:33] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:07:33] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:33] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:33] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:34] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:07:34] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:07:34] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:07:34] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:34] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:34] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:34] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:07:34] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:07:34] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:07:34] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:34] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:34] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:34] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:07:34] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:07:34] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:07:34] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:34] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:34] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:40] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:07:40] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:07:40] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:07:40] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:40] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:40] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:41] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:07:41] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:07:41] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:07:41] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:41] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:07:41] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:01] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:08:02] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:08:02] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:08:02] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:02] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:02] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:02] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:08:02] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:08:02] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:08:02] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:02] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:02] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:16] "GET /app/hr HTTP/1.1" 200 15615
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:08:16] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:08:16] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:08:16] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:16] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:16] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:17] "GET /app/hr HTTP/1.1" 200 15615
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:08:17] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:08:17] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:08:17] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:17] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:17] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:38] "GET /app/hr HTTP/1.1" 200 15615
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:08:38] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:08:38] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:08:38] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:38] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:38] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:39] "GET /app/hr HTTP/1.1" 200 15615
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:08:39] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:08:39] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:08:39] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:39] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:39] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:39] "GET /app/hr HTTP/1.1" 200 15615
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:08:39] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:08:39] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:08:39] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:39] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:39] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:39] "GET /app/hr HTTP/1.1" 200 15615
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:08:39] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:08:39] "GET /app/hr HTTP/1.1" 200 15615
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:08:39,775] - Broken pipe from ('127.0.0.1', 55667)
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:08:39] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:08:39] "GET /app/hr HTTP/1.1" 200 15615
+[13/Aug/2025 04:08:39] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:08:39] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:08:39] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:08:39] "GET /app/hr HTTP/1.1" 200 15615
+[13/Aug/2025 04:08:40,030] - Broken pipe from ('127.0.0.1', 55682)
+[13/Aug/2025 04:08:40,046] - Broken pipe from ('127.0.0.1', 55663)
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:08:40] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:08:40] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:08:40] "GET /app/hr HTTP/1.1" 200 15615
+[13/Aug/2025 04:08:40] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:40] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:40,116] - Broken pipe from ('127.0.0.1', 55689)
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:08:40,123] - Broken pipe from ('127.0.0.1', 55681)
+[13/Aug/2025 04:08:40] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:08:40] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:08:40] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:40] "GET /app/hr HTTP/1.1" 200 15615
+[13/Aug/2025 04:08:40] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 04:08:40,294] - Broken pipe from ('127.0.0.1', 55692)
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:08:40] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:08:40,297] - Broken pipe from ('127.0.0.1', 55685)
+[13/Aug/2025 04:08:40] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:08:40] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:40] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:40] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:47] "GET /app/hr HTTP/1.1" 200 15326
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:08:47] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:08:47] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:08:47] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:47] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:08:47] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
