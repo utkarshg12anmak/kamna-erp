@@ -147,6 +147,98 @@ def employees_api(request):
         except Exception as e:
             return JsonResponse({'error': f'Delete error: {str(e)}'}, status=500)
 
+@csrf_exempt  
+@require_http_methods(["GET", "PUT", "PATCH", "DELETE"])
+def employee_detail_api(request, employee_id):
+    """API endpoint for individual employee operations"""
+    
+    try:
+        from hr.models import Employee
+        
+        # Get employee by ID
+        try:
+            employee = Employee.objects.get(id=employee_id)
+        except Employee.DoesNotExist:
+            return JsonResponse({'error': 'Employee not found'}, status=404)
+        
+        if request.method == "GET":
+            # Return individual employee data
+            employee_data = {
+                'id': employee.id,
+                'emp_code': employee.emp_code,
+                'first_name': employee.first_name,
+                'last_name': employee.last_name,
+                'email': employee.email,
+                'phone': employee.phone or '',
+                'department': employee.department or '',
+                'designation': employee.designation or '',
+                'status': employee.status,
+                'gender': employee.gender or '',
+                'birth_date': employee.birth_date.isoformat() if employee.birth_date else '',
+                'date_of_joining': employee.date_of_joining.isoformat() if employee.date_of_joining else '',
+                'is_phone_assigned': employee.is_phone_assigned,
+                'is_laptop_assigned': employee.is_laptop_assigned,
+                'company_assigned_phone_number': employee.company_assigned_phone_number or '',
+                'company_assigned_laptop': employee.company_assigned_laptop or '',
+                'profile_image': employee.profile_image.url if employee.profile_image else None,
+                'manager_name': f"{employee.manager.first_name} {employee.manager.last_name}" if employee.manager else '',
+                'manager': employee.manager.id if employee.manager else None,
+                'org_unit': employee.org_unit.id if employee.org_unit else None,
+                'position': employee.position.id if employee.position else None,
+                'access_profile': employee.access_profile.id if employee.access_profile else None,
+                'salary_amount': str(employee.salary_amount),
+                'salary_currency': employee.salary_currency,
+                'salary_period': employee.salary_period,
+                'aadhaar_last4': employee.aadhaar_last4 or '',
+                'pan_number': employee.pan_number or '',
+                'created_at': employee.created_at.isoformat() if employee.created_at else '',
+                'updated_at': employee.updated_at.isoformat() if employee.updated_at else '',
+            }
+            
+            return JsonResponse(employee_data)
+            
+        elif request.method in ["PUT", "PATCH"]:
+            # Update employee (for edit functionality)
+            try:
+                # Parse JSON data for updates
+                data = json.loads(request.body)
+                
+                # Update fields if provided
+                if 'first_name' in data:
+                    employee.first_name = data['first_name']
+                if 'last_name' in data:
+                    employee.last_name = data['last_name']
+                if 'email' in data:
+                    employee.email = data['email']
+                if 'phone' in data:
+                    employee.phone = data['phone']
+                if 'department' in data:
+                    employee.department = data['department']
+                if 'designation' in data:
+                    employee.designation = data['designation']
+                if 'status' in data:
+                    employee.status = data['status']
+                
+                from django.utils import timezone
+                employee.updated_at = timezone.now()
+                employee.save()
+                
+                return JsonResponse({'message': 'Employee updated successfully'})
+                
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+            except Exception as e:
+                return JsonResponse({'error': f'Update error: {str(e)}'}, status=400)
+                
+        elif request.method == "DELETE":
+            # Delete individual employee
+            employee.delete()
+            return JsonResponse({'message': 'Employee deleted successfully'})
+            
+    except Exception as e:
+        return JsonResponse({'error': f'API error: {str(e)}'}, status=500)
+
 urlpatterns = [
     path('employees/', employees_api, name='employees-api'),
+    path('employees/<int:employee_id>/', employee_detail_api, name='employee-detail-api'),
 ]
