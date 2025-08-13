@@ -414,3 +414,141 @@ Not Found: /api/hr/dashboard/upcoming/
 Not Found: /api/hr/org-units/
 [13/Aug/2025 01:27:46] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
 [13/Aug/2025 01:27:46] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:48:05] "GET /app/hr/employees HTTP/1.1" 200 32589
+[13/Aug/2025 01:48:10] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:48:10] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:48:10] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:48:11] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:48:11] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:48:11] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:48:12] "GET /app/hr/org-chart HTTP/1.1" 200 25779
+[13/Aug/2025 01:48:13] "GET /app/hr/org-chart HTTP/1.1" 200 25779
+[13/Aug/2025 01:48:14] "GET /app/hr/org-chart HTTP/1.1" 200 25779
+[13/Aug/2025 01:48:14] "GET /app/hr/org-chart HTTP/1.1" 200 25779
+[13/Aug/2025 01:48:14] "GET /app/hr/org-chart HTTP/1.1" 200 25779
+[13/Aug/2025 01:49:59] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:49:59] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:49:59] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:50:00] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:50:00] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:50:00] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:51:56] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:51:56] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:51:56] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:51:56] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:51:56] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:51:56] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:51:58] "GET /app/hr/employees/1 HTTP/1.1" 200 24884
+[13/Aug/2025 01:52:10] "GET /app/hr/employees/1/edit HTTP/1.1" 200 59387
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:52:10] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+Not Found: /api/hr/positions/
+Not Found: /api/hr/access-profiles/
+[13/Aug/2025 01:52:10] "GET /api/hr/positions/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:52:10] "GET /api/hr/access-profiles/ HTTP/1.1" 404 23772
+[13/Aug/2025 01:52:10] "GET /api/hr/employees/?status=ACTIVE HTTP/1.1" 200 5655
+[13/Aug/2025 01:52:10] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+Not Found: /api/hr/employees/1/
+[13/Aug/2025 01:52:10] "GET /api/hr/employees/1/ HTTP/1.1" 404 23760
+[13/Aug/2025 01:52:10] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/employees/1/field-changes/
+[13/Aug/2025 01:52:10] "GET /api/hr/employees/1/field-changes/ HTTP/1.1" 404 23802
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:52:10] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:52:10] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+Not Found: /api/hr/employees/1/
+[13/Aug/2025 01:52:13] "GET /api/hr/employees/1/ HTTP/1.1" 404 23760
+[13/Aug/2025 01:52:18] "GET /app/hr/employees/3 HTTP/1.1" 200 24884
+[13/Aug/2025 01:52:53] "GET /app/hr/employees/3/edit HTTP/1.1" 200 59387
+Not Found: /api/hr/org-units/
+Not Found: /api/hr/positions/
+Not Found: /api/hr/access-profiles/
+[13/Aug/2025 01:52:53] "GET /api/hr/positions/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:52:53] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:52:53] "GET /api/hr/access-profiles/ HTTP/1.1" 404 23772
+[13/Aug/2025 01:52:53] "GET /api/hr/employees/?status=ACTIVE HTTP/1.1" 200 5655
+[13/Aug/2025 01:52:53] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+Not Found: /api/hr/employees/3/
+[13/Aug/2025 01:52:53] "GET /api/hr/employees/3/ HTTP/1.1" 404 23760
+[13/Aug/2025 01:52:53] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/employees/3/field-changes/
+[13/Aug/2025 01:52:53] "GET /api/hr/employees/3/field-changes/ HTTP/1.1" 404 23802
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:52:53] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:52:53] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:52:56] "GET /app/hr/employees/1/edit HTTP/1.1" 200 59387
+Not Found: /api/hr/org-units/
+Not Found: /api/hr/positions/
+[13/Aug/2025 01:52:56] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+Not Found: /api/hr/access-profiles/
+[13/Aug/2025 01:52:56] "GET /api/hr/positions/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:52:56] "GET /api/hr/access-profiles/ HTTP/1.1" 404 23772
+[13/Aug/2025 01:52:56] "GET /api/hr/employees/?status=ACTIVE HTTP/1.1" 200 5655
+[13/Aug/2025 01:52:56] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+Not Found: /api/hr/employees/1/
+[13/Aug/2025 01:52:56] "GET /api/hr/employees/1/ HTTP/1.1" 404 23760
+Not Found: /api/hr/employees/1/field-changes/
+[13/Aug/2025 01:52:56] "GET /app/hr/employees HTTP/1.1" 200 32589
+[13/Aug/2025 01:52:56] "GET /api/hr/employees/1/field-changes/ HTTP/1.1" 404 23802
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:52:56] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:52:56] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+Not Found: /api/hr/employees/1/
+[13/Aug/2025 01:52:57] "GET /api/hr/employees/1/ HTTP/1.1" 404 23760
+[13/Aug/2025 01:53:04] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:53:04] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:53:04] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:04] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:53:04] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:53:04] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:04] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:53:04] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:53:04] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:04] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:53:04] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:53:04] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:04] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:53:05] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:53:05] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:05] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:53:05] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:53:05] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:05] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:53:05] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:53:05] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:05] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:53:05] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:53:05] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:05] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:53:05] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:53:05] "GET /api/hr/employees/ HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:14] "GET / HTTP/1.1" 200 2849
+[13/Aug/2025 01:53:19] "POST /api/auth/jwt/create/ HTTP/1.1" 200 489
+[13/Aug/2025 01:53:19] "GET /app HTTP/1.1" 200 6535
+[13/Aug/2025 01:53:21] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/upcoming/
+Not Found: /api/hr/dashboard/summary/
+[13/Aug/2025 01:53:21] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23807
+[13/Aug/2025 01:53:21] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23778
+[13/Aug/2025 01:53:21] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:21] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:21] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 5655
+[13/Aug/2025 01:53:23] "GET /app/hr/employees HTTP/1.1" 200 32589
+Not Found: /api/hr/org-units/
+[13/Aug/2025 01:53:23] "GET /api/hr/org-units/ HTTP/1.1" 404 23754
+[13/Aug/2025 01:53:23] "GET /api/hr/employees/ HTTP/1.1" 200 5655
