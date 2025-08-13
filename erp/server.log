@@ -1423,3 +1423,13 @@ Not Found: /api/hr/dashboard/upcoming/
 [13/Aug/2025 04:08:47] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
 [13/Aug/2025 04:08:47] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
 [13/Aug/2025 04:08:47] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:09:25] "GET /app/hr HTTP/1.1" 200 15326
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 04:09:25] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 24109
+[13/Aug/2025 04:09:25] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 24080
+[13/Aug/2025 04:09:25] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:09:25] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:09:25] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2155
+[13/Aug/2025 04:09:25] "GET /app HTTP/1.1" 200 6535
+[13/Aug/2025 04:09:26] "GET /app HTTP/1.1" 200 6535
