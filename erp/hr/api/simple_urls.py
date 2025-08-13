@@ -7,10 +7,40 @@ import json
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def employees_api(request):
-    """Simple employee API endpoint for testing"""
+    """Simple employee API endpoint that actually returns database data"""
+    
     if request.method == "GET":
-        # Return empty list for now
-        return JsonResponse([], safe=False)
+        try:
+            # Import here to avoid circular imports
+            from hr.models import Employee
+            
+            # Get all employees and convert to JSON-serializable format
+            employees = []
+            for emp in Employee.objects.all().order_by('emp_code'):
+                employee_data = {
+                    'id': emp.id,
+                    'emp_code': emp.emp_code,
+                    'first_name': emp.first_name,
+                    'last_name': emp.last_name,
+                    'email': emp.email,
+                    'phone': emp.phone or '',
+                    'department': emp.department or '',
+                    'designation': emp.designation or '',
+                    'status': emp.status,
+                    'gender': emp.gender or '',
+                    'date_of_joining': emp.date_of_joining.isoformat() if emp.date_of_joining else '',
+                    'is_phone_assigned': emp.is_phone_assigned,
+                    'is_laptop_assigned': emp.is_laptop_assigned,
+                    'profile_image': emp.profile_image.url if emp.profile_image else None,
+                    'manager_name': f"{emp.manager.first_name} {emp.manager.last_name}" if emp.manager else '',
+                    'created_at': emp.created_at.isoformat() if emp.created_at else '',
+                }
+                employees.append(employee_data)
+            
+            return JsonResponse(employees, safe=False)
+            
+        except Exception as e:
+            return JsonResponse({'error': f'Database error: {str(e)}'}, status=500)
     
     elif request.method == "POST":
         # For testing, just return success
@@ -21,7 +51,7 @@ def employees_api(request):
                 'first_name': request.POST.get('first_name', ''),
                 'last_name': request.POST.get('last_name', ''),
                 'email': request.POST.get('email', ''),
-                'employee_id': request.POST.get('employee_id', ''),
+                'emp_code': request.POST.get('employee_id', ''),
                 'is_draft': request.POST.get('is_draft', False)
             }
             return JsonResponse(data, status=201)
