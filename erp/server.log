@@ -131,3 +131,16 @@ Unauthorized: /api/auth/me/
 [13/Aug/2025 01:00:25] "GET /app/catalog HTTP/1.1" 200 6777
 [13/Aug/2025 01:00:25] "GET /api/auth/me/ HTTP/1.1" 200 181
 [13/Aug/2025 01:00:26] "GET /app HTTP/1.1" 200 6535
+[13/Aug/2025 01:01:40] "GET /app/hr HTTP/1.1" 200 16045
+Not Found: /api/hr/dashboard/summary/
+Not Found: /api/hr/dashboard/upcoming/
+[13/Aug/2025 01:01:40] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 404 23807
+[13/Aug/2025 01:01:40] "GET /api/hr/dashboard/summary/ HTTP/1.1" 404 23778
+[13/Aug/2025 01:01:40] "GET /api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true HTTP/1.1" 200 2
+[13/Aug/2025 01:01:40] "GET /api/hr/employees/?is_phone_assigned=true HTTP/1.1" 200 2
+[13/Aug/2025 01:01:40] "GET /api/hr/employees/?is_laptop_assigned=true HTTP/1.1" 200 2
+[13/Aug/2025 01:01:41] "GET /app HTTP/1.1" 200 6535
+[13/Aug/2025 01:11:13] "GET /app/cv_hub/entries/ HTTP/1.1" 200 37053
+[13/Aug/2025 01:11:13] "GET /api/cv_hub/states/ HTTP/1.1" 200 254
+[13/Aug/2025 01:11:13] "GET /api/cv_hub/entries/?page=1 HTTP/1.1" 200 3817
+[13/Aug/2025 01:11:17] "GET /app HTTP/1.1" 200 6535
