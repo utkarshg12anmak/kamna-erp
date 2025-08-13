@@ -571,19 +571,28 @@ function populateDataList(listId, options) {
 }
 
 async function loadEmployee() {
+  console.log(`📡 Loading employee data for ID: ${employeeId}`);
   const response = await fetch(`/api/hr/employees/${employeeId}/`);
   if (response.ok) {
     const employee = await response.json();
+    console.log('✅ Employee data loaded:', employee);
+    
+    // Store original data for comparison
     originalData = { ...employee };
     populateForm(employee);
     updateSummary();
+    
+    console.log('✅ Form populated with updated employee data');
   } else {
+    console.error('❌ Failed to load employee data:', response.status, response.statusText);
     showToast('Employee not found', 'error');
     window.location.href = '/app/hr/employees';
   }
 }
 
 function populateForm(employee) {
+  console.log('🔄 Populating form with employee data:', employee);
+  
   // Set the hidden ID field for edit mode
   document.getElementById('employeeId').value = employee.id || '';
   
@@ -613,14 +622,20 @@ function populateForm(employee) {
   document.getElementById('salaryCurrency').value = employee.salary_currency || 'INR';
   document.getElementById('salaryPeriod').value = employee.salary_period || 'MONTHLY';
   
-  // Assets
+  // Assets - with enhanced logging
+  console.log('📱 Setting phone asset:', employee.is_phone_assigned, employee.company_assigned_phone_number);
   document.getElementById('isPhoneAssigned').checked = employee.is_phone_assigned || false;
   document.getElementById('companyPhone').value = employee.company_assigned_phone_number || '';
+  
+  console.log('💻 Setting laptop asset:', employee.is_laptop_assigned, employee.company_assigned_laptop);
   document.getElementById('isLaptopAssigned').checked = employee.is_laptop_assigned || false;
   document.getElementById('companyLaptop').value = employee.company_assigned_laptop || '';
   
   // Toggle asset details visibility
   toggleAssetDetails();
+  
+  console.log('✅ Form successfully populated with employee data');
+  console.log('📋 Final asset states - Phone checked:', document.getElementById('isPhoneAssigned').checked, 'Laptop checked:', document.getElementById('isLaptopAssigned').checked);
 }
 
 async function loadFieldChanges() {
@@ -1201,8 +1216,19 @@ async function saveEmployee(isDraft = false) {
     
     showToast(message, 'success');
     
-    // Redirect to employee list after successful save (not draft)
-    if (!isDraft) {
+    // If in edit mode, reload the employee data to show updated values
+    if (isEditMode && !isDraft) {
+      console.log('🔄 Reloading employee data to show updates...');
+      try {
+        await loadEmployee();
+        console.log('✅ Employee data reloaded successfully');
+        showToast('Changes saved and data refreshed!', 'success');
+      } catch (error) {
+        console.error('❌ Error reloading employee data:', error);
+        showToast('Saved successfully, but failed to refresh data. Please reload the page.', 'warning');
+      }
+    } else if (!isDraft) {
+      // Redirect to employee list after successful save (only for new employees)
       console.log('🔄 Redirecting to employee list...');
       setTimeout(() => {
         window.location.href = '/app/hr/employees';
@@ -1302,12 +1328,28 @@ async function saveEmployeeAPI(formData, isDraft) {
   if (isEditMode) {
     // For PUT requests, convert FormData to JSON as backend expects JSON
     const jsonData = {};
-    for (let [key, value] of formData.entries()) {
-      // Skip file uploads and CSRF token for JSON conversion
-      if (!(value instanceof File) && key !== 'csrfmiddlewaretoken') {
-        jsonData[key] = value;
+    
+    // Get all form elements to properly handle checkboxes
+    const form = document.getElementById('employeeForm');
+    const formElements = form.querySelectorAll('input, select, textarea');
+    
+    // Process each form element properly
+    formElements.forEach(element => {
+      const name = element.name;
+      if (!name || name === 'csrfmiddlewaretoken') return;
+      
+      if (element.type === 'checkbox') {
+        // Handle checkboxes: always include them with proper boolean values
+        jsonData[name] = element.checked;
+        console.log(`📋 Checkbox ${name}: ${element.checked}`);
+      } else if (element.type === 'file') {
+        // Skip file uploads for JSON conversion
+        console.log(`📋 Skipping file field: ${name}`);
+      } else {
+        // Handle regular fields
+        jsonData[name] = element.value;
       }
-    }
+    });
     
     if (isDraft) {
       jsonData.is_draft = 'true';

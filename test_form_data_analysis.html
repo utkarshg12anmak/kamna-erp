@@ -24,9 +24,10 @@
     
     <div class="test-section info">
         <h2>📋 Current Issue Analysis</h2>
-        <p><strong>Problem:</strong> Changes aren't reflecting after save button works</p>
-        <p><strong>Hypothesis:</strong> Backend PUT API only handles limited fields, but form sends many more</p>
-        <p><strong>Expected Backend Fields:</strong> first_name, last_name, email, phone, department, designation, status</p>
+        <p><strong>Problem:</strong> Assets (phone/laptop assignments) not updating when editing employees</p>
+        <p><strong>Root Cause:</strong> Checkbox values not properly converted in FormData → JSON for PUT requests</p>
+        <p><strong>Expected Backend Fields:</strong> first_name, last_name, email, phone, department, designation, status, is_phone_assigned, company_assigned_phone_number, is_laptop_assigned, company_assigned_laptop</p>
+        <p><strong>Issue:</strong> Unchecked checkboxes were omitted from JSON, so backend didn't update them</p>
     </div>
 
     <div class="test-section">
@@ -79,6 +80,18 @@
                 <label>Joining Date:</label>
                 <input type="date" id="joiningDate" name="date_of_joining" value="2025-08-13">
             </div>
+            
+            <!-- Asset Fields for Testing -->
+            <div class="form-row">
+                <label>Phone Assigned:</label>
+                <input type="checkbox" id="isPhoneAssigned" name="is_phone_assigned" checked>
+                <input type="text" id="companyPhone" name="company_assigned_phone_number" value="+91 9876543210" placeholder="Company Phone">
+            </div>
+            <div class="form-row">
+                <label>Laptop Assigned:</label>
+                <input type="checkbox" id="isLaptopAssigned" name="is_laptop_assigned" checked>
+                <input type="text" id="companyLaptop" name="company_assigned_laptop" value="Dell Laptop - 12345" placeholder="Company Laptop">
+            </div>
         </form>
         
         <div style="margin: 20px 0;">
@@ -124,7 +137,7 @@
                 jsonData[key] = value;
             }
             
-            const expectedBackendFields = ['first_name', 'last_name', 'email', 'phone', 'department', 'designation', 'status'];
+            const expectedBackendFields = ['first_name', 'last_name', 'email', 'phone', 'department', 'designation', 'status', 'is_phone_assigned', 'company_assigned_phone_number', 'is_laptop_assigned', 'company_assigned_laptop'];
             const actualFields = Object.keys(jsonData);
             const backendFields = actualFields.filter(field => expectedBackendFields.includes(field));
             const ignoredFields = actualFields.filter(field => !expectedBackendFields.includes(field));
@@ -170,7 +183,11 @@
                             phone: employee.phone,
                             department: employee.department,
                             designation: employee.designation,
-                            status: employee.status
+                            status: employee.status,
+                            is_phone_assigned: employee.is_phone_assigned,
+                            company_assigned_phone_number: employee.company_assigned_phone_number,
+                            is_laptop_assigned: employee.is_laptop_assigned,
+                            company_assigned_laptop: employee.company_assigned_laptop
                         }, null, 2)}</pre>
                         
                         <h5>📊 Full Employee Data:</h5>
@@ -201,7 +218,7 @@
                 }
                 
                 // Filter to only backend-supported fields
-                const supportedFields = ['first_name', 'last_name', 'email', 'phone', 'department', 'designation', 'status'];
+                const supportedFields = ['first_name', 'last_name', 'email', 'phone', 'department', 'designation', 'status', 'is_phone_assigned', 'company_assigned_phone_number', 'is_laptop_assigned', 'company_assigned_laptop'];
                 const apiData = {};
                 supportedFields.forEach(field => {
                     if (jsonData[field] !== undefined) {
@@ -239,6 +256,10 @@
                             department: updatedEmployee.department,
                             designation: updatedEmployee.designation,
                             status: updatedEmployee.status,
+                            is_phone_assigned: updatedEmployee.is_phone_assigned,
+                            company_assigned_phone_number: updatedEmployee.company_assigned_phone_number,
+                            is_laptop_assigned: updatedEmployee.is_laptop_assigned,
+                            company_assigned_laptop: updatedEmployee.company_assigned_laptop,
                             updated_at: updatedEmployee.updated_at
                         }, null, 2)}</pre>
                     `;
