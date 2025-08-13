@@ -1,3 +1,4 @@
+# Step 1: Create the lookup models first
 from django.db import models
 from django.conf import settings
 from django.core.validators import RegexValidator, MinValueValidator
@@ -19,6 +20,36 @@ class Gender(models.TextChoices):
     OTHER = 'OTHER', 'Other'
     NA = 'NA', 'Prefer not to say'
 
+# NEW: Org structure and lookup models
+class Department(models.Model):
+    name = models.CharField(max_length=120, unique=True)
+    code = models.CharField(max_length=20, unique=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()
+    
+    class Meta:
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
+class Designation(models.Model):
+    title = models.CharField(max_length=120, unique=True)
+    department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.SET_NULL, related_name='designations')
+    level = models.CharField(max_length=50, blank=True, help_text='e.g., Junior, Senior, Lead, Manager')
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()
+    
+    class Meta:
+        ordering = ['title']
+    
+    def __str__(self):
+        return self.title
+
 class OrgUnit(models.Model):
     name = models.CharField(max_length=120)
     code = models.CharField(max_length=50, unique=True, blank=True)
@@ -35,7 +66,13 @@ class Position(models.Model):
     title = models.CharField(max_length=120)
     grade = models.CharField(max_length=40, blank=True)
     family = models.CharField(max_length=60, blank=True)
+    # NEW: Add department relationship and is_active
+    department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.SET_NULL, related_name='positions')
+    is_active = models.BooleanField(default=True)
     history = HistoricalRecords()
+    
+    class Meta:
+        ordering = ['title']
     
     def __str__(self):
         return self.title
@@ -68,9 +105,9 @@ class Employee(models.Model):
     pan_number = models.CharField(max_length=10, validators=[pan_validator], null=True, blank=True)
     pan_doc = models.FileField(upload_to='hr/docs/pan/', null=True, blank=True)
     
-    # Job & Org - Original CharField fields
-    department = models.CharField(max_length=120, blank=True)
-    designation = models.CharField(max_length=120, blank=True)
+    # Job & Org - KEEP OLD FIELDS FOR NOW
+    department = models.CharField(max_length=120, blank=True)  # Keep original for migration
+    designation = models.CharField(max_length=120, blank=True)  # Keep original for migration
     
     position = models.ForeignKey(Position, null=True, blank=True, on_delete=models.SET_NULL)
     org_unit = models.ForeignKey(OrgUnit, null=True, blank=True, on_delete=models.SET_NULL)

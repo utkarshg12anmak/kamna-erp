@@ -119,33 +119,39 @@ class EmployeeDocumentAdmin(SimpleHistoryAdmin):
             kwargs["queryset"] = Employee.objects.select_related().order_by('emp_code')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-@admin.register(OrgUnit)
-class OrgUnitAdmin(SimpleHistoryAdmin):
-    list_display = ['name', 'code', 'type', 'get_parent', 'get_manager', 'status']
-    list_filter = ['type', 'status']
-    search_fields = ['name', 'code']
-    ordering = ['name']
-    
-    def get_parent(self, obj):
-        if obj.parent:
-            url = reverse('admin:hr_orgunit_change', args=[obj.parent.id])
-            return format_html('<a href="{}">{}</a>', url, obj.parent.name)
-        return '-'
-    get_parent.short_description = 'Parent Unit'
-    
-    def get_manager(self, obj):
-        if obj.manager:
-            url = reverse('admin:hr_employee_change', args=[obj.manager.id])
-            return format_html('<a href="{}">{}</a>', url, obj.manager)
-        return '-'
-    get_manager.short_description = 'Manager'
-
 @admin.register(Position)
 class PositionAdmin(SimpleHistoryAdmin):
-    list_display = ['title', 'grade', 'family']
+    list_display = ['title', 'grade', 'family', 'get_employee_count']
     list_filter = ['grade', 'family']
     search_fields = ['title', 'grade', 'family']
     ordering = ['title']
+    
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'grade', 'family')
+        }),
+    )
+    
+    def get_employee_count(self, obj):
+        return obj.employee_set.count()
+    get_employee_count.short_description = 'Employees'
+
+@admin.register(OrgUnit)
+class OrgUnitAdmin(SimpleHistoryAdmin):
+    list_display = ['name', 'code', 'parent', 'type', 'manager', 'status', 'get_children_count']
+    list_filter = ['status', 'type']
+    search_fields = ['name', 'code']
+    ordering = ['name']
+    
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'code', 'parent', 'type', 'manager', 'status')
+        }),
+    )
+    
+    def get_children_count(self, obj):
+        return obj.children.count()
+    get_children_count.short_description = 'Sub Units'
 
 @admin.register(AccessProfile)
 class AccessProfileAdmin(SimpleHistoryAdmin):
