@@ -238,7 +238,22 @@ def employee_detail_api(request, employee_id):
     except Exception as e:
         return JsonResponse({'error': f'API error: {str(e)}'}, status=500)
 
+# Import dashboard views
+try:
+    from .dashboard import HRDashboardSummary, HRDashboardUpcoming
+    dashboard_views_imported = True
+except ImportError as e:
+    print(f"Warning: Could not import dashboard views: {e}")
+    dashboard_views_imported = False
+
 urlpatterns = [
     path('employees/', employees_api, name='employees-api'),
     path('employees/<int:employee_id>/', employee_detail_api, name='employee-detail-api'),
 ]
+
+# Add dashboard endpoints if available
+if dashboard_views_imported:
+    urlpatterns += [
+        path('dashboard/summary/', HRDashboardSummary.as_view(), name='hr-dashboard-summary'),
+        path('dashboard/upcoming/', HRDashboardUpcoming.as_view(), name='hr-dashboard-upcoming'),
+    ]

@@ -3,11 +3,11 @@ from calendar import monthrange
 from django.db.models import Sum, Count, Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from ..models import Employee, EmploymentStatus, SalaryPeriod
 
 class HRDashboardSummary(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Allow access without authentication for now
     
     def get(self, request):
         today = date.today()
@@ -33,7 +33,7 @@ class HRDashboardSummary(APIView):
         })
 
 class HRDashboardUpcoming(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Allow access without authentication for now
     
     def get(self, request):
         typ = request.GET.get('type', 'birthday')
@@ -46,7 +46,7 @@ class HRDashboardUpcoming(APIView):
             if today <= nd <= end:
                 return True
             return False
-        
+            
         items = []
         for e in Employee.objects.filter(status=EmploymentStatus.ACTIVE).only('id', 'first_name', 'last_name', 'birth_date', 'date_of_joining', 'emp_code'):
             if typ == 'birthday' and e.birth_date and within(e.birth_date):

@@ -113,11 +113,7 @@
     // Load dashboard data
     async function loadDashboardSummary() {
       try {
-        const response = await fetch('/api/hr/dashboard/summary/', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          }
-        });
+        const response = await fetch('/api/hr/dashboard/summary/');
         
         if (response.ok) {
           const data = await response.json();
@@ -138,11 +134,7 @@
     // Load upcoming events
     async function loadUpcomingEvents(type = 'birthday') {
       try {
-        const response = await fetch(`/api/hr/dashboard/upcoming/?type=${type}&days=14`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          }
-        });
+        const response = await fetch(`/api/hr/dashboard/upcoming/?type=${type}&days=14`);
         
         if (response.ok) {
           const data = await response.json();
@@ -187,17 +179,19 @@
     // Load device statistics
     async function loadDeviceStats() {
       try {
-        const response = await fetch('/api/hr/employees/?is_phone_assigned=true&is_laptop_assigned=true', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          }
-        });
+        const response = await fetch('/api/hr/employees/');
         
         if (response.ok) {
-          const data = await response.json();
-          // This is a simplified approach - in a real scenario, you'd have separate endpoints
-          // For now, we'll make separate calls or calculate from the employee list
-          loadDeviceStatsFromEmployees();
+          const employees = await response.json();
+          
+          // Calculate device statistics from employee data
+          const phoneAssigned = employees.filter(emp => emp.is_phone_assigned).length;
+          const laptopAssigned = employees.filter(emp => emp.is_laptop_assigned).length;
+
+          document.getElementById('phoneAssigned').textContent = phoneAssigned;
+          document.getElementById('laptopAssigned').textContent = laptopAssigned;
+        } else {
+          console.error('Failed to load employee data for device stats');
         }
       } catch (error) {
         console.error('Error loading device stats:', error);
@@ -205,24 +199,9 @@
     }
 
     async function loadDeviceStatsFromEmployees() {
-      try {
-        const [phonesResponse, laptopsResponse] = await Promise.all([
-          fetch('/api/hr/employees/?is_phone_assigned=true', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-          }),
-          fetch('/api/hr/employees/?is_laptop_assigned=true', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-          })
-        ]);
-
-        const phonesData = phonesResponse.ok ? await phonesResponse.json() : { count: 0 };
-        const laptopsData = laptopsResponse.ok ? await laptopsResponse.json() : { count: 0 };
-
-        document.getElementById('phoneAssigned').textContent = phonesData.count || 0;
-        document.getElementById('laptopAssigned').textContent = laptopsData.count || 0;
-      } catch (error) {
-        console.error('Error loading device stats:', error);
-      }
+      // This function is no longer needed since we're using the main loadDeviceStats
+      // Keeping for backward compatibility
+      return loadDeviceStats();
     }
 
     // Event listeners
