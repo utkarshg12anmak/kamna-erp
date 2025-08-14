@@ -49,24 +49,37 @@ class STNViewSet(viewsets.ModelViewSet):
                 'detail': 'Only DRAFT STNs can be confirmed'
             }, status=400)
 
+        # Check if this is a dry run (for warnings)
+        dry_run = request.data.get('dry_run', False)
+
         # Re-check all lines against live availability
         shortages = []
+        warnings = []
         for line in stn.lines.select_related('sku'):
             available = get_available_physical_qty(line.sku_id, stn.source_warehouse_id)
-            if line.created_qty > available:            shortages.append({
-                'sku_id': line.sku_id,
-                'sku': getattr(line.sku, 'sku', ''),
-                'need': float(line.created_qty),
-                'have': float(available),
-                'short_by': float(line.created_qty - available)
-            })
+            if line.created_qty > available:
+                shortages.append({
+                    'sku_id': line.sku_id,
+                    'sku': getattr(line.sku, 'sku', ''),
+                    'need': float(line.created_qty),
+                    'have': float(available),
+                    'short_by': float(line.created_qty - available)
+                })
+                warnings.append(f"Insufficient stock for {getattr(line.sku, 'sku', '')}: need {line.created_qty}, have {available}")
 
         if shortages:
             return Response({
                 'code': CONFIRM_FAILED,
                 'detail': 'Availability changed',
-                'shortages': shortages
+                'shortages': shortages,
+                'warnings': warnings
             }, status=400)
+
+        # If dry run, return warnings only
+        if dry_run:
+            return Response({
+                'warnings': warnings
+            })
 
         # Update status and create history
         stn.status = STNStatus.CREATED
@@ -110,6 +123,13 @@ class STNViewSet(viewsets.ModelViewSet):
         )
 
         return Response(STNSerializer(stn).data)
+
+    @action(detail=True, methods=['get'])
+    def history(self, request, pk=None):
+        stn = self.get_object()
+        history = stn.status_history.all().order_by('-changed_at')
+        serializer = STNStatusHistorySerializer(history, many=True)
+        return Response(serializer.data)
 
 
 class STNDetailViewSet(viewsets.ModelViewSet):

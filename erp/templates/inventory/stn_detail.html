@@ -251,11 +251,14 @@ function renderSTNData() {
     
     const statusBadge = document.getElementById('stnStatus');
     const statusClass = {
-        'PENDING': 'warning',
-        'CONFIRMED': 'success',
-        'CANCELLED': 'danger'
+        'DRAFT': 'warning',
+        'CREATED': 'success', 
+        'DELETED': 'danger',
+        'DISPATCHED': 'info',
+        'RECEIVED': 'primary'
     }[stnData.status] || 'secondary';
-    statusBadge.innerHTML = `<span class="badge bg-${statusClass}">${stnData.status}</span>`;
+    const statusText = stnData.status_display || stnData.status;
+    statusBadge.innerHTML = `<span class="badge bg-${statusClass}">${statusText}</span>`;
     
     document.getElementById('fromWarehouse').textContent = stnData.from_warehouse_name || '—';
     document.getElementById('toWarehouse').textContent = stnData.to_warehouse_name || '—';
@@ -309,7 +312,7 @@ function setupActionButtons() {
     actionButtons.innerHTML = '';
     actionsList.innerHTML = '';
     
-    if (stnData.status === 'PENDING') {
+    if (stnData.status === 'DRAFT') {
         // Header action buttons
         actionButtons.innerHTML = `
             <button class="btn btn-success btn-sm" onclick="confirmSTN()">Confirm STN</button>
@@ -356,8 +359,8 @@ async function loadStatusHistory(stnId) {
         }
         
         const historyHTML = history.map(entry => {
-            const icon = getStatusIcon(entry.status);
-            const date = formatDate(entry.timestamp);
+            const icon = getStatusIcon(entry.to_status);
+            const date = formatDate(entry.changed_at);
             
             return `
                 <div class="d-flex align-items-start mb-3">
@@ -365,11 +368,11 @@ async function loadStatusHistory(stnId) {
                         <div class="status-icon">${icon}</div>
                     </div>
                     <div class="flex-grow-1">
-                        <div class="fw-semibold">${entry.status}</div>
+                        <div class="fw-semibold">${entry.to_status}</div>
                         <div class="small text-muted">
-                            ${entry.user ? `by ${entry.user}` : ''} • ${date}
+                            ${entry.changed_by_name ? `by ${entry.changed_by_name}` : ''} • ${date}
                         </div>
-                        ${entry.notes ? `<div class="small mt-1">${entry.notes}</div>` : ''}
+                        ${entry.reason ? `<div class="small mt-1">${entry.reason}</div>` : ''}
                     </div>
                 </div>
             `;
@@ -390,9 +393,11 @@ async function loadStatusHistory(stnId) {
 
 function getStatusIcon(status) {
     const icons = {
-        'PENDING': '<i class="fas fa-clock text-warning"></i>',
-        'CONFIRMED': '<i class="fas fa-check-circle text-success"></i>',
-        'CANCELLED': '<i class="fas fa-times-circle text-danger"></i>'
+        'DRAFT': '<i class="fas fa-clock text-warning"></i>',
+        'CREATED': '<i class="fas fa-check-circle text-success"></i>',
+        'DELETED': '<i class="fas fa-times-circle text-danger"></i>',
+        'DISPATCHED': '<i class="fas fa-truck text-info"></i>',
+        'RECEIVED': '<i class="fas fa-check-double text-primary"></i>'
     };
     return icons[status] || '<i class="fas fa-circle text-muted"></i>';
 }

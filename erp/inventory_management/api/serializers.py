@@ -58,18 +58,55 @@ class STNDetailSerializer(serializers.ModelSerializer):
 
 class STNSerializer(serializers.ModelSerializer):
     lines = STNDetailSerializer(many=True, read_only=True)
+    from_warehouse_name = serializers.CharField(source='source_warehouse.name', read_only=True)
+    to_warehouse_name = serializers.CharField(source='destination_warehouse.name', read_only=True)
+    from_warehouse_code = serializers.CharField(source='source_warehouse.code', read_only=True)
+    to_warehouse_code = serializers.CharField(source='destination_warehouse.code', read_only=True)
+    created_by_username = serializers.CharField(source='created_by.username', read_only=True)
+    updated_by_username = serializers.CharField(source='updated_by.username', read_only=True)
+    total_unique_skus = serializers.SerializerMethodField(read_only=True)
+    total_qty = serializers.SerializerMethodField(read_only=True)
+    details = serializers.SerializerMethodField(read_only=True)
+    status_display = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = STN
         fields = [
             'id', 'stn_code', 'source_warehouse', 'destination_warehouse', 'status', 'notes',
             'sum_created_qty', 'sum_dispatched_qty', 'sum_received_qty',
-            'created_at', 'updated_at', 'created_by', 'updated_by', 'lines'
+            'created_at', 'updated_at', 'created_by', 'updated_by', 'lines',
+            'from_warehouse_name', 'to_warehouse_name', 'from_warehouse_code', 'to_warehouse_code',
+            'created_by_username', 'updated_by_username', 'total_unique_skus', 'total_qty', 'details',
+            'status_display'
         ]
         read_only_fields = [
             'stn_code', 'status', 'sum_created_qty', 'sum_dispatched_qty', 'sum_received_qty',
             'created_at', 'updated_at', 'created_by', 'updated_by'
         ]
+
+    def get_total_unique_skus(self, obj):
+        return obj.lines.count()
+
+    def get_total_qty(self, obj):
+        return float(obj.sum_created_qty) if obj.sum_created_qty else 0
+
+    def get_details(self, obj):
+        return [{
+            'sku_code': line.sku.sku,
+            'sku_name': line.sku.name,
+            'qty': float(line.created_qty),
+            'sku_uom': getattr(line.sku, 'uom', 'PCS')
+        } for line in obj.lines.all()]
+
+    def get_status_display(self, obj):
+        status_map = {
+            'DRAFT': 'Draft',
+            'CREATED': 'Created', 
+            'DELETED': 'Cancelled',
+            'DISPATCHED': 'Dispatched',
+            'RECEIVED': 'Received'
+        }
+        return status_map.get(obj.status, obj.status)
 
     def validate(self, attrs):
         source_warehouse = attrs.get('source_warehouse') or (self.instance.source_warehouse if self.instance else None)
