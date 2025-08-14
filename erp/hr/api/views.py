@@ -212,5 +212,6 @@ class AvailableUsersView(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         """Filter users who are not assigned to any employee"""
         User = get_user_model()
-        assigned_user_ids = Employee.objects.values_list('user_id', flat=True).distinct()
+        # Get user IDs that are actually assigned (excluding None values)
+        assigned_user_ids = Employee.objects.filter(user__isnull=False).values_list('user_id', flat=True).distinct()
         return User.objects.exclude(id__in=assigned_user_ids)
