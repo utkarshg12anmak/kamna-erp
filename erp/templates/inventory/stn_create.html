@@ -1,0 +1,703 @@
+<div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center gap-2">
+      <a href="/app/inventory/stn" class="btn btn-outline-secondary btn-sm">← Back to List</a>
+      <h2 class="h5 mb-0">Create Stock Transfer Note</h2>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetForm()">Reset</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="saveSTN()" id="saveBtn">
+        <span class="spinner-border spinner-border-sm me-1" style="display:none;" id="saveSpinner"></span>
+        Save STN
+      </button>
+    </div>
+  </div>
+
+  <!-- Progress Steps -->
+  <div class="card-like mb-3">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="step-indicator active" id="step1">1</div>
+          <div class="ms-2">
+            <div class="fw-semibold">Basic Details</div>
+            <small class="text-muted">Warehouses & reference</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="step-indicator" id="step2">2</div>
+          <div class="ms-2">
+            <div class="fw-semibold">Add Items</div>
+            <small class="text-muted">SKUs and quantities</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="step-indicator" id="step3">3</div>
+          <div class="ms-2">
+            <div class="fw-semibold">Review & Save</div>
+            <small class="text-muted">Final validation</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 1: Basic Details -->
+  <div class="step-content" id="stepContent1">
+    <div class="card-like">
+      <h6 class="mb-3">Basic Information</h6>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" for="fromWarehouse">From Warehouse *</label>
+          <select id="fromWarehouse" class="form-select" required>
+            <option value="">Select source warehouse</option>
+          </select>
+          <div class="invalid-feedback">Please select a source warehouse</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="toWarehouse">To Warehouse *</label>
+          <select id="toWarehouse" class="form-select" required>
+            <option value="">Select destination warehouse</option>
+          </select>
+          <div class="invalid-feedback">Please select a destination warehouse</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="reference">Reference</label>
+          <input type="text" id="reference" class="form-control" placeholder="Optional reference">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="remarks">Remarks</label>
+          <input type="text" id="remarks" class="form-control" placeholder="Optional remarks">
+        </div>
+      </div>
+      <div class="d-flex justify-content-end mt-3">
+        <button type="button" class="btn btn-primary" onclick="nextStep(1)">Next: Add Items</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Add Items -->
+  <div class="step-content" id="stepContent2" style="display:none;">
+    <div class="card-like">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0">Transfer Items</h6>
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="addItemRow()">+ Add Item</button>
+      </div>
+      
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th width="35%">SKU *</th>
+              <th width="25%">Item Name</th>
+              <th width="15%">Available</th>
+              <th width="15%">Quantity *</th>
+              <th width="10%">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="itemsTableBody">
+            <!-- Items will be added dynamically -->
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="noItemsMessage" class="text-center text-muted py-4">
+        <p>No items added yet. Click "Add Item" to start.</p>
+      </div>
+      
+      <div class="d-flex justify-content-between mt-3">
+        <button type="button" class="btn btn-outline-secondary" onclick="prevStep(2)">Previous</button>
+        <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next: Review</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Review & Save -->
+  <div class="step-content" id="stepContent3" style="display:none;">
+    <div class="card-like">
+      <h6 class="mb-3">Review Transfer Details</h6>
+      
+      <!-- Summary -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div class="border rounded p-3">
+            <h6 class="text-muted mb-2">Transfer Route</h6>
+            <div class="d-flex align-items-center">
+              <span id="reviewFromWarehouse" class="fw-semibold">—</span>
+              <span class="mx-2">→</span>
+              <span id="reviewToWarehouse" class="fw-semibold">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="border rounded p-3">
+            <h6 class="text-muted mb-2">Summary</h6>
+            <div class="row">
+              <div class="col-6">
+                <div class="small text-muted">Total Items</div>
+                <div class="fw-semibold" id="reviewTotalItems">0</div>
+              </div>
+              <div class="col-6">
+                <div class="small text-muted">Total Quantity</div>
+                <div class="fw-semibold" id="reviewTotalQty">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Items Review -->
+      <h6 class="mb-2">Items to Transfer</h6>
+      <div class="table-responsive mb-3">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Item Name</th>
+              <th class="text-end">Quantity</th>
+            </tr>
+          </thead>
+          <tbody id="reviewItemsTable">
+            <!-- Review items will be populated -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Validation Warnings -->
+      <div id="validationWarnings" class="alert alert-warning" style="display:none;">
+        <h6>⚠️ Validation Warnings</h6>
+        <ul id="warningsList" class="mb-0"></ul>
+      </div>
+      
+      <!-- Actions -->
+      <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-outline-secondary" onclick="prevStep(3)">Previous</button>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-primary" onclick="validateSTN()">Validate</button>
+          <button type="button" class="btn btn-primary" onclick="saveSTN()">Save STN</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.step-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.step-indicator.active {
+  background: #3C83F6;
+  color: white;
+}
+
+.step-indicator.completed {
+  background: #10b981;
+  color: white;
+}
+
+.item-row {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.item-row:last-child {
+  border-bottom: none;
+}
+
+.available-qty {
+  font-size: 0.875rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #f3f4f6;
+}
+
+.available-qty.low {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.available-qty.zero {
+  background: #fee2e2;
+  color: #991b1b;
+}
+</style>
+
+<script>
+let currentStep = 1;
+let warehouses = [];
+let stnItems = [];
+let skuLookup = {};
+
+// Authentication helper functions
+function token() {
+    const t = localStorage.getItem('accessToken');
+    if (!t) {
+        window.location = '/';
+    }
+    return t;
+}
+
+async function apiFetch(url, options = {}) {
+    const headers = Object.assign({
+        'Authorization': `Bearer ${token()}`,
+        'Content-Type': 'application/json'
+    }, options.headers || {});
+    
+    const res = await fetch(url, { ...options, headers });
+    
+    if (res.status === 401) {
+        window.location = '/';
+        throw new Error('Unauthorized');
+    }
+    
+    return res;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadWarehouses();
+    loadSKUs();
+    addItemRow(); // Start with one empty row
+});
+
+async function loadWarehouses() {
+    try {
+        const response = await apiFetch('/api/warehousing/warehouses/?status=ACTIVE');
+        const data = await response.json();
+        warehouses = data.results || [];
+        
+        const fromSelect = document.getElementById('fromWarehouse');
+        const toSelect = document.getElementById('toWarehouse');
+        
+        warehouses.forEach(wh => {
+            const option1 = new Option(`${wh.code} - ${wh.name}`, wh.id);
+            const option2 = new Option(`${wh.code} - ${wh.name}`, wh.id);
+            fromSelect.appendChild(option1);
+            toSelect.appendChild(option2);
+        });
+        
+    } catch (error) {
+        console.error('Error loading warehouses:', error);
+        notify('Error loading warehouses', 'error');
+    }
+}
+
+async function loadSKUs() {
+    try {
+        const response = await apiFetch('/api/catalog/items/?status=ACTIVE&page_size=1000');
+        const data = await response.json();
+        const items = data.results || [];
+        
+        skuLookup = {};
+        items.forEach(item => {
+            skuLookup[item.sku] = {
+                id: item.id,
+                name: item.name,
+                sku: item.sku
+            };
+        });
+        
+    } catch (error) {
+        console.error('Error loading SKUs:', error);
+        notify('Error loading items', 'error');
+    }
+}
+
+function nextStep(step) {
+    if (step === 1) {
+        if (!validateStep1()) return;
+        showStep(2);
+    } else if (step === 2) {
+        if (!validateStep2()) return;
+        updateReviewStep();
+        showStep(3);
+    }
+}
+
+function prevStep(step) {
+    showStep(step - 1);
+}
+
+function showStep(stepNumber) {
+    // Hide all steps
+    document.querySelectorAll('.step-content').forEach(el => el.style.display = 'none');
+    
+    // Show current step
+    document.getElementById(`stepContent${stepNumber}`).style.display = 'block';
+    
+    // Update step indicators
+    document.querySelectorAll('.step-indicator').forEach((el, index) => {
+        el.classList.remove('active', 'completed');
+        if (index + 1 < stepNumber) {
+            el.classList.add('completed');
+        } else if (index + 1 === stepNumber) {
+            el.classList.add('active');
+        }
+    });
+    
+    currentStep = stepNumber;
+}
+
+function validateStep1() {
+    const fromWarehouse = document.getElementById('fromWarehouse').value;
+    const toWarehouse = document.getElementById('toWarehouse').value;
+    
+    let valid = true;
+    
+    if (!fromWarehouse) {
+        document.getElementById('fromWarehouse').classList.add('is-invalid');
+        valid = false;
+    } else {
+        document.getElementById('fromWarehouse').classList.remove('is-invalid');
+    }
+    
+    if (!toWarehouse) {
+        document.getElementById('toWarehouse').classList.add('is-invalid');
+        valid = false;
+    } else {
+        document.getElementById('toWarehouse').classList.remove('is-invalid');
+    }
+    
+    if (fromWarehouse && toWarehouse && fromWarehouse === toWarehouse) {
+        notify('Source and destination warehouses cannot be the same', 'error');
+        valid = false;
+    }
+    
+    return valid;
+}
+
+function validateStep2() {
+    collectItemsData();
+    
+    if (stnItems.length === 0) {
+        notify('Please add at least one item', 'error');
+        return false;
+    }
+    
+    // Check for duplicate SKUs
+    const skus = stnItems.map(item => item.sku);
+    const duplicates = skus.filter((sku, index) => skus.indexOf(sku) !== index);
+    
+    if (duplicates.length > 0) {
+        notify('Duplicate SKUs found: ' + duplicates.join(', '), 'error');
+        return false;
+    }
+    
+    // Check for invalid quantities
+    const invalidItems = stnItems.filter(item => !item.qty || item.qty <= 0);
+    if (invalidItems.length > 0) {
+        notify('All items must have valid quantities greater than 0', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+function addItemRow() {
+    const tbody = document.getElementById('itemsTableBody');
+    const rowIndex = tbody.children.length;
+    
+    const row = document.createElement('tr');
+    row.className = 'item-row';
+    row.innerHTML = `
+        <td>
+            <input type="text" class="form-control form-control-sm sku-input" 
+                   placeholder="Enter SKU" 
+                   onchange="updateItemName(this, ${rowIndex})"
+                   onkeyup="searchSKU(this)"
+                   list="skuDatalist${rowIndex}">
+            <datalist id="skuDatalist${rowIndex}"></datalist>
+        </td>
+        <td>
+            <span class="item-name text-muted">—</span>
+        </td>
+        <td>
+            <span class="available-qty">—</span>
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm qty-input" 
+                   placeholder="0" min="1" step="1">
+        </td>
+        <td>
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeItemRow(this)">
+                ×
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+    updateNoItemsMessage();
+    
+    // Populate datalist with SKUs
+    populateSKUDatalist(rowIndex);
+}
+
+function populateSKUDatalist(rowIndex) {
+    const datalist = document.getElementById(`skuDatalist${rowIndex}`);
+    Object.values(skuLookup).forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.sku;
+        option.textContent = `${item.sku} - ${item.name}`;
+        datalist.appendChild(option);
+    });
+}
+
+function searchSKU(input) {
+    const value = input.value.toLowerCase();
+    const rowIndex = Array.from(input.closest('tbody').children).indexOf(input.closest('tr'));
+    const datalist = document.getElementById(`skuDatalist${rowIndex}`);
+    
+    // Filter options based on input
+    datalist.innerHTML = '';
+    Object.values(skuLookup)
+        .filter(item => 
+            item.sku.toLowerCase().includes(value) || 
+            item.name.toLowerCase().includes(value)
+        )
+        .slice(0, 10) // Limit to 10 results
+        .forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.sku;
+            option.textContent = `${item.sku} - ${item.name}`;
+            datalist.appendChild(option);
+        });
+}
+
+async function updateItemName(input, rowIndex) {
+    const sku = input.value.trim();
+    const row = input.closest('tr');
+    const nameSpan = row.querySelector('.item-name');
+    const availableSpan = row.querySelector('.available-qty');
+    
+    if (!sku) {
+        nameSpan.textContent = '—';
+        availableSpan.textContent = '—';
+        availableSpan.className = 'available-qty';
+        return;
+    }
+    
+    if (skuLookup[sku]) {
+        nameSpan.textContent = skuLookup[sku].name;
+        
+        // Get available quantity from source warehouse
+        const fromWarehouse = document.getElementById('fromWarehouse').value;
+        if (fromWarehouse) {
+            await updateAvailableQuantity(sku, fromWarehouse, availableSpan);
+        }
+    } else {
+        nameSpan.textContent = 'Unknown SKU';
+        nameSpan.className = 'item-name text-danger';
+        availableSpan.textContent = '—';
+    }
+}
+
+async function updateAvailableQuantity(sku, warehouseId, span) {
+    try {
+        // This would call the available quantity API
+        // For now, we'll simulate it
+        span.textContent = 'Loading...';
+        
+        // Simulated API call - replace with actual implementation
+        setTimeout(() => {
+            const qty = Math.floor(Math.random() * 100); // Simulate random quantity
+            span.textContent = qty;
+            
+            if (qty === 0) {
+                span.className = 'available-qty zero';
+            } else if (qty < 10) {
+                span.className = 'available-qty low';
+            } else {
+                span.className = 'available-qty';
+            }
+        }, 500);
+        
+    } catch (error) {
+        console.error('Error getting available quantity:', error);
+        span.textContent = 'Error';
+        span.className = 'available-qty zero';
+    }
+}
+
+function removeItemRow(button) {
+    button.closest('tr').remove();
+    updateNoItemsMessage();
+}
+
+function updateNoItemsMessage() {
+    const tbody = document.getElementById('itemsTableBody');
+    const message = document.getElementById('noItemsMessage');
+    
+    if (tbody.children.length === 0) {
+        message.style.display = 'block';
+    } else {
+        message.style.display = 'none';
+    }
+}
+
+function collectItemsData() {
+    const tbody = document.getElementById('itemsTableBody');
+    stnItems = [];
+    
+    Array.from(tbody.children).forEach(row => {
+        const sku = row.querySelector('.sku-input').value.trim();
+        const qty = parseInt(row.querySelector('.qty-input').value) || 0;
+        
+        if (sku && qty > 0) {
+            stnItems.push({
+                sku: sku,
+                qty: qty
+            });
+        }
+    });
+}
+
+function updateReviewStep() {
+    const fromWarehouseId = document.getElementById('fromWarehouse').value;
+    const toWarehouseId = document.getElementById('toWarehouse').value;
+    
+    const fromWarehouse = warehouses.find(w => w.id == fromWarehouseId);
+    const toWarehouse = warehouses.find(w => w.id == toWarehouseId);
+    
+    document.getElementById('reviewFromWarehouse').textContent = fromWarehouse ? `${fromWarehouse.code} - ${fromWarehouse.name}` : '—';
+    document.getElementById('reviewToWarehouse').textContent = toWarehouse ? `${toWarehouse.code} - ${toWarehouse.name}` : '—';
+    
+    document.getElementById('reviewTotalItems').textContent = stnItems.length;
+    document.getElementById('reviewTotalQty').textContent = stnItems.reduce((sum, item) => sum + item.qty, 0);
+    
+    const reviewTable = document.getElementById('reviewItemsTable');
+    reviewTable.innerHTML = stnItems.map(item => `
+        <tr>
+            <td><code>${item.sku}</code></td>
+            <td>${skuLookup[item.sku]?.name || 'Unknown'}</td>
+            <td class="text-end">${item.qty}</td>
+        </tr>
+    `).join('');
+}
+
+async function validateSTN() {
+    try {
+        const stnData = collectSTNData();
+        
+        // Perform validation via API
+        const response = await apiFetch('/api/inventory/stns/validate/', {
+            method: 'POST',
+            body: JSON.stringify(stnData)
+        });
+        
+        const result = await response.json();
+        
+        const warningsDiv = document.getElementById('validationWarnings');
+        const warningsList = document.getElementById('warningsList');
+        
+        if (result.warnings && result.warnings.length > 0) {
+            warningsList.innerHTML = result.warnings.map(w => `<li>${w}</li>`).join('');
+            warningsDiv.style.display = 'block';
+        } else {
+            warningsDiv.style.display = 'none';
+            notify('Validation passed successfully', 'success');
+        }
+        
+    } catch (error) {
+        console.error('Error validating STN:', error);
+        notify('Error during validation: ' + error.message, 'error');
+    }
+}
+
+async function saveSTN() {
+    try {
+        const saveBtn = document.getElementById('saveBtn');
+        const spinner = document.getElementById('saveSpinner');
+        
+        saveBtn.disabled = true;
+        spinner.style.display = 'inline-block';
+        
+        if (currentStep !== 3) {
+            if (!validateStep1() || !validateStep2()) {
+                return;
+            }
+            collectItemsData();
+        }
+        
+        const stnData = collectSTNData();
+        
+        const response = await apiFetch('/api/inventory/stns/', {
+            method: 'POST',
+            body: JSON.stringify(stnData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            notify('STN created successfully', 'success');
+            setTimeout(() => {
+                window.location.href = `/app/inventory/stn/${result.id}`;
+            }, 1000);
+        } else {
+            throw new Error(result.detail || 'Failed to create STN');
+        }
+        
+    } catch (error) {
+        console.error('Error saving STN:', error);
+        notify('Error saving STN: ' + error.message, 'error');
+    } finally {
+        const saveBtn = document.getElementById('saveBtn');
+        const spinner = document.getElementById('saveSpinner');
+        saveBtn.disabled = false;
+        spinner.style.display = 'none';
+    }
+}
+
+function collectSTNData() {
+    return {
+        from_warehouse: parseInt(document.getElementById('fromWarehouse').value),
+        to_warehouse: parseInt(document.getElementById('toWarehouse').value),
+        reference: document.getElementById('reference').value.trim() || null,
+        remarks: document.getElementById('remarks').value.trim() || null,
+        details: stnItems
+    };
+}
+
+function resetForm() {
+    if (confirm('Are you sure you want to reset the form? All data will be lost.')) {
+        location.reload();
+    }
+}
+
+function notify(message, type = 'info') {
+    // Simple notification implementation
+    const alertClass = type === 'success' ? 'alert-success' : 
+                       type === 'error' ? 'alert-danger' : 
+                       type === 'warning' ? 'alert-warning' : 'alert-info';
+    
+    const div = document.createElement('div');
+    div.className = `alert ${alertClass} position-fixed`;
+    div.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    div.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center">
+            <span>${message}</span>
+            <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(div);
+    
+    // Auto remove after 4 seconds
+    setTimeout(() => {
+        if (div.parentElement) {
+            div.remove();
+        }
+    }, 4000);
+}
+</script>

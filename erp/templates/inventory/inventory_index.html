@@ -1,0 +1,254 @@
+<div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 m-0">Inventory Management Dashboard</h2>
+    <div class="d-flex gap-2">
+      <a href="/app/inventory/stn/new" class="btn btn-primary btn-sm">+ Create STN</a>
+      <a href="/app/inventory/stn" class="btn btn-outline-primary btn-sm">View All STNs</a>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card-like text-center">
+        <h3 class="h4 text-primary mb-1" id="totalSTNs">—</h3>
+        <p class="small text-muted mb-0">Total STNs</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card-like text-center">
+        <h3 class="h4 text-warning mb-1" id="pendingSTNs">—</h3>
+        <p class="small text-muted mb-0">Pending STNs</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card-like text-center">
+        <h3 class="h4 text-success mb-1" id="confirmedSTNs">—</h3>
+        <p class="small text-muted mb-0">Confirmed STNs</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card-like text-center">
+        <h3 class="h4 text-info mb-1" id="totalQty">—</h3>
+        <p class="small text-muted mb-0">Total Transfer Qty</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent STNs -->
+  <div class="row g-3">
+    <div class="col-md-8">
+      <div class="card-like">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="mb-0">Recent STNs</h6>
+          <a href="/app/inventory/stn" class="btn btn-outline-secondary btn-sm">View All</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>STN Code</th>
+                <th>From Warehouse</th>
+                <th>To Warehouse</th>
+                <th>Status</th>
+                <th class="text-end">Total Qty</th>
+                <th>Created</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="recentSTNs">
+              <tr>
+                <td colspan="7" class="text-center text-muted">Loading recent STNs...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card-like">
+        <h6 class="mb-3">Quick Actions</h6>
+        <div class="d-grid gap-2">
+          <a href="/app/inventory/stn/new" class="btn btn-primary">Create New STN</a>
+          <a href="/app/inventory/stn?status=PENDING" class="btn btn-outline-warning">View Pending STNs</a>
+          <a href="/app/inventory/stn?status=CONFIRMED" class="btn btn-outline-success">View Confirmed STNs</a>
+        </div>
+      </div>
+
+      <div class="card-like mt-3">
+        <h6 class="mb-3">Status Distribution</h6>
+        <div id="statusChart" class="text-center">
+          <div class="spinner-border spinner-border-sm text-muted" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Authentication helper functions
+function token() {
+    const t = localStorage.getItem('accessToken');
+    if (!t) {
+        window.location = '/';
+    }
+    return t;
+}
+
+async function apiFetch(url, options = {}) {
+    const headers = Object.assign({
+        'Authorization': `Bearer ${token()}`,
+        'Content-Type': 'application/json'
+    }, options.headers || {});
+    
+    const res = await fetch(url, { ...options, headers });
+    
+    if (res.status === 401) {
+        window.location = '/';
+        throw new Error('Unauthorized');
+    }
+    
+    return res;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+});
+
+async function loadDashboardData() {
+    try {
+        // Load KPIs
+        const response = await apiFetch('/api/inventory/stns/?page_size=1');
+        const data = await response.json();
+        
+        // Update total count
+        document.getElementById('totalSTNs').textContent = data.count || 0;
+        
+        // Load status-specific counts
+        const [pendingResponse, confirmedResponse] = await Promise.all([
+            apiFetch('/api/inventory/stns/?status=PENDING&page_size=1'),
+            apiFetch('/api/inventory/stns/?status=CONFIRMED&page_size=1')
+        ]);
+        
+        const pendingData = await pendingResponse.json();
+        const confirmedData = await confirmedResponse.json();
+        
+        document.getElementById('pendingSTNs').textContent = pendingData.count || 0;
+        document.getElementById('confirmedSTNs').textContent = confirmedData.count || 0;
+        
+        // Load recent STNs
+        await loadRecentSTNs();
+        
+        // Create simple status chart
+        createStatusChart(pendingData.count || 0, confirmedData.count || 0);
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        notify('Error loading dashboard data', 'error');
+    }
+}
+
+async function loadRecentSTNs() {
+    try {
+        const response = await apiFetch('/api/inventory/stns/?ordering=-created_at&page_size=10');
+        const data = await response.json();
+        const stns = data.results || [];
+        
+        let totalQty = 0;
+        
+        const tbody = document.getElementById('recentSTNs');
+        if (stns.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No STNs found</td></tr>';
+        } else {
+            tbody.innerHTML = stns.map(stn => {
+                totalQty += stn.total_qty || 0;
+                return `
+                    <tr>
+                        <td><code>${stn.stn_code}</code></td>
+                        <td>${stn.from_warehouse_name || '—'}</td>
+                        <td>${stn.to_warehouse_name || '—'}</td>
+                        <td><span class="badge bg-${stn.status === 'CONFIRMED' ? 'success' : stn.status === 'PENDING' ? 'warning' : 'secondary'}">${stn.status}</span></td>
+                        <td class="text-end">${stn.total_qty || 0}</td>
+                        <td><small>${new Date(stn.created_at).toLocaleDateString()}</small></td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="/app/inventory/stn/${stn.id}" class="btn btn-outline-primary">View</a>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        document.getElementById('totalQty').textContent = totalQty.toLocaleString();
+        
+    } catch (error) {
+        console.error('Error loading recent STNs:', error);
+        const tbody = document.getElementById('recentSTNs');
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error loading data</td></tr>';
+    }
+}
+
+function createStatusChart(pending, confirmed) {
+    const chartDiv = document.getElementById('statusChart');
+    const total = pending + confirmed;
+    
+    if (total === 0) {
+        chartDiv.innerHTML = '<p class="text-muted mb-0">No STNs yet</p>';
+        return;
+    }
+    
+    const pendingPct = Math.round((pending / total) * 100);
+    const confirmedPct = Math.round((confirmed / total) * 100);
+    
+    chartDiv.innerHTML = `
+        <div class="mb-2">
+            <div class="d-flex justify-content-between">
+                <small class="text-muted">Pending</small>
+                <small class="fw-semibold">${pending} (${pendingPct}%)</small>
+            </div>
+            <div class="progress mb-2" style="height: 8px;">
+                <div class="progress-bar bg-warning" style="width: ${pendingPct}%"></div>
+            </div>
+        </div>
+        <div>
+            <div class="d-flex justify-content-between">
+                <small class="text-muted">Confirmed</small>
+                <small class="fw-semibold">${confirmed} (${confirmedPct}%)</small>
+            </div>
+            <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-success" style="width: ${confirmedPct}%"></div>
+            </div>
+        </div>
+    `;
+}
+
+function notify(message, type = 'info') {
+    // Simple notification implementation
+    const alertClass = type === 'success' ? 'alert-success' : 
+                       type === 'error' ? 'alert-danger' : 
+                       type === 'warning' ? 'alert-warning' : 'alert-info';
+    
+    const div = document.createElement('div');
+    div.className = `alert ${alertClass} position-fixed`;
+    div.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    div.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center">
+            <span>${message}</span>
+            <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(div);
+    
+    // Auto remove after 4 seconds
+    setTimeout(() => {
+        if (div.parentElement) {
+            div.remove();
+        }
+    }, 4000);
+}
+</script>

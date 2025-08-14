@@ -583,3 +583,32 @@ def cv_hub_entry_view(request, id: int):
 
 def cv_hub_entry_edit(request, id: int):
     return render_module(request, "Customer & Vendor Hub", cv_hub_menu("/app/cv_hub/entries"), "cv_hub/cv_hub_form.html")
+
+
+# Inventory Management module
+
+def inventory_menu(active_href):
+    items = [
+        {"label": "Dashboard", "href": "/app/inventory"},
+        {"label": "STN List", "href": "/app/inventory/stn"},
+        {"label": "Create STN", "href": "/app/inventory/stn/new"},
+    ]
+    for it in items:
+        it["active"] = (it["href"] == active_href)
+    return items
+
+
+def module_inventory(request):
+    return render_module(request, "Inventory Management", inventory_menu("/app/inventory"), "inventory/inventory_index.html")
+
+
+def inventory_stn_list(request):
+    return render_module(request, "Inventory Management", inventory_menu("/app/inventory/stn"), "inventory/stn_list.html")
+
+
+def inventory_stn_create(request):
+    return render_module(request, "Inventory Management", inventory_menu("/app/inventory/stn/new"), "inventory/stn_create.html")
+
+
+def inventory_stn_detail(request, id: int):
+    return render_module(request, "Inventory Management", inventory_menu("/app/inventory/stn"), "inventory/stn_detail.html")
