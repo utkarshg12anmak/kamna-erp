@@ -186,6 +186,11 @@
   </div>
 </div>
 
+<!-- Add Select2 for searchable dropdowns -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <style>
 .card-like {
   background: white;
@@ -193,6 +198,53 @@
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Select2 customization for SKU dropdowns */
+.select2-container--default .select2-selection--single {
+  height: 32px;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 30px;
+  font-size: 0.875rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 30px;
+}
+
+.select2-container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.select2-dropdown {
+  max-width: 400px !important;
+  z-index: 9999 !important;
+}
+
+.select2-results__option {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+}
+
+/* Select2 customization for SKU dropdowns */
+.select2-container--default .select2-selection--single {
+  height: 32px;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 30px;
+  font-size: 0.875rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 30px;
 }
 
 .step-indicator {
@@ -305,7 +357,7 @@
 }
 
 .sku-select {
-  /* actual select used; keep default look */
+  min-width: 200px; /* Ensure adequate width for Select2 dropdown */
 }
 </style>
 
@@ -352,6 +404,8 @@ async function loadWarehouses() {
     const data = await response.json();
     warehouses = data.results || [];
     
+    console.log('Loaded warehouses:', warehouses);
+    
     const fromSelect = document.getElementById('fromWarehouse');
     const toSelect = document.getElementById('toWarehouse');
     
@@ -362,91 +416,80 @@ async function loadWarehouses() {
       toSelect.appendChild(option2);
     });
     
-    // Change handler: reload SKUs with availability and refresh rows
+    // Change handler: reload SKUs and refresh rows
     fromSelect.addEventListener('change', async function() {
       const warehouseId = this.value;
-      if (warehouseId) {
-        notify('Loading items with availability for selected warehouse...', 'info');
-        await loadSKUs(warehouseId);
-      } else {
-        await loadSKUs(); // Load without warehouse context
-      }
+      console.log('Warehouse changed to:', warehouseId);
+      await loadSKUs(); // Load active SKUs without warehouse filtering
       // Update existing item rows with new availability and options
       updateItemRowsAvailability();
     });
 
   } catch (error) {
     console.error('Error loading warehouses:', error);
-    notify('Error loading warehouses', 'error');
+    notify('Error loading warehouses: ' + error.message, 'error');
   }
 }
 
-async function loadSKUs(warehouseId = null) {
+async function loadSKUs() {
   try {
-    if (warehouseId) {
-      await loadWarehouseSKUs(warehouseId);
-    } else {
-      // Load all active SKUs as fallback (no availability)
-      const response = await apiFetch('/api/catalog/items/?status=ACTIVE&page_size=1000');
-      const data = await response.json();
-      const items = data.results || [];
-      
-      skuLookup = {};
-      items.forEach(item => {
-        skuLookup[item.sku] = {
-          id: item.id,
-          name: item.name,
-          sku: item.sku,
-          available_qty: undefined // undefined when no warehouse selected
-        };
-      });
-    }
-  } catch (error) {
-    console.error('Error loading SKUs:', error);
-    notify('Error loading items', 'error');
-  }
-}
-
-async function loadWarehouseSKUs(warehouseId) {
-  try {
-    // Fetch items and stock in parallel
-    const [itemsResponse, stockResponse] = await Promise.all([
-      apiFetch('/api/catalog/items/?status=ACTIVE&page_size=1000'),
-      apiFetch(`/api/warehousing/warehouses/${warehouseId}/physical_stock_summary/`)
-    ]);
+    console.log('Loading active SKUs...');
     
-    const itemsData = await itemsResponse.json();
-    const stockData = await stockResponse.json();
+    // Load only active SKUs - simplified approach
+    const response = await apiFetch('/api/catalog/items/?status=ACTIVE&page_size=1000');
+    const data = await response.json();
+    const items = data.results || [];
     
-    const items = itemsData.results || [];
-    const stockItems = stockData.items || [];
+    console.log(`Loaded ${items.length} active items`);
     
-    // Build stock lookup
-    const stockLookup = {};
-    stockItems.forEach(stockItem => {
-      stockLookup[stockItem.item_sku] = stockItem.qty;
-    });
-    
-    // Combine with item master
     skuLookup = {};
     items.forEach(item => {
-      const availableQty = stockLookup[item.sku] || 0;
       skuLookup[item.sku] = {
         id: item.id,
         name: item.name,
-        sku: item.sku,
-        available_qty: availableQty
+        sku: item.sku
       };
     });
     
-    notify(`Loaded ${Object.keys(skuLookup).length} items with availability for selected warehouse`, 'success');
-
+    notify(`Loaded ${items.length} active items`, 'success');
+    
   } catch (error) {
-    console.error('Error loading warehouse SKUs:', error);
-    notify('Error loading warehouse inventory', 'error');
-    // Fallback
-    await loadSKUs();
+    console.error('Error loading SKUs:', error);
+    notify('Error loading items: ' + error.message, 'error');
   }
+}
+
+/** Initialize Select2 for a SKU dropdown */
+function initializeSelect2(selectElement) {
+  $(selectElement).select2({
+    placeholder: 'Search and select SKU...',
+    allowClear: true,
+    width: '100%',
+    theme: 'default',
+    dropdownAutoWidth: false,
+    dropdownParent: $(selectElement).parent(),
+    matcher: function(params, data) {
+      // If there are no search terms, return all data
+      if ($.trim(params.term) === '') {
+        return data;
+      }
+      
+      // Do not display the item if there is no text
+      if (!data.text) {
+        return null;
+      }
+      
+      // Search in both SKU and name (case insensitive)
+      const searchTerm = params.term.toLowerCase();
+      const text = data.text.toLowerCase();
+      
+      if (text.indexOf(searchTerm) > -1) {
+        return data;
+      }
+      
+      return null;
+    }
+  });
 }
 
 /** Row-scoped dropdown population (no index drift) */
@@ -455,37 +498,46 @@ function populateSKUDropdownForRow(row) {
   const fromWarehouse = document.getElementById('fromWarehouse').value;
   if (!select) return;
 
+  console.log('Populating SKU dropdown, warehouse:', fromWarehouse);
+  console.log('Available SKUs:', Object.keys(skuLookup).length);
+
   // Preserve previous selection (if any)
-  const previousValue = select.value || '';
+  const previousValue = $(select).val() || '';
+  
+  // Destroy existing Select2 instance if it exists
+  if ($(select).hasClass('select2-hidden-accessible')) {
+    $(select).select2('destroy');
+  }
 
   // Clear options
   select.innerHTML = '<option value="">Select SKU</option>';
 
   const itemsToShow = Object.values(skuLookup)
-    .filter(item => {
-      if (fromWarehouse && typeof item.available_qty !== 'undefined') {
-        return item.available_qty > 0; // show only positive stock when source selected
-      }
-      return true;
-    })
     .sort((a, b) => a.sku.localeCompare(b.sku));
+
+  console.log(`Items to show: ${itemsToShow.length}`);
 
   itemsToShow.forEach(item => {
     const option = document.createElement('option');
     option.value = item.sku;
-    let displayText = `${item.sku} - ${item.name}`;
-    if (typeof item.available_qty !== 'undefined') {
-      displayText += ` (Available: ${item.available_qty})`;
-    }
+    const displayText = `${item.sku} - ${item.name}`;
     option.textContent = displayText;
     select.appendChild(option);
   });
 
+  console.log(`Added ${select.options.length - 1} options to dropdown`); // -1 for placeholder
+
+  // Reinitialize Select2
+  initializeSelect2(select);
+  
+  // Re-add the change handler
+  $(select).off('select2:select').on('select2:select', function(e) {
+    updateItemName(this);
+  });
+  
   // Restore selection if still valid
   if (previousValue && [...select.options].some(o => o.value === previousValue)) {
-    select.value = previousValue;
-  } else {
-    select.value = '';
+    $(select).val(previousValue).trigger('change');
   }
 }
 
@@ -499,32 +551,12 @@ function populateSKUDropdown(rowIndex){
 function updateItemRowsAvailability() {
   const rows = document.querySelectorAll('.item-row');
   rows.forEach((row) => {
-    const skuSelect = row.querySelector('.sku-select');
-    const availableSpan = row.querySelector('.available-qty');
-
     // Refresh the dropdown options for THIS row
     populateSKUDropdownForRow(row);
-
-    if (skuSelect && availableSpan && skuSelect.value) {
-      const sku = skuSelect.value.trim();
-      const item = skuLookup[sku];
-
-      if (item && typeof item.available_qty !== 'undefined') {
-        const qty = item.available_qty;
-        availableSpan.textContent = qty;
-
-        // Update styling based on availability
-        availableSpan.className = 'available-qty';
-        if (qty === 0) {
-          availableSpan.classList.add('zero');
-        } else if (qty < 10) {
-          availableSpan.classList.add('low');
-        }
-      } else {
-        availableSpan.textContent = '—';
-        availableSpan.className = 'available-qty';
-      }
-    } else if (availableSpan) {
+    
+    const availableSpan = row.querySelector('.available-qty');
+    if (availableSpan) {
+      // Simplified version - no availability display
       availableSpan.textContent = '—';
       availableSpan.className = 'available-qty';
     }
@@ -602,8 +634,6 @@ function validateStep2() {
     return false;
   }
   
-  const fromWarehouse = document.getElementById('fromWarehouse').value;
-  
   // Check for duplicate SKUs
   const skus = stnItems.map(item => item.sku);
   const duplicates = skus.filter((sku, index) => skus.indexOf(sku) !== index);
@@ -620,34 +650,6 @@ function validateStep2() {
     return false;
   }
   
-  // Check availability if warehouse is selected
-  if (fromWarehouse) {
-    const unavailableItems = stnItems.filter(item => {
-      const skuItem = skuLookup[item.sku];
-      return skuItem && typeof skuItem.available_qty !== 'undefined' && skuItem.available_qty === 0;
-    });
-    
-    if (unavailableItems.length > 0) {
-      notify(`Items with zero availability: ${unavailableItems.map(item => item.sku).join(', ')}`, 'error');
-      return false;
-    }
-    
-    // Check if requested quantity exceeds available quantity
-    const excessItems = stnItems.filter(item => {
-      const skuItem = skuLookup[item.sku];
-      return skuItem && typeof skuItem.available_qty !== 'undefined' && item.qty > skuItem.available_qty;
-    });
-    
-    if (excessItems.length > 0) {
-      const excessDetails = excessItems.map(item => {
-        const available = skuLookup[item.sku].available_qty;
-        return `${item.sku} (requested: ${item.qty}, available: ${available})`;
-      }).join(', ');
-      notify(`Requested quantity exceeds availability: ${excessDetails}`, 'error');
-      return false;
-    }
-  }
-  
   return true;
 }
 
@@ -658,7 +660,7 @@ function addItemRow() {
   row.className = 'item-row';
   row.innerHTML = `
     <td>
-      <select class="form-control form-control-sm sku-select" onchange="updateItemName(this)">
+      <select class="form-control form-control-sm sku-select">
         <option value="">Select SKU</option>
       </select>
     </td>
@@ -678,11 +680,21 @@ function addItemRow() {
   
   tbody.appendChild(row);
   updateNoItemsMessage();
+  
+  // Initialize Select2 for the new dropdown
+  const select = row.querySelector('.sku-select');
+  initializeSelect2(select);
+  
+  // Add Select2 change handler
+  $(select).on('select2:select', function(e) {
+    updateItemName(this);
+  });
+  
   populateSKUDropdownForRow(row);
 }
 
 function updateItemName(select) {
-  const sku = select.value.trim();
+  const sku = $(select).val() || '';
   const row = select.closest('tr');
   const nameSpan = row.querySelector('.item-name');
   const availableSpan = row.querySelector('.available-qty');
@@ -700,22 +712,9 @@ function updateItemName(select) {
     nameSpan.textContent = item.name;
     nameSpan.className = 'item-name';
     
-    // Show availability from loaded data
-    if (typeof item.available_qty !== 'undefined') {
-      const qty = item.available_qty;
-      availableSpan.textContent = qty;
-      
-      // Apply styling based on availability
-      availableSpan.className = 'available-qty';
-      if (qty === 0) {
-        availableSpan.classList.add('zero');
-      } else if (qty < 10) {
-        availableSpan.classList.add('low');
-      }
-    } else {
-      availableSpan.textContent = '—';
-      availableSpan.className = 'available-qty';
-    }
+    // No availability display in simplified version
+    availableSpan.textContent = '—';
+    availableSpan.className = 'available-qty';
   } else {
     nameSpan.textContent = 'Unknown SKU';
     nameSpan.className = 'item-name text-danger';
@@ -740,7 +739,8 @@ function collectItemsData() {
   stnItems = [];
   
   Array.from(tbody.children).forEach(row => {
-    const sku = row.querySelector('.sku-select').value.trim();
+    const skuSelect = row.querySelector('.sku-select');
+    const sku = $(skuSelect).val() || '';
     const qty = parseInt(row.querySelector('.qty-input').value) || 0;
     
     if (sku && qty > 0) {
@@ -769,17 +769,13 @@ function updateReviewStep() {
   const reviewTable = document.getElementById('reviewItemsTable');
   reviewTable.innerHTML = stnItems.map(item => {
     const skuItem = skuLookup[item.sku];
-    const availableQty = (skuItem && typeof skuItem.available_qty !== 'undefined') ? skuItem.available_qty : '—';
-    const availabilityClass = (skuItem && typeof skuItem.available_qty !== 'undefined' && skuItem.available_qty < item.qty)
-      ? (skuItem.available_qty === 0 ? 'text-danger' : 'text-warning')
-      : '';
     
     return `
       <tr>
         <td><code>${item.sku}</code></td>
         <td>${skuItem?.name || 'Unknown'}</td>
-        <td class="text-end ${availabilityClass}">${item.qty}</td>
-        <td class="text-end text-muted small">${availableQty}</td>
+        <td class="text-end">${item.qty}</td>
+        <td class="text-end text-muted small">—</td>
       </tr>
     `;
   }).join('');
