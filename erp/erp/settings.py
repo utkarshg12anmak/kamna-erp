@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     # Local apps
     "catalog",
     "warehousing",
-    "cv_hub"    
+    "cv_hub",
 ]
 
 MIDDLEWARE = [
