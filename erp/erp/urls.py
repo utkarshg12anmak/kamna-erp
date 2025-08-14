@@ -71,6 +71,7 @@ urlpatterns = [
     path("", include("catalog.urls")),
     path("api/warehousing/", include("warehousing.urls")),
     path("api/cv_hub/", include("cv_hub.api.urls")),
+    path("api/inventory/", include("inventory_management.api.urls")),
     path("api/auth/jwt/create/", TokenObtainPairView.as_view(), name="jwt-create"),
     path("api/auth/jwt/refresh/", TokenRefreshView.as_view(), name="jwt-refresh"),
     path("api/auth/me/", AuthMeView.as_view(), name="auth-me"),
