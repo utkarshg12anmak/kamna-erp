@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Mapping Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        button { margin: 5px; padding: 8px 16px; }
+    </style>
+</head>
+<body>
+    <h1>User Mapping API Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Available Users Endpoint</h3>
+        <button onclick="testAvailableUsers()">Test /api/hr/available-users/</button>
+        <div id="available-users-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test Employee List Endpoint</h3>
+        <button onclick="testEmployeeList()">Test /api/hr/employees/</button>
+        <div id="employee-list-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test User Assignment</h3>
+        <button onclick="testUserAssignment()">Test User Assignment</button>
+        <div id="assignment-result" class="result"></div>
+    </div>
+
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        async function testAvailableUsers() {
+            const resultDiv = document.getElementById('available-users-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/hr/available-users/', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>Success!</strong><br>
+                        Status: ${response.status}<br>
+                        Available Users: ${data.length}<br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <strong>Error!</strong><br>
+                        Status: ${response.status}<br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<strong>Exception:</strong> ${error.message}`;
+            }
+        }
+
+        async function testEmployeeList() {
+            const resultDiv = document.getElementById('employee-list-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/hr/employees/', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>Success!</strong><br>
+                        Status: ${response.status}<br>
+                        Employees: ${data.length}<br>
+                        <pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <strong>Error!</strong><br>
+                        Status: ${response.status}<br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<strong>Exception:</strong> ${error.message}`;
+            }
+        }
+
+        async function testUserAssignment() {
+            const resultDiv = document.getElementById('assignment-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                // First get available users and employees
+                const usersResponse = await fetch('/api/hr/available-users/', {
+                    credentials: 'same-origin',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                });
+                const employeesResponse = await fetch('/api/hr/employees/', {
+                    credentials: 'same-origin',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                });
+                
+                const users = await usersResponse.json();
+                const employees = await employeesResponse.json();
+                
+                if (users.length > 0 && employees.length > 0) {
+                    const testUser = users[0];
+                    const testEmployee = employees[0];
+                    
+                    // Test assignment
+                    const assignResponse = await fetch(`/api/hr/employees/${testEmployee.id}/assign-user/`, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ user_id: testUser.id })
+                    });
+                    
+                    const assignResult = await assignResponse.json();
+                    
+                    let resultHtml = `
+                        <strong>Assignment Test:</strong><br>
+                        Status: ${assignResponse.status}<br>
+                        Employee: ${testEmployee.first_name} ${testEmployee.last_name}<br>
+                        User: ${testUser.username}<br>
+                        Result: <pre>${JSON.stringify(assignResult, null, 2)}</pre>
+                    `;
+                    
+                    if (assignResponse.ok) {
+                        // Test unassignment
+                        const unassignResponse = await fetch(`/api/hr/employees/${testEmployee.id}/unassign-user/`, {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken')
+                            }
+                        });
+                        
+                        const unassignResult = await unassignResponse.json();
+                        
+                        resultHtml += `
+                            <br><strong>Unassignment Test:</strong><br>
+                            Status: ${unassignResponse.status}<br>
+                            Result: <pre>${JSON.stringify(unassignResult, null, 2)}</pre>
+                        `;
+                        
+                        resultDiv.className = 'result success';
+                    } else {
+                        resultDiv.className = 'result error';
+                    }
+                    
+                    resultDiv.innerHTML = resultHtml;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `No users (${users.length}) or employees (${employees.length}) available for testing`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<strong>Exception:</strong> ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

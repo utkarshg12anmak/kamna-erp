@@ -42,18 +42,32 @@ class HRFieldChangeSerializer(serializers.ModelSerializer):
 class EmployeeListSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
     aadhaar_masked = serializers.SerializerMethodField()
+    manager_name = serializers.SerializerMethodField()
+    user_username = serializers.SerializerMethodField()
+    user_id = serializers.SerializerMethodField()
     
     class Meta:
         model = Employee
         fields = ['id', 'emp_code', 'first_name', 'last_name', 'full_name', 'gender', 'email', 'phone', 'department', 'designation', 
                  'date_of_joining', 'status', 'aadhaar_masked', 'pan_number', 'profile_image', 
-                 'is_phone_assigned', 'is_laptop_assigned']
+                 'is_phone_assigned', 'is_laptop_assigned', 'manager_name', 'user_username', 'user_id']
     
     def get_full_name(self, o):
         return f"{o.first_name} {o.last_name}".strip()
     
     def get_aadhaar_masked(self, o):
         return f"****{o.aadhaar_last4}" if o.aadhaar_last4 else ''
+    
+    def get_manager_name(self, o):
+        if o.manager:
+            return f"{o.manager.first_name} {o.manager.last_name}".strip()
+        return None
+    
+    def get_user_username(self, o):
+        return o.user.username if o.user else None
+    
+    def get_user_id(self, o):
+        return o.user.id if o.user else None
 
 class EmployeeSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField(read_only=True)
@@ -117,3 +131,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
             emp.save(update_fields=['user'])
         
         return emp
+
+class AvailableUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'email']

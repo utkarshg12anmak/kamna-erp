@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 # Import views with error handling
 try:
-    from .views import EmployeeViewSet, EmployeeDocumentViewSet, OrgUnitViewSet, PositionViewSet, AccessProfileViewSet
+    from .views import EmployeeViewSet, EmployeeDocumentViewSet, OrgUnitViewSet, PositionViewSet, AccessProfileViewSet, AvailableUsersView
     from .dashboard import HRDashboardSummary, HRDashboardUpcoming, HRDashboardOrgChart
     views_imported = True
 except ImportError as e:
@@ -18,6 +18,7 @@ if views_imported:
     router.register(r'org-units', OrgUnitViewSet)
     router.register(r'positions', PositionViewSet)
     router.register(r'access-profiles', AccessProfileViewSet)
+    router.register(r'available-users', AvailableUsersView, basename='available-users')
     
     urlpatterns = [
         path('', include(router.urls)),

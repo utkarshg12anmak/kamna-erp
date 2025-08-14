@@ -125,6 +125,7 @@
             <th>Manager</th>
             <th><a href="#" class="text-decoration-none text-dark" data-sort="date_of_joining">Joining <span class="sort-icon">↕</span></a></th>
             <th><a href="#" class="text-decoration-none text-dark" data-sort="status">Status <span class="sort-icon">↕</span></a></th>
+            <th>User Account</th>
             <th>Assets</th>
             <th>Actions</th>
           </tr>
@@ -376,6 +377,21 @@ function renderTable() {
       <td>${employee.manager_name || 'N/A'}</td>
       <td>${new Date(employee.date_of_joining).toLocaleDateString()}</td>
       <td><span class="badge bg-${getStatusColor(employee.status)}">${employee.status}</span></td>
+      <td>
+        <div class="d-flex align-items-center gap-2">
+          ${employee.user_username ? 
+            `<div class="d-flex align-items-center gap-2">
+              <span class="badge bg-success">👤 ${employee.user_username}</span>
+              <button class="btn btn-outline-danger btn-sm" onclick="unassignUser(${employee.id}, '${employee.user_username}')" title="Unassign user">
+                <i class="fas fa-unlink"></i>
+              </button>
+            </div>` :
+            `<button class="btn btn-outline-primary btn-sm" onclick="assignUser(${employee.id}, '${employee.first_name} ${employee.last_name}')" title="Assign user account">
+              <i class="fas fa-user-plus"></i> Assign User
+            </button>`
+          }
+        </div>
+      </td>
       <td>
         <div class="d-flex gap-1">
           ${employee.is_phone_assigned ? '<span class="badge bg-info">📱</span>' : ''}
@@ -720,5 +736,179 @@ function debounce(func, wait) {
 function showToast(message, type = 'info') {
   // Implementation depends on your toast system
   console.log(`${type.toUpperCase()}: ${message}`);
+}
+
+// User Assignment Functions
+async function assignUser(employeeId, employeeName) {
+  try {
+    // First, get available users
+    const usersResponse = await fetch('/api/hr/available-users/');
+    if (!usersResponse.ok) throw new Error('Failed to fetch available users');
+    
+    const availableUsers = await usersResponse.json();
+    
+    if (availableUsers.length === 0) {
+      showToast('No available users found. Please create users in Django admin first.', 'warning');
+      return;
+    }
+    
+    // Show user selection modal
+    showUserSelectionModal(employeeId, employeeName, availableUsers);
+    
+  } catch (error) {
+    console.error('Error fetching available users:', error);
+    showToast('Error loading available users', 'error');
+  }
+}
+
+function showUserSelectionModal(employeeId, employeeName, availableUsers) {
+  // Create modal HTML
+  const modalHtml = `
+    <div class="modal fade" id="userAssignmentModal" tabindex="-1" aria-labelledby="userAssignmentModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="userAssignmentModalLabel">
+              <i class="fas fa-user-plus"></i> Assign User Account
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-3">
+              <strong>Employee:</strong> ${employeeName}
+            </p>
+            <div class="mb-3">
+              <label for="userSelect" class="form-label">Select User Account:</label>
+              <select class="form-select" id="userSelect" required>
+                <option value="">Choose a user...</option>
+                ${availableUsers.map(user => 
+                  `<option value="${user.id}">${user.username} (${user.first_name} ${user.last_name || ''}) - ${user.email}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              This will create a 1-to-1 mapping between the employee and the selected user account.
+              The user will be able to log in and access their employee profile.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="confirmUserAssignment(${employeeId})">
+              <i class="fas fa-link"></i> Assign User
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Remove existing modal if present
+  const existingModal = document.getElementById('userAssignmentModal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // Add modal to page
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('userAssignmentModal'));
+  modal.show();
+}
+
+async function confirmUserAssignment(employeeId) {
+  const userSelect = document.getElementById('userSelect');
+  const selectedUserId = userSelect.value;
+  
+  if (!selectedUserId) {
+    showToast('Please select a user', 'warning');
+    return;
+  }
+  
+  try {
+    const csrfToken = getCookie('csrftoken');
+    
+    const response = await fetch(`/api/hr/employees/${employeeId}/assign-user/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        user_id: selectedUserId
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to assign user');
+    }
+    
+    const result = await response.json();
+    
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('userAssignmentModal'));
+    modal.hide();
+    
+    // Refresh employee list
+    loadEmployees();
+    
+    showToast(`User successfully assigned to employee`, 'success');
+    
+  } catch (error) {
+    console.error('Error assigning user:', error);
+    showToast(error.message, 'error');
+  }
+}
+
+async function unassignUser(employeeId, username) {
+  if (!confirm(`Are you sure you want to unassign user "${username}" from this employee?`)) {
+    return;
+  }
+  
+  try {
+    const csrfToken = getCookie('csrftoken');
+    
+    const response = await fetch(`/api/hr/employees/${employeeId}/unassign-user/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      credentials: 'same-origin'
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to unassign user');
+    }
+    
+    // Refresh employee list
+    loadEmployees();
+    
+    showToast('User successfully unassigned from employee', 'success');
+    
+  } catch (error) {
+    console.error('Error unassigning user:', error);
+    showToast(error.message, 'error');
+  }
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
 }
 </script>

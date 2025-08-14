@@ -2,13 +2,16 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import transaction
 from django.db.models import Prefetch
+from django.contrib.auth import get_user_model
 from ..models import Employee, EmployeeDocument, AccessProfile, OrgUnit, Position, HRFieldChange, EmploymentStatus
 from .serializers import (EmployeeSerializer, EmployeeListSerializer, EmployeeDocumentSerializer, 
-                         AccessProfileSerializer, OrgUnitSerializer, PositionSerializer, HRFieldChangeSerializer)
+                         AccessProfileSerializer, OrgUnitSerializer, PositionSerializer, HRFieldChangeSerializer,
+                         AvailableUserSerializer)
 
 class EmployeeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -80,6 +83,64 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         qs = self.get_object().field_changes.order_by('-changed_at')
         return Response(HRFieldChangeSerializer(qs, many=True).data)
 
+    @action(detail=True, methods=['post'])
+    def assign_user(self, request, pk=None):
+        """Assign a user account to an employee"""
+        from django.contrib.auth import get_user_model
+        
+        employee = self.get_object()
+        user_id = request.data.get('user_id')
+        
+        if not user_id:
+            return Response({'error': 'user_id is required'}, status=400)
+        
+        User = get_user_model()
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+        
+        # Check if user is already assigned to another employee
+        if hasattr(user, 'employee_profile') and user.employee_profile:
+            return Response({'error': f'User "{user.username}" is already assigned to another employee'}, status=400)
+        
+        # Check if employee already has a user assigned
+        if employee.user:
+            return Response({'error': f'Employee already has user "{employee.user.username}" assigned'}, status=400)
+        
+        # Assign user to employee
+        employee.user = user
+        employee.save(update_fields=['user', 'updated_at'])
+        
+        return Response({
+            'success': True,
+            'message': f'User "{user.username}" successfully assigned to employee',
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email
+            }
+        })
+
+    @action(detail=True, methods=['post'])
+    def unassign_user(self, request, pk=None):
+        """Unassign user account from an employee"""
+        employee = self.get_object()
+        
+        if not employee.user:
+            return Response({'error': 'No user assigned to this employee'}, status=400)
+        
+        user_username = employee.user.username
+        employee.user = None
+        employee.save(update_fields=['user', 'updated_at'])
+        
+        return Response({
+            'success': True,
+            'message': f'User "{user_username}" successfully unassigned from employee'
+        })
+
 class EmployeeDocumentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = EmployeeDocument.objects.select_related('employee')
@@ -143,3 +204,13 @@ class OrgChartView(viewsets.ViewSet):
             roots = ([e for e in active if e.manager_id is None] 
                     if not root_id else [Employee.objects.get(id=root_id)])
             return Response([emp_node(r) for r in roots])
+
+class AvailableUsersView(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AvailableUserSerializer
+
+    def get_queryset(self):
+        """Filter users who are not assigned to any employee"""
+        User = get_user_model()
+        assigned_user_ids = Employee.objects.values_list('user_id', flat=True).distinct()
+        return User.objects.exclude(id__in=assigned_user_ids)

@@ -465,3 +465,140 @@ Quit the server with CONTROL-C.
 WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
 For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
 Watching for file changes with StatReloader
+[13/Aug/2025 11:11:21] "GET /app/hr/employees HTTP/1.1" 200 32589
+/Users/dealshare/anaconda3/lib/python3.11/site-packages/rest_framework/pagination.py:207: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'hr.models.OrgUnit'> QuerySet.
+  paginator = self.django_paginator_class(queryset, page_size)
+[13/Aug/2025 11:11:21] "GET /api/hr/org-units/ HTTP/1.1" 200 1148
+[13/Aug/2025 11:11:21] "GET /api/hr/employees/ HTTP/1.1" 200 2473
+[13/Aug/2025 11:11:24] "GET /app/hr/org-chart HTTP/1.1" 200 28660
+[13/Aug/2025 11:11:24] "GET /api/hr/dashboard/org-chart/ HTTP/1.1" 200 1028
+[13/Aug/2025 11:11:26] "GET /app/hr/employees/new HTTP/1.1" 200 65082
+/Users/dealshare/anaconda3/lib/python3.11/site-packages/rest_framework/pagination.py:207: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'hr.models.Position'> QuerySet.
+  paginator = self.django_paginator_class(queryset, page_size)
+[13/Aug/2025 11:11:26] "GET /api/hr/positions/ HTTP/1.1" 200 815
+/Users/dealshare/anaconda3/lib/python3.11/site-packages/rest_framework/pagination.py:207: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'hr.models.AccessProfile'> QuerySet.
+  paginator = self.django_paginator_class(queryset, page_size)
+[13/Aug/2025 11:11:26] "GET /api/hr/org-units/ HTTP/1.1" 200 1148
+[13/Aug/2025 11:11:26] "GET /api/hr/access-profiles/ HTTP/1.1" 200 370
+[13/Aug/2025 11:11:26] "GET /api/hr/employees/ HTTP/1.1" 200 2473
+[13/Aug/2025 11:11:26] "GET /api/hr/employees/?status=ACTIVE HTTP/1.1" 200 2068
+[13/Aug/2025 11:11:27] "GET /app HTTP/1.1" 200 6535
+[13/Aug/2025 11:11:30] "GET /app/hr HTTP/1.1" 200 14472
+[13/Aug/2025 11:11:30] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 200 2
+[13/Aug/2025 11:11:30] "GET /api/hr/dashboard/summary/ HTTP/1.1" 200 102
+[13/Aug/2025 11:11:30] "GET /api/hr/employees/ HTTP/1.1" 200 2473
+[13/Aug/2025 11:11:31] "GET /app/hr/employees HTTP/1.1" 200 32589
+[13/Aug/2025 11:11:31] "GET /api/hr/org-units/ HTTP/1.1" 200 1148
+[13/Aug/2025 11:11:31] "GET /api/hr/employees/ HTTP/1.1" 200 2473
+[13/Aug/2025 11:15:38] "GET /admin/auth/user/ HTTP/1.1" 200 23880
+[13/Aug/2025 11:15:38] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[13/Aug/2025 11:15:38] "GET /admin/auth/user/ HTTP/1.1" 200 23880
+[13/Aug/2025 11:15:38] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[13/Aug/2025 11:20:59] "GET /app/hr/employees HTTP/1.1" 200 32589
+[13/Aug/2025 11:20:59] "GET /api/hr/org-units/ HTTP/1.1" 200 1148
+[13/Aug/2025 11:20:59] "GET /api/hr/employees/ HTTP/1.1" 200 2473
+[13/Aug/2025 11:21:00] "GET /app/hr/org-chart HTTP/1.1" 200 28660
+[13/Aug/2025 11:21:00] "GET /api/hr/dashboard/org-chart/ HTTP/1.1" 200 1028
+[13/Aug/2025 11:21:01] "GET /app/hr/org-chart HTTP/1.1" 200 28660
+[13/Aug/2025 11:21:01] "GET /api/hr/dashboard/org-chart/ HTTP/1.1" 200 1028
+[13/Aug/2025 11:21:01] "GET /app/hr/org-chart HTTP/1.1" 200 28660
+[13/Aug/2025 11:21:01] "GET /api/hr/dashboard/org-chart/ HTTP/1.1" 200 1028
+[13/Aug/2025 11:21:01] "GET /app/hr/org-chart HTTP/1.1" 200 28660
+[13/Aug/2025 11:21:01] "GET /api/hr/dashboard/org-chart/ HTTP/1.1" 200 1028
+[13/Aug/2025 11:21:43] "GET /app/hr HTTP/1.1" 200 14472
+[13/Aug/2025 11:21:43] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 200 2
+[13/Aug/2025 11:21:43] "GET /api/hr/dashboard/summary/ HTTP/1.1" 200 102
+[13/Aug/2025 11:21:43] "GET /api/hr/employees/ HTTP/1.1" 200 2473
+[13/Aug/2025 11:21:45] "GET /app/hr/employees HTTP/1.1" 200 32589
+[13/Aug/2025 11:21:45] "GET /api/hr/org-units/ HTTP/1.1" 200 1148
+[13/Aug/2025 11:21:45] "GET /api/hr/employees/ HTTP/1.1" 200 2473
+[13/Aug/2025 11:26:42] "GET /app/hr HTTP/1.1" 200 14472
+[13/Aug/2025 11:26:43] "GET /api/hr/dashboard/upcoming/?type=birthday&days=14 HTTP/1.1" 200 2
+[13/Aug/2025 11:26:43] "GET /api/hr/dashboard/summary/ HTTP/1.1" 200 102
+[13/Aug/2025 11:26:43] "GET /api/hr/employees/ HTTP/1.1" 200 2473
+[13/Aug/2025 11:31:03] "GET /app/hr/employees HTTP/1.1" 200 32589
+[13/Aug/2025 11:31:03] "GET /api/hr/org-units/ HTTP/1.1" 200 1148
+[13/Aug/2025 11:31:03] "GET /api/hr/employees/ HTTP/1.1" 200 2473
+[13/Aug/2025 11:31:05] "GET /app/hr/employees/26/edit HTTP/1.1" 200 65082
+[13/Aug/2025 11:31:05] "GET /api/hr/org-units/ HTTP/1.1" 200 1148
+[13/Aug/2025 11:31:05] "GET /api/hr/positions/ HTTP/1.1" 200 815
+[13/Aug/2025 11:31:05] "GET /api/hr/access-profiles/ HTTP/1.1" 200 370
+[13/Aug/2025 11:31:05] "GET /api/hr/employees/?status=ACTIVE HTTP/1.1" 200 2068
+[13/Aug/2025 11:31:05] "GET /api/hr/employees/ HTTP/1.1" 200 2473
+[13/Aug/2025 11:31:05] "GET /api/hr/employees/26/ HTTP/1.1" 200 871
+Not Found: /api/hr/employees/26/field-changes/
+[13/Aug/2025 11:31:05] "GET /api/hr/employees/26/field-changes/ HTTP/1.1" 404 34728
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/api/serializers.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 13, 2025 - 11:07:28
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/api/serializers.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 13, 2025 - 11:37:59
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/api/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 13, 2025 - 11:38:13
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/api/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 13, 2025 - 11:40:57
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/api/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 13, 2025 - 11:45:17
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/Users/dealshare/Documents/GitHub/kamna-erp/erp/hr/api/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+August 13, 2025 - 11:45:41
+Django version 5.2.4, using settings 'erp.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+Not Found: /hr/employees/
+[13/Aug/2025 11:50:01] "GET /hr/employees/?id=7b660b17-5662-4206-86e7-08536795774d&vscodeBrowserReqId=1755103801210 HTTP/1.1" 404 23697
