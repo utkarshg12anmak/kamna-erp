@@ -159,6 +159,7 @@
               <th>SKU</th>
               <th>Item Name</th>
               <th class="text-end">Quantity</th>
+              <th class="text-end">Available</th>
             </tr>
           </thead>
           <tbody id="reviewItemsTable">
@@ -186,6 +187,14 @@
 </div>
 
 <style>
+.card-like {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 .step-indicator {
   width: 32px;
   height: 32px;
@@ -233,6 +242,71 @@
   background: #fee2e2;
   color: #991b1b;
 }
+
+/* SKU Dropdown Styles */
+.dropdown-container {
+  position: relative;
+}
+
+.dropdown-search {
+  position: relative;
+}
+
+.sku-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+}
+
+.sku-dropdown .dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.sku-dropdown .dropdown-item:hover {
+  background-color: #f9fafb;
+}
+
+.sku-dropdown .dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.sku-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sku-code {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.sku-name {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.sku-availability {
+  font-size: 0.75rem;
+  color: #059669;
+  font-weight: 500;
+}
+
+.sku-select {
+  /* actual select used; keep default look */
+}
 </style>
 
 <script>
@@ -243,461 +317,586 @@ let skuLookup = {};
 
 // Authentication helper functions
 function token() {
-    const t = localStorage.getItem('accessToken');
-    if (!t) {
-        window.location = '/';
-    }
-    return t;
+  const t = localStorage.getItem('accessToken');
+  if (!t) {
+    window.location = '/';
+  }
+  return t;
 }
 
 async function apiFetch(url, options = {}) {
-    const headers = Object.assign({
-        'Authorization': `Bearer ${token()}`,
-        'Content-Type': 'application/json'
-    }, options.headers || {});
-    
-    const res = await fetch(url, { ...options, headers });
-    
-    if (res.status === 401) {
-        window.location = '/';
-        throw new Error('Unauthorized');
-    }
-    
-    return res;
+  const headers = Object.assign({
+      'Authorization': `Bearer ${token()}`,
+      'Content-Type': 'application/json'
+  }, options.headers || {});
+  
+  const res = await fetch(url, { ...options, headers });
+  
+  if (res.status === 401) {
+      window.location = '/';
+      throw new Error('Unauthorized');
+  }
+  
+  return res;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    loadWarehouses();
-    loadSKUs();
-    addItemRow(); // Start with one empty row
+  loadWarehouses();
+  loadSKUs();
+  addItemRow(); // Start with one empty row
 });
 
 async function loadWarehouses() {
-    try {
-        const response = await apiFetch('/api/warehousing/warehouses/?status=ACTIVE');
-        const data = await response.json();
-        warehouses = data.results || [];
-        
-        const fromSelect = document.getElementById('fromWarehouse');
-        const toSelect = document.getElementById('toWarehouse');
-        
-        warehouses.forEach(wh => {
-            const option1 = new Option(`${wh.code} - ${wh.name}`, wh.id);
-            const option2 = new Option(`${wh.code} - ${wh.name}`, wh.id);
-            fromSelect.appendChild(option1);
-            toSelect.appendChild(option2);
-        });
-        
-    } catch (error) {
-        console.error('Error loading warehouses:', error);
-        notify('Error loading warehouses', 'error');
-    }
+  try {
+    const response = await apiFetch('/api/warehousing/warehouses/?status=ACTIVE');
+    const data = await response.json();
+    warehouses = data.results || [];
+    
+    const fromSelect = document.getElementById('fromWarehouse');
+    const toSelect = document.getElementById('toWarehouse');
+    
+    warehouses.forEach(wh => {
+      const option1 = new Option(`${wh.code} - ${wh.name}`, wh.id);
+      const option2 = new Option(`${wh.code} - ${wh.name}`, wh.id);
+      fromSelect.appendChild(option1);
+      toSelect.appendChild(option2);
+    });
+    
+    // Change handler: reload SKUs with availability and refresh rows
+    fromSelect.addEventListener('change', async function() {
+      const warehouseId = this.value;
+      if (warehouseId) {
+        notify('Loading items with availability for selected warehouse...', 'info');
+        await loadSKUs(warehouseId);
+      } else {
+        await loadSKUs(); // Load without warehouse context
+      }
+      // Update existing item rows with new availability and options
+      updateItemRowsAvailability();
+    });
+
+  } catch (error) {
+    console.error('Error loading warehouses:', error);
+    notify('Error loading warehouses', 'error');
+  }
 }
 
-async function loadSKUs() {
-    try {
-        const response = await apiFetch('/api/catalog/items/?status=ACTIVE&page_size=1000');
-        const data = await response.json();
-        const items = data.results || [];
-        
-        skuLookup = {};
-        items.forEach(item => {
-            skuLookup[item.sku] = {
-                id: item.id,
-                name: item.name,
-                sku: item.sku
-            };
-        });
-        
-    } catch (error) {
-        console.error('Error loading SKUs:', error);
-        notify('Error loading items', 'error');
+async function loadSKUs(warehouseId = null) {
+  try {
+    if (warehouseId) {
+      await loadWarehouseSKUs(warehouseId);
+    } else {
+      // Load all active SKUs as fallback (no availability)
+      const response = await apiFetch('/api/catalog/items/?status=ACTIVE&page_size=1000');
+      const data = await response.json();
+      const items = data.results || [];
+      
+      skuLookup = {};
+      items.forEach(item => {
+        skuLookup[item.sku] = {
+          id: item.id,
+          name: item.name,
+          sku: item.sku,
+          available_qty: undefined // undefined when no warehouse selected
+        };
+      });
     }
+  } catch (error) {
+    console.error('Error loading SKUs:', error);
+    notify('Error loading items', 'error');
+  }
+}
+
+async function loadWarehouseSKUs(warehouseId) {
+  try {
+    // Fetch items and stock in parallel
+    const [itemsResponse, stockResponse] = await Promise.all([
+      apiFetch('/api/catalog/items/?status=ACTIVE&page_size=1000'),
+      apiFetch(`/api/warehousing/warehouses/${warehouseId}/physical_stock_summary/`)
+    ]);
+    
+    const itemsData = await itemsResponse.json();
+    const stockData = await stockResponse.json();
+    
+    const items = itemsData.results || [];
+    const stockItems = stockData.items || [];
+    
+    // Build stock lookup
+    const stockLookup = {};
+    stockItems.forEach(stockItem => {
+      stockLookup[stockItem.item_sku] = stockItem.qty;
+    });
+    
+    // Combine with item master
+    skuLookup = {};
+    items.forEach(item => {
+      const availableQty = stockLookup[item.sku] || 0;
+      skuLookup[item.sku] = {
+        id: item.id,
+        name: item.name,
+        sku: item.sku,
+        available_qty: availableQty
+      };
+    });
+    
+    notify(`Loaded ${Object.keys(skuLookup).length} items with availability for selected warehouse`, 'success');
+
+  } catch (error) {
+    console.error('Error loading warehouse SKUs:', error);
+    notify('Error loading warehouse inventory', 'error');
+    // Fallback
+    await loadSKUs();
+  }
+}
+
+/** Row-scoped dropdown population (no index drift) */
+function populateSKUDropdownForRow(row) {
+  const select = row.querySelector('.sku-select');
+  const fromWarehouse = document.getElementById('fromWarehouse').value;
+  if (!select) return;
+
+  // Preserve previous selection (if any)
+  const previousValue = select.value || '';
+
+  // Clear options
+  select.innerHTML = '<option value="">Select SKU</option>';
+
+  const itemsToShow = Object.values(skuLookup)
+    .filter(item => {
+      if (fromWarehouse && typeof item.available_qty !== 'undefined') {
+        return item.available_qty > 0; // show only positive stock when source selected
+      }
+      return true;
+    })
+    .sort((a, b) => a.sku.localeCompare(b.sku));
+
+  itemsToShow.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item.sku;
+    let displayText = `${item.sku} - ${item.name}`;
+    if (typeof item.available_qty !== 'undefined') {
+      displayText += ` (Available: ${item.available_qty})`;
+    }
+    option.textContent = displayText;
+    select.appendChild(option);
+  });
+
+  // Restore selection if still valid
+  if (previousValue && [...select.options].some(o => o.value === previousValue)) {
+    select.value = previousValue;
+  } else {
+    select.value = '';
+  }
+}
+
+/** Wrapper for backward compatibility if any legacy calls exist */
+function populateSKUDropdown(rowIndex){
+  const rows = document.querySelectorAll('.item-row');
+  const row = rows[rowIndex];
+  if (row) populateSKUDropdownForRow(row);
+}
+
+function updateItemRowsAvailability() {
+  const rows = document.querySelectorAll('.item-row');
+  rows.forEach((row) => {
+    const skuSelect = row.querySelector('.sku-select');
+    const availableSpan = row.querySelector('.available-qty');
+
+    // Refresh the dropdown options for THIS row
+    populateSKUDropdownForRow(row);
+
+    if (skuSelect && availableSpan && skuSelect.value) {
+      const sku = skuSelect.value.trim();
+      const item = skuLookup[sku];
+
+      if (item && typeof item.available_qty !== 'undefined') {
+        const qty = item.available_qty;
+        availableSpan.textContent = qty;
+
+        // Update styling based on availability
+        availableSpan.className = 'available-qty';
+        if (qty === 0) {
+          availableSpan.classList.add('zero');
+        } else if (qty < 10) {
+          availableSpan.classList.add('low');
+        }
+      } else {
+        availableSpan.textContent = '—';
+        availableSpan.className = 'available-qty';
+      }
+    } else if (availableSpan) {
+      availableSpan.textContent = '—';
+      availableSpan.className = 'available-qty';
+    }
+  });
 }
 
 function nextStep(step) {
-    if (step === 1) {
-        if (!validateStep1()) return;
-        showStep(2);
-    } else if (step === 2) {
-        if (!validateStep2()) return;
-        updateReviewStep();
-        showStep(3);
-    }
+  if (step === 1) {
+    if (!validateStep1()) return;
+    showStep(2);
+  } else if (step === 2) {
+    if (!validateStep2()) return;
+    updateReviewStep();
+    showStep(3);
+  }
 }
 
 function prevStep(step) {
-    showStep(step - 1);
+  showStep(step - 1);
 }
 
 function showStep(stepNumber) {
-    // Hide all steps
-    document.querySelectorAll('.step-content').forEach(el => el.style.display = 'none');
-    
-    // Show current step
-    document.getElementById(`stepContent${stepNumber}`).style.display = 'block';
-    
-    // Update step indicators
-    document.querySelectorAll('.step-indicator').forEach((el, index) => {
-        el.classList.remove('active', 'completed');
-        if (index + 1 < stepNumber) {
-            el.classList.add('completed');
-        } else if (index + 1 === stepNumber) {
-            el.classList.add('active');
-        }
-    });
-    
-    currentStep = stepNumber;
+  // Hide all steps
+  document.querySelectorAll('.step-content').forEach(el => el.style.display = 'none');
+  
+  // Show current step
+  document.getElementById(`stepContent${stepNumber}`).style.display = 'block';
+  
+  // Update step indicators
+  document.querySelectorAll('.step-indicator').forEach((el, index) => {
+    el.classList.remove('active', 'completed');
+    if (index + 1 < stepNumber) {
+      el.classList.add('completed');
+    } else if (index + 1 === stepNumber) {
+      el.classList.add('active');
+    }
+  });
+  
+  currentStep = stepNumber;
 }
 
 function validateStep1() {
-    const fromWarehouse = document.getElementById('fromWarehouse').value;
-    const toWarehouse = document.getElementById('toWarehouse').value;
-    
-    let valid = true;
-    
-    if (!fromWarehouse) {
-        document.getElementById('fromWarehouse').classList.add('is-invalid');
-        valid = false;
-    } else {
-        document.getElementById('fromWarehouse').classList.remove('is-invalid');
-    }
-    
-    if (!toWarehouse) {
-        document.getElementById('toWarehouse').classList.add('is-invalid');
-        valid = false;
-    } else {
-        document.getElementById('toWarehouse').classList.remove('is-invalid');
-    }
-    
-    if (fromWarehouse && toWarehouse && fromWarehouse === toWarehouse) {
-        notify('Source and destination warehouses cannot be the same', 'error');
-        valid = false;
-    }
-    
-    return valid;
+  const fromWarehouse = document.getElementById('fromWarehouse').value;
+  const toWarehouse = document.getElementById('toWarehouse').value;
+  
+  let valid = true;
+  
+  if (!fromWarehouse) {
+    document.getElementById('fromWarehouse').classList.add('is-invalid');
+    valid = false;
+  } else {
+    document.getElementById('fromWarehouse').classList.remove('is-invalid');
+  }
+  
+  if (!toWarehouse) {
+    document.getElementById('toWarehouse').classList.add('is-invalid');
+    valid = false;
+  } else {
+    document.getElementById('toWarehouse').classList.remove('is-invalid');
+  }
+  
+  if (fromWarehouse && toWarehouse && fromWarehouse === toWarehouse) {
+    notify('Source and destination warehouses cannot be the same', 'error');
+    valid = false;
+  }
+  
+  return valid;
 }
 
 function validateStep2() {
-    collectItemsData();
+  collectItemsData();
+  
+  if (stnItems.length === 0) {
+    notify('Please add at least one item', 'error');
+    return false;
+  }
+  
+  const fromWarehouse = document.getElementById('fromWarehouse').value;
+  
+  // Check for duplicate SKUs
+  const skus = stnItems.map(item => item.sku);
+  const duplicates = skus.filter((sku, index) => skus.indexOf(sku) !== index);
+  
+  if (duplicates.length > 0) {
+    notify('Duplicate SKUs found: ' + [...new Set(duplicates)].join(', '), 'error');
+    return false;
+  }
+  
+  // Check for invalid quantities
+  const invalidItems = stnItems.filter(item => !item.qty || item.qty <= 0);
+  if (invalidItems.length > 0) {
+    notify('All items must have valid quantities greater than 0', 'error');
+    return false;
+  }
+  
+  // Check availability if warehouse is selected
+  if (fromWarehouse) {
+    const unavailableItems = stnItems.filter(item => {
+      const skuItem = skuLookup[item.sku];
+      return skuItem && typeof skuItem.available_qty !== 'undefined' && skuItem.available_qty === 0;
+    });
     
-    if (stnItems.length === 0) {
-        notify('Please add at least one item', 'error');
-        return false;
+    if (unavailableItems.length > 0) {
+      notify(`Items with zero availability: ${unavailableItems.map(item => item.sku).join(', ')}`, 'error');
+      return false;
     }
     
-    // Check for duplicate SKUs
-    const skus = stnItems.map(item => item.sku);
-    const duplicates = skus.filter((sku, index) => skus.indexOf(sku) !== index);
+    // Check if requested quantity exceeds available quantity
+    const excessItems = stnItems.filter(item => {
+      const skuItem = skuLookup[item.sku];
+      return skuItem && typeof skuItem.available_qty !== 'undefined' && item.qty > skuItem.available_qty;
+    });
     
-    if (duplicates.length > 0) {
-        notify('Duplicate SKUs found: ' + duplicates.join(', '), 'error');
-        return false;
+    if (excessItems.length > 0) {
+      const excessDetails = excessItems.map(item => {
+        const available = skuLookup[item.sku].available_qty;
+        return `${item.sku} (requested: ${item.qty}, available: ${available})`;
+      }).join(', ');
+      notify(`Requested quantity exceeds availability: ${excessDetails}`, 'error');
+      return false;
     }
-    
-    // Check for invalid quantities
-    const invalidItems = stnItems.filter(item => !item.qty || item.qty <= 0);
-    if (invalidItems.length > 0) {
-        notify('All items must have valid quantities greater than 0', 'error');
-        return false;
-    }
-    
-    return true;
+  }
+  
+  return true;
 }
 
 function addItemRow() {
-    const tbody = document.getElementById('itemsTableBody');
-    const rowIndex = tbody.children.length;
-    
-    const row = document.createElement('tr');
-    row.className = 'item-row';
-    row.innerHTML = `
-        <td>
-            <input type="text" class="form-control form-control-sm sku-input" 
-                   placeholder="Enter SKU" 
-                   onchange="updateItemName(this, ${rowIndex})"
-                   onkeyup="searchSKU(this)"
-                   list="skuDatalist${rowIndex}">
-            <datalist id="skuDatalist${rowIndex}"></datalist>
-        </td>
-        <td>
-            <span class="item-name text-muted">—</span>
-        </td>
-        <td>
-            <span class="available-qty">—</span>
-        </td>
-        <td>
-            <input type="number" class="form-control form-control-sm qty-input" 
-                   placeholder="0" min="1" step="1">
-        </td>
-        <td>
-            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeItemRow(this)">
-                ×
-            </button>
-        </td>
-    `;
-    
-    tbody.appendChild(row);
-    updateNoItemsMessage();
-    
-    // Populate datalist with SKUs
-    populateSKUDatalist(rowIndex);
+  const tbody = document.getElementById('itemsTableBody');
+  
+  const row = document.createElement('tr');
+  row.className = 'item-row';
+  row.innerHTML = `
+    <td>
+      <select class="form-control form-control-sm sku-select" onchange="updateItemName(this)">
+        <option value="">Select SKU</option>
+      </select>
+    </td>
+    <td>
+      <span class="item-name text-muted">—</span>
+    </td>
+    <td>
+      <span class="available-qty">—</span>
+    </td>
+    <td>
+      <input type="number" class="form-control form-control-sm qty-input" placeholder="0" min="1" step="1">
+    </td>
+    <td>
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeItemRow(this)">×</button>
+    </td>
+  `;
+  
+  tbody.appendChild(row);
+  updateNoItemsMessage();
+  populateSKUDropdownForRow(row);
 }
 
-function populateSKUDatalist(rowIndex) {
-    const datalist = document.getElementById(`skuDatalist${rowIndex}`);
-    Object.values(skuLookup).forEach(item => {
-        const option = document.createElement('option');
-        option.value = item.sku;
-        option.textContent = `${item.sku} - ${item.name}`;
-        datalist.appendChild(option);
-    });
-}
-
-function searchSKU(input) {
-    const value = input.value.toLowerCase();
-    const rowIndex = Array.from(input.closest('tbody').children).indexOf(input.closest('tr'));
-    const datalist = document.getElementById(`skuDatalist${rowIndex}`);
+function updateItemName(select) {
+  const sku = select.value.trim();
+  const row = select.closest('tr');
+  const nameSpan = row.querySelector('.item-name');
+  const availableSpan = row.querySelector('.available-qty');
+  
+  if (!sku) {
+    nameSpan.textContent = '—';
+    nameSpan.className = 'item-name text-muted';
+    availableSpan.textContent = '—';
+    availableSpan.className = 'available-qty';
+    return;
+  }
+  
+  if (skuLookup[sku]) {
+    const item = skuLookup[sku];
+    nameSpan.textContent = item.name;
+    nameSpan.className = 'item-name';
     
-    // Filter options based on input
-    datalist.innerHTML = '';
-    Object.values(skuLookup)
-        .filter(item => 
-            item.sku.toLowerCase().includes(value) || 
-            item.name.toLowerCase().includes(value)
-        )
-        .slice(0, 10) // Limit to 10 results
-        .forEach(item => {
-            const option = document.createElement('option');
-            option.value = item.sku;
-            option.textContent = `${item.sku} - ${item.name}`;
-            datalist.appendChild(option);
-        });
-}
-
-async function updateItemName(input, rowIndex) {
-    const sku = input.value.trim();
-    const row = input.closest('tr');
-    const nameSpan = row.querySelector('.item-name');
-    const availableSpan = row.querySelector('.available-qty');
-    
-    if (!sku) {
-        nameSpan.textContent = '—';
-        availableSpan.textContent = '—';
-        availableSpan.className = 'available-qty';
-        return;
-    }
-    
-    if (skuLookup[sku]) {
-        nameSpan.textContent = skuLookup[sku].name;
-        
-        // Get available quantity from source warehouse
-        const fromWarehouse = document.getElementById('fromWarehouse').value;
-        if (fromWarehouse) {
-            await updateAvailableQuantity(sku, fromWarehouse, availableSpan);
-        }
+    // Show availability from loaded data
+    if (typeof item.available_qty !== 'undefined') {
+      const qty = item.available_qty;
+      availableSpan.textContent = qty;
+      
+      // Apply styling based on availability
+      availableSpan.className = 'available-qty';
+      if (qty === 0) {
+        availableSpan.classList.add('zero');
+      } else if (qty < 10) {
+        availableSpan.classList.add('low');
+      }
     } else {
-        nameSpan.textContent = 'Unknown SKU';
-        nameSpan.className = 'item-name text-danger';
-        availableSpan.textContent = '—';
+      availableSpan.textContent = '—';
+      availableSpan.className = 'available-qty';
     }
-}
-
-async function updateAvailableQuantity(sku, warehouseId, span) {
-    try {
-        // This would call the available quantity API
-        // For now, we'll simulate it
-        span.textContent = 'Loading...';
-        
-        // Simulated API call - replace with actual implementation
-        setTimeout(() => {
-            const qty = Math.floor(Math.random() * 100); // Simulate random quantity
-            span.textContent = qty;
-            
-            if (qty === 0) {
-                span.className = 'available-qty zero';
-            } else if (qty < 10) {
-                span.className = 'available-qty low';
-            } else {
-                span.className = 'available-qty';
-            }
-        }, 500);
-        
-    } catch (error) {
-        console.error('Error getting available quantity:', error);
-        span.textContent = 'Error';
-        span.className = 'available-qty zero';
-    }
+  } else {
+    nameSpan.textContent = 'Unknown SKU';
+    nameSpan.className = 'item-name text-danger';
+    availableSpan.textContent = '—';
+    availableSpan.className = 'available-qty';
+  }
 }
 
 function removeItemRow(button) {
-    button.closest('tr').remove();
-    updateNoItemsMessage();
+  button.closest('tr').remove();
+  updateNoItemsMessage();
 }
 
 function updateNoItemsMessage() {
-    const tbody = document.getElementById('itemsTableBody');
-    const message = document.getElementById('noItemsMessage');
-    
-    if (tbody.children.length === 0) {
-        message.style.display = 'block';
-    } else {
-        message.style.display = 'none';
-    }
+  const tbody = document.getElementById('itemsTableBody');
+  const message = document.getElementById('noItemsMessage');
+  message.style.display = tbody.children.length === 0 ? 'block' : 'none';
 }
 
 function collectItemsData() {
-    const tbody = document.getElementById('itemsTableBody');
-    stnItems = [];
+  const tbody = document.getElementById('itemsTableBody');
+  stnItems = [];
+  
+  Array.from(tbody.children).forEach(row => {
+    const sku = row.querySelector('.sku-select').value.trim();
+    const qty = parseInt(row.querySelector('.qty-input').value) || 0;
     
-    Array.from(tbody.children).forEach(row => {
-        const sku = row.querySelector('.sku-input').value.trim();
-        const qty = parseInt(row.querySelector('.qty-input').value) || 0;
-        
-        if (sku && qty > 0) {
-            stnItems.push({
-                sku: sku,
-                qty: qty
-            });
-        }
-    });
+    if (sku && qty > 0) {
+      stnItems.push({
+        sku: sku,
+        qty: qty,
+        item_id: skuLookup[sku]?.id
+      });
+    }
+  });
 }
 
 function updateReviewStep() {
-    const fromWarehouseId = document.getElementById('fromWarehouse').value;
-    const toWarehouseId = document.getElementById('toWarehouse').value;
+  const fromWarehouseId = document.getElementById('fromWarehouse').value;
+  const toWarehouseId = document.getElementById('toWarehouse').value;
+  
+  const fromWarehouse = warehouses.find(w => w.id == fromWarehouseId);
+  const toWarehouse = warehouses.find(w => w.id == toWarehouseId);
+  
+  document.getElementById('reviewFromWarehouse').textContent = fromWarehouse ? `${fromWarehouse.code} - ${fromWarehouse.name}` : '—';
+  document.getElementById('reviewToWarehouse').textContent = toWarehouse ? `${toWarehouse.code} - ${toWarehouse.name}` : '—';
+  
+  document.getElementById('reviewTotalItems').textContent = stnItems.length;
+  document.getElementById('reviewTotalQty').textContent = stnItems.reduce((sum, item) => sum + item.qty, 0);
+  
+  const reviewTable = document.getElementById('reviewItemsTable');
+  reviewTable.innerHTML = stnItems.map(item => {
+    const skuItem = skuLookup[item.sku];
+    const availableQty = (skuItem && typeof skuItem.available_qty !== 'undefined') ? skuItem.available_qty : '—';
+    const availabilityClass = (skuItem && typeof skuItem.available_qty !== 'undefined' && skuItem.available_qty < item.qty)
+      ? (skuItem.available_qty === 0 ? 'text-danger' : 'text-warning')
+      : '';
     
-    const fromWarehouse = warehouses.find(w => w.id == fromWarehouseId);
-    const toWarehouse = warehouses.find(w => w.id == toWarehouseId);
-    
-    document.getElementById('reviewFromWarehouse').textContent = fromWarehouse ? `${fromWarehouse.code} - ${fromWarehouse.name}` : '—';
-    document.getElementById('reviewToWarehouse').textContent = toWarehouse ? `${toWarehouse.code} - ${toWarehouse.name}` : '—';
-    
-    document.getElementById('reviewTotalItems').textContent = stnItems.length;
-    document.getElementById('reviewTotalQty').textContent = stnItems.reduce((sum, item) => sum + item.qty, 0);
-    
-    const reviewTable = document.getElementById('reviewItemsTable');
-    reviewTable.innerHTML = stnItems.map(item => `
-        <tr>
-            <td><code>${item.sku}</code></td>
-            <td>${skuLookup[item.sku]?.name || 'Unknown'}</td>
-            <td class="text-end">${item.qty}</td>
-        </tr>
-    `).join('');
+    return `
+      <tr>
+        <td><code>${item.sku}</code></td>
+        <td>${skuItem?.name || 'Unknown'}</td>
+        <td class="text-end ${availabilityClass}">${item.qty}</td>
+        <td class="text-end text-muted small">${availableQty}</td>
+      </tr>
+    `;
+  }).join('');
 }
 
 async function validateSTN() {
-    try {
-        const stnData = collectSTNData();
-        
-        // Perform validation via API
-        const response = await apiFetch('/api/inventory/stns/validate/', {
-            method: 'POST',
-            body: JSON.stringify(stnData)
-        });
-        
-        const result = await response.json();
-        
-        const warningsDiv = document.getElementById('validationWarnings');
-        const warningsList = document.getElementById('warningsList');
-        
-        if (result.warnings && result.warnings.length > 0) {
-            warningsList.innerHTML = result.warnings.map(w => `<li>${w}</li>`).join('');
-            warningsDiv.style.display = 'block';
-        } else {
-            warningsDiv.style.display = 'none';
-            notify('Validation passed successfully', 'success');
-        }
-        
-    } catch (error) {
-        console.error('Error validating STN:', error);
-        notify('Error during validation: ' + error.message, 'error');
+  try {
+    const stnData = collectSTNData();
+    
+    // Perform validation via API
+    const response = await apiFetch('/api/inventory/stns/validate/', {
+      method: 'POST',
+      body: JSON.stringify(stnData)
+    });
+    
+    const result = await response.json();
+    
+    const warningsDiv = document.getElementById('validationWarnings');
+    const warningsList = document.getElementById('warningsList');
+    
+    if (result.warnings && result.warnings.length > 0) {
+      warningsList.innerHTML = result.warnings.map(w => `<li>${w}</li>`).join('');
+      warningsDiv.style.display = 'block';
+    } else {
+      warningsDiv.style.display = 'none';
+      notify('Validation passed successfully', 'success');
     }
+    
+  } catch (error) {
+    console.error('Error validating STN:', error);
+    notify('Error during validation: ' + error.message, 'error');
+  }
 }
 
 async function saveSTN() {
-    try {
-        const saveBtn = document.getElementById('saveBtn');
-        const spinner = document.getElementById('saveSpinner');
-        
-        saveBtn.disabled = true;
-        spinner.style.display = 'inline-block';
-        
-        if (currentStep !== 3) {
-            if (!validateStep1() || !validateStep2()) {
-                return;
-            }
-            collectItemsData();
-        }
-        
-        const stnData = collectSTNData();
-        
-        const response = await apiFetch('/api/inventory/stns/', {
-            method: 'POST',
-            body: JSON.stringify(stnData)
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            notify('STN created successfully', 'success');
-            setTimeout(() => {
-                window.location.href = `/app/inventory/stn/${result.id}`;
-            }, 1000);
-        } else {
-            throw new Error(result.detail || 'Failed to create STN');
-        }
-        
-    } catch (error) {
-        console.error('Error saving STN:', error);
-        notify('Error saving STN: ' + error.message, 'error');
-    } finally {
-        const saveBtn = document.getElementById('saveBtn');
-        const spinner = document.getElementById('saveSpinner');
-        saveBtn.disabled = false;
-        spinner.style.display = 'none';
+  try {
+    const saveBtn = document.getElementById('saveBtn');
+    const spinner = document.getElementById('saveSpinner');
+    
+    saveBtn.disabled = true;
+    spinner.style.display = 'inline-block';
+    
+    if (currentStep !== 3) {
+      if (!validateStep1() || !validateStep2()) {
+        return;
+      }
+      collectItemsData();
     }
+    
+    const stnData = collectSTNData();
+    
+    const response = await apiFetch('/api/inventory/stns/', {
+      method: 'POST',
+      body: JSON.stringify(stnData)
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok) {
+      notify('STN created successfully', 'success');
+      setTimeout(() => {
+        window.location.href = `/app/inventory/stn/${result.id}`;
+      }, 1000);
+    } else {
+      throw new Error(result.detail || 'Failed to create STN');
+    }
+    
+  } catch (error) {
+    console.error('Error saving STN:', error);
+    notify('Error saving STN: ' + error.message, 'error');
+  } finally {
+    const saveBtn = document.getElementById('saveBtn');
+    const spinner = document.getElementById('saveSpinner');
+    saveBtn.disabled = false;
+    spinner.style.display = 'none';
+  }
 }
 
 function collectSTNData() {
-    return {
-        from_warehouse: parseInt(document.getElementById('fromWarehouse').value),
-        to_warehouse: parseInt(document.getElementById('toWarehouse').value),
-        reference: document.getElementById('reference').value.trim() || null,
-        remarks: document.getElementById('remarks').value.trim() || null,
-        details: stnItems
-    };
+  return {
+    from_warehouse: parseInt(document.getElementById('fromWarehouse').value),
+    to_warehouse: parseInt(document.getElementById('toWarehouse').value),
+    reference: document.getElementById('reference').value.trim() || null,
+    remarks: document.getElementById('remarks').value.trim() || null,
+    details: stnItems
+  };
 }
 
 function resetForm() {
-    if (confirm('Are you sure you want to reset the form? All data will be lost.')) {
-        location.reload();
-    }
+  if (confirm('Are you sure you want to reset the form? All data will be lost.')) {
+    location.reload();
+  }
 }
 
 function notify(message, type = 'info') {
-    // Simple notification implementation
-    const alertClass = type === 'success' ? 'alert-success' : 
-                       type === 'error' ? 'alert-danger' : 
-                       type === 'warning' ? 'alert-warning' : 'alert-info';
-    
-    const div = document.createElement('div');
-    div.className = `alert ${alertClass} position-fixed`;
-    div.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    div.innerHTML = `
-        <div class="d-flex justify-content-between align-items-center">
-            <span>${message}</span>
-            <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
-        </div>
-    `;
-    
-    document.body.appendChild(div);
-    
-    // Auto remove after 4 seconds
-    setTimeout(() => {
-        if (div.parentElement) {
-            div.remove();
-        }
-    }, 4000);
+  // Simple notification implementation
+  const alertClass = type === 'success' ? 'alert-success' : 
+                     type === 'error' ? 'alert-danger' : 
+                     type === 'warning' ? 'alert-warning' : 'alert-info';
+  
+  const div = document.createElement('div');
+  div.className = `alert ${alertClass} position-fixed`;
+  div.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+  div.innerHTML = `
+    <div class="d-flex justify-content-between align-items-center">
+      <span>${message}</span>
+      <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+    </div>
+  `;
+  
+  document.body.appendChild(div);
+  
+  // Auto remove after 4 seconds
+  setTimeout(() => {
+    if (div.parentElement) {
+      div.remove();
+    }
+  }, 4000);
 }
 </script>
