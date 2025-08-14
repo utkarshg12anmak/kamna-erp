@@ -89,11 +89,6 @@
         return true;
       }
       
-      // Inventory Management module has no permission restrictions - accessible to all users
-      if (moduleName === 'Inventory Management') {
-        return true;
-      }
-      
       const token = localStorage.getItem('accessToken');
       if (!token) { window.location = '/'; return false; }
       const res = await fetch('/api/auth/me/', { headers: { 'Authorization': `Bearer ${token}` } });

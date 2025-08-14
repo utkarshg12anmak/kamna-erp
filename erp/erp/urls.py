@@ -32,7 +32,6 @@ from .views import (
     module_sales,
     module_finance,
     module_cv_hub,
-    module_inventory,
     module_catalog_items,
     module_catalog_items_new,
     module_catalog_item_view,
@@ -57,9 +56,6 @@ from .views import (
     warehouse_putaway,
     warehouse_internal_move,
     warehouse_internal_move_rows,
-    inventory_stn_list,
-    inventory_stn_create,
-    inventory_stn_detail,
 )
 from .api_auth_views import AuthMeView
 from django.conf import settings
@@ -75,7 +71,6 @@ urlpatterns = [
     path("", include("catalog.urls")),
     path("api/warehousing/", include("warehousing.urls")),
     path("api/cv_hub/", include("cv_hub.api.urls")),
-    path("api/inventory/", include("inventory_management.api.urls")),
     path("api/auth/jwt/create/", TokenObtainPairView.as_view(), name="jwt-create"),
     path("api/auth/jwt/refresh/", TokenRefreshView.as_view(), name="jwt-refresh"),
     path("api/auth/me/", AuthMeView.as_view(), name="auth-me"),
@@ -104,15 +99,6 @@ urlpatterns = [
     path("app/manufacturing", module_manufacturing, name="module_manufacturing"),
     path("app/sales", module_sales, name="module_sales"),
     path("app/finance", module_finance, name="module_finance"),
-    # Inventory Management routes
-    path("app/inventory", module_inventory, name="module_inventory"),
-    path("app/inventory/", module_inventory, name="module_inventory_slash"),
-    path("app/inventory/stn", inventory_stn_list, name="inventory_stn_list"),
-    path("app/inventory/stn/", inventory_stn_list, name="inventory_stn_list_slash"),
-    path("app/inventory/stn/new", inventory_stn_create, name="inventory_stn_create"),
-    path("app/inventory/stn/new/", inventory_stn_create, name="inventory_stn_create_slash"),
-    path("app/inventory/stn/<int:id>", inventory_stn_detail, name="inventory_stn_detail"),
-    path("app/inventory/stn/<int:id>/", inventory_stn_detail, name="inventory_stn_detail_slash"),
     # CV Hub routes
     path("app/cv_hub", module_cv_hub, name="module_cv_hub"),
     path("app/cv_hub/", module_cv_hub, name="module_cv_hub_slash"),

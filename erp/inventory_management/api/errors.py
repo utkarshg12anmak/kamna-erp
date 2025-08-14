@@ -1,6 +1,0 @@
-SKU_DUPLICATE = 'sku_duplicate'
-QTY_EXCEEDS_AVAILABLE = 'qty_exceeds_available'
-WAREHOUSES_SAME = 'warehouses_same'
-INVALID_STATE_CHANGE = 'stn_invalid_state_change'
-SOFT_DELETE_NOT_ALLOWED = 'soft_delete_not_allowed'
-CONFIRM_FAILED = 'confirm_failed'
