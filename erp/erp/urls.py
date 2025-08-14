@@ -24,6 +24,7 @@ from rest_framework_simplejwt.views import (
 )
 from .views import (
     landing_page,
+    user_mapping_debug,
     module_hub,
     module_catalog,
     module_warehousing,
@@ -31,12 +32,6 @@ from .views import (
     module_sales,
     module_finance,
     module_cv_hub,
-    module_hr,
-    hr_employees,
-    hr_employees_new,
-    hr_employee_view,
-    hr_employee_edit,
-    hr_org_chart,
     module_catalog_items,
     module_catalog_items_new,
     module_catalog_item_view,
@@ -76,7 +71,6 @@ urlpatterns = [
     path("", include("catalog.urls")),
     path("api/warehousing/", include("warehousing.urls")),
     path("api/cv_hub/", include("cv_hub.api.urls")),
-    path("api/hr/", include("hr.api.urls")),  # Full HR API with ViewSets
     path("api/auth/jwt/create/", TokenObtainPairView.as_view(), name="jwt-create"),
     path("api/auth/jwt/refresh/", TokenRefreshView.as_view(), name="jwt-refresh"),
     path("api/auth/me/", AuthMeView.as_view(), name="auth-me"),
@@ -116,19 +110,7 @@ urlpatterns = [
     path("app/cv_hub/entries/<int:id>/", cv_hub_entry_view, name="cv_hub_entry_view_slash"),
     path("app/cv_hub/entries/<int:id>/edit", cv_hub_entry_edit, name="cv_hub_entry_edit"),
     path("app/cv_hub/entries/<int:id>/edit/", cv_hub_entry_edit, name="cv_hub_entry_edit_slash"),
-    # HR routes
-    path("app/hr", module_hr, name="module_hr"),
-    path("app/hr/", module_hr, name="module_hr_slash"),
-    path("app/hr/employees", hr_employees, name="hr_employees"),
-    path("app/hr/employees/", hr_employees, name="hr_employees_slash"),
-    path("app/hr/employees/new", hr_employees_new, name="hr_employees_new"),
-    path("app/hr/employees/new/", hr_employees_new, name="hr_employees_new_slash"),
-    path("app/hr/employees/<int:id>", hr_employee_view, name="hr_employee_view"),
-    path("app/hr/employees/<int:id>/", hr_employee_view, name="hr_employee_view_slash"),
-    path("app/hr/employees/<int:id>/edit", hr_employee_edit, name="hr_employee_edit"),
-    path("app/hr/employees/<int:id>/edit/", hr_employee_edit, name="hr_employee_edit_slash"),
-    path("app/hr/org-chart", hr_org_chart, name="hr_org_chart"),
-    path("app/hr/org-chart/", hr_org_chart, name="hr_org_chart_slash"),
+    path("debug/user-mapping", user_mapping_debug, name="user_mapping_debug"),
     path("app/warehousing/w/<str:code>/internal-move", warehouse_internal_move_rows, name="warehouse_internal_move_rows"),
 ]
 

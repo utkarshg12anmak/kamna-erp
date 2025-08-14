@@ -1,8 +1,25 @@
 <!-- Employee List Template -->
 <div class="container-fluid">
+  <!-- Authentication Alert -->
+  {% if not user.is_authenticated %}
+  <div class="alert alert-warning alert-dismissible fade show">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Authentication Required:</strong> 
+    User mapping features require login. Please <a href="/admin/login/?next=/hr/employees/" class="alert-link">login here</a> to assign/unassign user accounts.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endif %}
+
   <div class="d-flex justify-content-between align-items-center mb-2">
     <h2 class="h5 mb-0">Employees</h2>
-    <a href="/app/hr/employees/new" class="btn btn-primary btn-sm">New Employee</a>
+    <div class="d-flex gap-2 align-items-center">
+      {% if user.is_authenticated %}
+        <span class="badge bg-success"><i class="fas fa-user"></i> {{ user.username }}</span>
+      {% else %}
+        <a href="/admin/login/?next=/hr/employees/" class="btn btn-outline-primary btn-sm"><i class="fas fa-sign-in-alt"></i> Login</a>
+      {% endif %}
+      <a href="/app/hr/employees/new" class="btn btn-primary btn-sm">New Employee</a>
+    </div>
   </div>
   
   <!-- Filters -->
@@ -202,15 +219,32 @@ async function loadEmployees() {
     document.getElementById('emptyState').style.display = 'none';
     
     const response = await fetch('/api/hr/employees/');
-    if (!response.ok) throw new Error('Failed to fetch employees');
     
-    const data = await response.json();
-    employees = data.results || data;
-    applyFilters();
+    // Handle authentication errors
+    if (response.status === 401 || response.status === 403) {
+      console.warn('Authentication required for employees API');
+      // Don't show error to user here since it's expected for anonymous users
+      // The authentication alert at the top of the page handles this
+    } else if (!response.ok) {
+      throw new Error('Failed to fetch employees');
+    }
+    
+    if (response.ok) {
+      const data = await response.json();
+      employees = data.results || data;
+      applyFilters();
+    } else {
+      // For non-auth errors, show a message
+      if (response.status !== 401 && response.status !== 403) {
+        showToast('Error loading employees', 'error');
+      }
+    }
     
   } catch (error) {
     console.error('Error loading employees:', error);
-    showToast('Error loading employees', 'error');
+    if (!error.message.includes('401') && !error.message.includes('403')) {
+      showToast('Error loading employees', 'error');
+    }
   } finally {
     document.getElementById('loadingState').style.display = 'none';
   }
@@ -734,8 +768,43 @@ function debounce(func, wait) {
 }
 
 function showToast(message, type = 'info') {
-  // Implementation depends on your toast system
+  // Create toast notification
+  const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+  
+  const toastHtml = `
+    <div class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'primary'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+          ${message}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  `;
+  
+  toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+  
+  const toastElement = toastContainer.lastElementChild;
+  const toast = new bootstrap.Toast(toastElement, { delay: 5000 });
+  toast.show();
+  
+  // Remove toast element after it's hidden
+  toastElement.addEventListener('hidden.bs.toast', function() {
+    toastElement.remove();
+  });
+  
+  // Fallback console log
   console.log(`${type.toUpperCase()}: ${message}`);
+}
+
+function createToastContainer() {
+  const container = document.createElement('div');
+  container.id = 'toastContainer';
+  container.className = 'toast-container position-fixed top-0 end-0 p-3';
+  container.style.zIndex = '9999';
+  document.body.appendChild(container);
+  return container;
 }
 
 // User Assignment Functions
@@ -743,6 +812,17 @@ async function assignUser(employeeId, employeeName) {
   try {
     // First, get available users
     const usersResponse = await fetch('/api/hr/available-users/');
+    
+    // Handle authentication errors
+    if (usersResponse.status === 401 || usersResponse.status === 403) {
+      showToast('Authentication required. Please log in to assign users.', 'error');
+      // Redirect to login with return URL
+      setTimeout(() => {
+        window.location.href = '/admin/login/?next=' + encodeURIComponent(window.location.pathname);
+      }, 2000);
+      return;
+    }
+    
     if (!usersResponse.ok) throw new Error('Failed to fetch available users');
     
     const availableUsers = await usersResponse.json();
@@ -757,7 +837,11 @@ async function assignUser(employeeId, employeeName) {
     
   } catch (error) {
     console.error('Error fetching available users:', error);
-    showToast('Error loading available users', 'error');
+    if (error.message.includes('401') || error.message.includes('403')) {
+      showToast('Please log in to access user assignment features', 'error');
+    } else {
+      showToast('Error loading available users', 'error');
+    }
   }
 }
 
