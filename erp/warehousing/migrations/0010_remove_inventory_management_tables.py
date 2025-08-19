@@ -3,28 +3,6 @@
 from django.db import migrations
 
 
-def drop_inventory_tables(apps, schema_editor):
-    """Drop all inventory management related tables"""
-    from django.db import connection
-    with connection.cursor() as cursor:
-        # Drop tables in correct order to handle foreign key constraints
-        tables_to_drop = [
-            'inventory_management_stnstatushistory',
-            'inventory_management_historicalstndetail', 
-            'inventory_management_stndetail',
-            'inventory_management_historicalstn',
-            'inventory_management_stn',
-        ]
-        
-        for table in tables_to_drop:
-            cursor.execute(f"DROP TABLE IF EXISTS {table} CASCADE")
-
-
-def reverse_drop_inventory_tables(apps, schema_editor):
-    """This operation cannot be reversed"""
-    raise RuntimeError("Cannot reverse dropping inventory management tables")
-
-
 class Migration(migrations.Migration):
     dependencies = [
         (
@@ -33,6 +11,4 @@ class Migration(migrations.Migration):
         ),
     ]
 
-    operations = [
-        migrations.RunPython(drop_inventory_tables, reverse_drop_inventory_tables),
-    ]
+    operations = []

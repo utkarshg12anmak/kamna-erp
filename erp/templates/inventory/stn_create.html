@@ -1,0 +1,916 @@
+<div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center gap-2">
+      <a href="/app/inventory/stn" class="btn btn-outline-secondary btn-sm">← Back to List</a>
+      <h2 class="h5 mb-0">Create Stock Transfer Note</h2>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetForm()">Reset</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="saveSTN()" id="saveBtn">
+        <span class="spinner-border spinner-border-sm me-1" style="display:none;" id="saveSpinner"></span>
+        Save STN
+      </button>
+    </div>
+  </div>
+
+  <!-- Progress Steps -->
+  <div class="card-like mb-3">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="step-indicator active" id="step1">1</div>
+          <div class="ms-2">
+            <div class="fw-semibold">Basic Details</div>
+            <small class="text-muted">Warehouses & reference</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="step-indicator" id="step2">2</div>
+          <div class="ms-2">
+            <div class="fw-semibold">Add Items</div>
+            <small class="text-muted">SKUs and quantities</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="step-indicator" id="step3">3</div>
+          <div class="ms-2">
+            <div class="fw-semibold">Review & Save</div>
+            <small class="text-muted">Final validation</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 1: Basic Details -->
+  <div class="step-content" id="stepContent1">
+    <div class="card-like">
+      <h6 class="mb-3">Basic Information</h6>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" for="fromWarehouse">From Warehouse *</label>
+          <select id="fromWarehouse" class="form-select" required>
+            <option value="">Select source warehouse</option>
+          </select>
+          <div class="invalid-feedback">Please select a source warehouse</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="toWarehouse">To Warehouse *</label>
+          <select id="toWarehouse" class="form-select" required>
+            <option value="">Select destination warehouse</option>
+          </select>
+          <div class="invalid-feedback">Please select a destination warehouse</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="reference">Reference</label>
+          <input type="text" id="reference" class="form-control" placeholder="Optional reference">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="remarks">Remarks</label>
+          <input type="text" id="remarks" class="form-control" placeholder="Optional remarks">
+        </div>
+      </div>
+      <div class="d-flex justify-content-end mt-3">
+        <button type="button" class="btn btn-primary" onclick="nextStep(1)">Next: Add Items</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Add Items -->
+  <div class="step-content" id="stepContent2" style="display:none;">
+    <div class="card-like">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0">Transfer Items</h6>
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="addItemRow()">+ Add Item</button>
+      </div>
+      
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th width="35%">SKU *</th>
+              <th width="25%">Item Name</th>
+              <th width="15%">Available</th>
+              <th width="15%">Quantity *</th>
+              <th width="10%">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="itemsTableBody">
+            <!-- Items will be added dynamically -->
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="noItemsMessage" class="text-center text-muted py-4">
+        <p>No items added yet. Click "Add Item" to start.</p>
+      </div>
+      
+      <div class="d-flex justify-content-between mt-3">
+        <button type="button" class="btn btn-outline-secondary" onclick="prevStep(2)">Previous</button>
+        <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next: Review</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Review & Save -->
+  <div class="step-content" id="stepContent3" style="display:none;">
+    <div class="card-like">
+      <h6 class="mb-3">Review Transfer Details</h6>
+      
+      <!-- Summary -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div class="border rounded p-3">
+            <h6 class="text-muted mb-2">Transfer Route</h6>
+            <div class="d-flex align-items-center">
+              <span id="reviewFromWarehouse" class="fw-semibold">—</span>
+              <span class="mx-2">→</span>
+              <span id="reviewToWarehouse" class="fw-semibold">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="border rounded p-3">
+            <h6 class="text-muted mb-2">Summary</h6>
+            <div class="row">
+              <div class="col-6">
+                <div class="small text-muted">Total Items</div>
+                <div class="fw-semibold" id="reviewTotalItems">0</div>
+              </div>
+              <div class="col-6">
+                <div class="small text-muted">Total Quantity</div>
+                <div class="fw-semibold" id="reviewTotalQty">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Items Review -->
+      <h6 class="mb-2">Items to Transfer</h6>
+      <div class="table-responsive mb-3">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Item Name</th>
+              <th class="text-end">Quantity</th>
+              <th class="text-end">Available</th>
+            </tr>
+          </thead>
+          <tbody id="reviewItemsTable">
+            <!-- Review items will be populated -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Validation Warnings -->
+      <div id="validationWarnings" class="alert alert-warning" style="display:none;">
+        <h6>⚠️ Validation Warnings</h6>
+        <ul id="warningsList" class="mb-0"></ul>
+      </div>
+      
+      <!-- Actions -->
+      <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-outline-secondary" onclick="prevStep(3)">Previous</button>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-primary" onclick="validateSTN()">Validate</button>
+          <button type="button" class="btn btn-primary" onclick="saveSTN()">Save STN</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Select2 for searchable dropdowns -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<style>
+.card-like {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Select2 customization for SKU dropdowns */
+.select2-container--default .select2-selection--single {
+  height: 32px;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 30px;
+  font-size: 0.875rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 30px;
+}
+
+.select2-container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.select2-dropdown {
+  max-width: 400px !important;
+  z-index: 9999 !important;
+}
+
+.select2-results__option {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+}
+
+/* Select2 customization for SKU dropdowns */
+.select2-container--default .select2-selection--single {
+  height: 32px;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 30px;
+  font-size: 0.875rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 30px;
+}
+
+.step-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.step-indicator.active {
+  background: #3C83F6;
+  color: white;
+}
+
+.step-indicator.completed {
+  background: #10b981;
+  color: white;
+}
+
+.item-row {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.item-row:last-child {
+  border-bottom: none;
+}
+
+.available-qty {
+  font-size: 0.875rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #f3f4f6;
+}
+
+.available-qty.low {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.available-qty.zero {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* SKU Dropdown Styles */
+.dropdown-container {
+  position: relative;
+}
+
+.dropdown-search {
+  position: relative;
+}
+
+.sku-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+}
+
+.sku-dropdown .dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.sku-dropdown .dropdown-item:hover {
+  background-color: #f9fafb;
+}
+
+.sku-dropdown .dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.sku-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sku-code {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.sku-name {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.sku-availability {
+  font-size: 0.75rem;
+  color: #059669;
+  font-weight: 500;
+}
+
+.sku-select {
+  min-width: 200px; /* Ensure adequate width for Select2 dropdown */
+}
+</style>
+
+<script>
+let currentStep = 1;
+let warehouses = [];
+let stnItems = [];
+let skuLookup = {};
+
+// Authentication helper functions
+function token() {
+  const t = localStorage.getItem('accessToken');
+  if (!t) {
+    window.location = '/';
+  }
+  return t;
+}
+
+async function apiFetch(url, options = {}) {
+  const headers = Object.assign({
+      'Authorization': `Bearer ${token()}`,
+      'Content-Type': 'application/json'
+  }, options.headers || {});
+  
+  const res = await fetch(url, { ...options, headers });
+  
+  if (res.status === 401) {
+      window.location = '/';
+      throw new Error('Unauthorized');
+  }
+  
+  return res;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadWarehouses();
+  loadSKUs();
+  addItemRow(); // Start with one empty row
+});
+
+async function loadWarehouses() {
+  try {
+    const response = await apiFetch('/api/warehousing/warehouses/?status=ACTIVE');
+    const data = await response.json();
+    warehouses = data.results || [];
+    
+    console.log('Loaded warehouses:', warehouses);
+    
+    const fromSelect = document.getElementById('fromWarehouse');
+    const toSelect = document.getElementById('toWarehouse');
+    
+    warehouses.forEach(wh => {
+      const option1 = new Option(`${wh.code} - ${wh.name}`, wh.id);
+      const option2 = new Option(`${wh.code} - ${wh.name}`, wh.id);
+      fromSelect.appendChild(option1);
+      toSelect.appendChild(option2);
+    });
+    
+    // Change handler: reload SKUs and refresh rows
+    fromSelect.addEventListener('change', async function() {
+      const warehouseId = this.value;
+      console.log('Warehouse changed to:', warehouseId);
+      await loadSKUs(); // Load active SKUs without warehouse filtering
+      // Update existing item rows with new availability and options
+      updateItemRowsAvailability();
+    });
+
+  } catch (error) {
+    console.error('Error loading warehouses:', error);
+    notify('Error loading warehouses: ' + error.message, 'error');
+  }
+}
+
+async function loadSKUs() {
+  try {
+    console.log('Loading active SKUs...');
+    
+    // Load only active SKUs - simplified approach
+    const response = await apiFetch('/api/catalog/items/?status=ACTIVE&page_size=1000');
+    const data = await response.json();
+    const items = data.results || [];
+    
+    console.log(`Loaded ${items.length} active items`);
+    
+    skuLookup = {};
+    items.forEach(item => {
+      skuLookup[item.sku] = {
+        id: item.id,
+        name: item.name,
+        sku: item.sku
+      };
+    });
+    
+    notify(`Loaded ${items.length} active items`, 'success');
+    
+  } catch (error) {
+    console.error('Error loading SKUs:', error);
+    notify('Error loading items: ' + error.message, 'error');
+  }
+}
+
+/** Initialize Select2 for a SKU dropdown */
+function initializeSelect2(selectElement) {
+  $(selectElement).select2({
+    placeholder: 'Search and select SKU...',
+    allowClear: true,
+    width: '100%',
+    theme: 'default',
+    dropdownAutoWidth: false,
+    dropdownParent: $(selectElement).parent(),
+    matcher: function(params, data) {
+      // If there are no search terms, return all data
+      if ($.trim(params.term) === '') {
+        return data;
+      }
+      
+      // Do not display the item if there is no text
+      if (!data.text) {
+        return null;
+      }
+      
+      // Search in both SKU and name (case insensitive)
+      const searchTerm = params.term.toLowerCase();
+      const text = data.text.toLowerCase();
+      
+      if (text.indexOf(searchTerm) > -1) {
+        return data;
+      }
+      
+      return null;
+    }
+  });
+}
+
+/** Row-scoped dropdown population (no index drift) */
+function populateSKUDropdownForRow(row) {
+  const select = row.querySelector('.sku-select');
+  const fromWarehouse = document.getElementById('fromWarehouse').value;
+  if (!select) return;
+
+  console.log('Populating SKU dropdown, warehouse:', fromWarehouse);
+  console.log('Available SKUs:', Object.keys(skuLookup).length);
+
+  // Preserve previous selection (if any)
+  const previousValue = $(select).val() || '';
+  
+  // Destroy existing Select2 instance if it exists
+  if ($(select).hasClass('select2-hidden-accessible')) {
+    $(select).select2('destroy');
+  }
+
+  // Clear options
+  select.innerHTML = '<option value="">Select SKU</option>';
+
+  const itemsToShow = Object.values(skuLookup)
+    .sort((a, b) => a.sku.localeCompare(b.sku));
+
+  console.log(`Items to show: ${itemsToShow.length}`);
+
+  itemsToShow.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item.sku;
+    const displayText = `${item.sku} - ${item.name}`;
+    option.textContent = displayText;
+    select.appendChild(option);
+  });
+
+  console.log(`Added ${select.options.length - 1} options to dropdown`); // -1 for placeholder
+
+  // Reinitialize Select2
+  initializeSelect2(select);
+  
+  // Re-add the change handler
+  $(select).off('select2:select').on('select2:select', function(e) {
+    updateItemName(this);
+  });
+  
+  // Restore selection if still valid
+  if (previousValue && [...select.options].some(o => o.value === previousValue)) {
+    $(select).val(previousValue).trigger('change');
+  }
+}
+
+/** Wrapper for backward compatibility if any legacy calls exist */
+function populateSKUDropdown(rowIndex){
+  const rows = document.querySelectorAll('.item-row');
+  const row = rows[rowIndex];
+  if (row) populateSKUDropdownForRow(row);
+}
+
+function updateItemRowsAvailability() {
+  const rows = document.querySelectorAll('.item-row');
+  rows.forEach((row) => {
+    // Refresh the dropdown options for THIS row
+    populateSKUDropdownForRow(row);
+    
+    const availableSpan = row.querySelector('.available-qty');
+    if (availableSpan) {
+      // Simplified version - no availability display
+      availableSpan.textContent = '—';
+      availableSpan.className = 'available-qty';
+    }
+  });
+}
+
+function nextStep(step) {
+  if (step === 1) {
+    if (!validateStep1()) return;
+    showStep(2);
+  } else if (step === 2) {
+    if (!validateStep2()) return;
+    updateReviewStep();
+    showStep(3);
+  }
+}
+
+function prevStep(step) {
+  showStep(step - 1);
+}
+
+function showStep(stepNumber) {
+  // Hide all steps
+  document.querySelectorAll('.step-content').forEach(el => el.style.display = 'none');
+  
+  // Show current step
+  document.getElementById(`stepContent${stepNumber}`).style.display = 'block';
+  
+  // Update step indicators
+  document.querySelectorAll('.step-indicator').forEach((el, index) => {
+    el.classList.remove('active', 'completed');
+    if (index + 1 < stepNumber) {
+      el.classList.add('completed');
+    } else if (index + 1 === stepNumber) {
+      el.classList.add('active');
+    }
+  });
+  
+  currentStep = stepNumber;
+}
+
+function validateStep1() {
+  const fromWarehouse = document.getElementById('fromWarehouse').value;
+  const toWarehouse = document.getElementById('toWarehouse').value;
+  
+  let valid = true;
+  
+  if (!fromWarehouse) {
+    document.getElementById('fromWarehouse').classList.add('is-invalid');
+    valid = false;
+  } else {
+    document.getElementById('fromWarehouse').classList.remove('is-invalid');
+  }
+  
+  if (!toWarehouse) {
+    document.getElementById('toWarehouse').classList.add('is-invalid');
+    valid = false;
+  } else {
+    document.getElementById('toWarehouse').classList.remove('is-invalid');
+  }
+  
+  if (fromWarehouse && toWarehouse && fromWarehouse === toWarehouse) {
+    notify('Source and destination warehouses cannot be the same', 'error');
+    valid = false;
+  }
+  
+  return valid;
+}
+
+function validateStep2() {
+  collectItemsData();
+  
+  if (stnItems.length === 0) {
+    notify('Please add at least one item', 'error');
+    return false;
+  }
+  
+  // Check for duplicate SKUs
+  const skus = stnItems.map(item => item.sku);
+  const duplicates = skus.filter((sku, index) => skus.indexOf(sku) !== index);
+  
+  if (duplicates.length > 0) {
+    notify('Duplicate SKUs found: ' + [...new Set(duplicates)].join(', '), 'error');
+    return false;
+  }
+  
+  // Check for invalid quantities
+  const invalidItems = stnItems.filter(item => !item.qty || item.qty <= 0);
+  if (invalidItems.length > 0) {
+    notify('All items must have valid quantities greater than 0', 'error');
+    return false;
+  }
+  
+  return true;
+}
+
+function addItemRow() {
+  const tbody = document.getElementById('itemsTableBody');
+  
+  const row = document.createElement('tr');
+  row.className = 'item-row';
+  row.innerHTML = `
+    <td>
+      <select class="form-control form-control-sm sku-select">
+        <option value="">Select SKU</option>
+      </select>
+    </td>
+    <td>
+      <span class="item-name text-muted">—</span>
+    </td>
+    <td>
+      <span class="available-qty">—</span>
+    </td>
+    <td>
+      <input type="number" class="form-control form-control-sm qty-input" placeholder="0" min="1" step="1">
+    </td>
+    <td>
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeItemRow(this)">×</button>
+    </td>
+  `;
+  
+  tbody.appendChild(row);
+  updateNoItemsMessage();
+  
+  // Initialize Select2 for the new dropdown
+  const select = row.querySelector('.sku-select');
+  initializeSelect2(select);
+  
+  // Add Select2 change handler
+  $(select).on('select2:select', function(e) {
+    updateItemName(this);
+  });
+  
+  populateSKUDropdownForRow(row);
+}
+
+function updateItemName(select) {
+  const sku = $(select).val() || '';
+  const row = select.closest('tr');
+  const nameSpan = row.querySelector('.item-name');
+  const availableSpan = row.querySelector('.available-qty');
+  
+  if (!sku) {
+    nameSpan.textContent = '—';
+    nameSpan.className = 'item-name text-muted';
+    availableSpan.textContent = '—';
+    availableSpan.className = 'available-qty';
+    return;
+  }
+  
+  if (skuLookup[sku]) {
+    const item = skuLookup[sku];
+    nameSpan.textContent = item.name;
+    nameSpan.className = 'item-name';
+    
+    // No availability display in simplified version
+    availableSpan.textContent = '—';
+    availableSpan.className = 'available-qty';
+  } else {
+    nameSpan.textContent = 'Unknown SKU';
+    nameSpan.className = 'item-name text-danger';
+    availableSpan.textContent = '—';
+    availableSpan.className = 'available-qty';
+  }
+}
+
+function removeItemRow(button) {
+  button.closest('tr').remove();
+  updateNoItemsMessage();
+}
+
+function updateNoItemsMessage() {
+  const tbody = document.getElementById('itemsTableBody');
+  const message = document.getElementById('noItemsMessage');
+  message.style.display = tbody.children.length === 0 ? 'block' : 'none';
+}
+
+function collectItemsData() {
+  const tbody = document.getElementById('itemsTableBody');
+  stnItems = [];
+  
+  Array.from(tbody.children).forEach(row => {
+    const skuSelect = row.querySelector('.sku-select');
+    const sku = $(skuSelect).val() || '';
+    const qty = parseInt(row.querySelector('.qty-input').value) || 0;
+    
+    if (sku && qty > 0) {
+      stnItems.push({
+        sku: sku,
+        qty: qty,
+        item_id: skuLookup[sku]?.id
+      });
+    }
+  });
+}
+
+function updateReviewStep() {
+  const fromWarehouseId = document.getElementById('fromWarehouse').value;
+  const toWarehouseId = document.getElementById('toWarehouse').value;
+  
+  const fromWarehouse = warehouses.find(w => w.id == fromWarehouseId);
+  const toWarehouse = warehouses.find(w => w.id == toWarehouseId);
+  
+  document.getElementById('reviewFromWarehouse').textContent = fromWarehouse ? `${fromWarehouse.code} - ${fromWarehouse.name}` : '—';
+  document.getElementById('reviewToWarehouse').textContent = toWarehouse ? `${toWarehouse.code} - ${toWarehouse.name}` : '—';
+  
+  document.getElementById('reviewTotalItems').textContent = stnItems.length;
+  document.getElementById('reviewTotalQty').textContent = stnItems.reduce((sum, item) => sum + item.qty, 0);
+  
+  const reviewTable = document.getElementById('reviewItemsTable');
+  reviewTable.innerHTML = stnItems.map(item => {
+    const skuItem = skuLookup[item.sku];
+    
+    return `
+      <tr>
+        <td><code>${item.sku}</code></td>
+        <td>${skuItem?.name || 'Unknown'}</td>
+        <td class="text-end">${item.qty}</td>
+        <td class="text-end text-muted small">—</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function validateSTN() {
+  try {
+    // Run client-side checks only
+    if (!validateStep1() || !validateStep2()) return;
+
+    const warningsDiv = document.getElementById('validationWarnings');
+    const warningsList = document.getElementById('warningsList');
+    warningsList.innerHTML = '';
+    warningsDiv.style.display = 'none';
+
+    notify('Basic validation passed', 'success');
+  } catch (error) {
+    console.error('Error validating STN:', error);
+    notify('Error during validation: ' + error.message, 'error');
+  }
+}
+
+async function saveSTN() {
+  try {
+    const saveBtn = document.getElementById('saveBtn');
+    const spinner = document.getElementById('saveSpinner');
+    
+    saveBtn.disabled = true;
+    spinner.style.display = 'inline-block';
+    
+    if (currentStep !== 3) {
+      if (!validateStep1() || !validateStep2()) {
+        return;
+      }
+      collectItemsData();
+    }
+    
+    // Build payload for backend
+    const stnData = collectSTNData();
+
+    // Create STN (headers added in apiFetch)
+    const response = await apiFetch('/api/inventory/stns/', {
+      method: 'POST',
+      body: JSON.stringify(stnData)
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.detail || 'Failed to create STN');
+    }
+
+    // Create STN lines sequentially
+    for (const item of stnItems) {
+      if (!item.item_id) {
+        throw new Error(`Unknown SKU: ${item.sku}`);
+      }
+      const lineRes = await apiFetch('/api/inventory/stn_lines/', {
+        method: 'POST',
+        body: JSON.stringify({
+          stn: result.id,
+          sku: item.item_id,
+          created_qty: item.qty
+        })
+      });
+      if (!lineRes.ok) {
+        const lineBody = await lineRes.json().catch(() => ({}));
+        const detail = lineBody.detail || JSON.stringify(lineBody);
+        throw new Error(`Failed to add line for ${item.sku}: ${detail}`);
+      }
+    }
+
+    notify('STN created successfully', 'success');
+    setTimeout(() => {
+      window.location.href = `/app/inventory/stn/${result.id}`;
+    }, 800);
+    
+  } catch (error) {
+    console.error('Error saving STN:', error);
+    notify('Error saving STN: ' + error.message, 'error');
+  } finally {
+    const saveBtn = document.getElementById('saveBtn');
+    const spinner = document.getElementById('saveSpinner');
+    saveBtn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+function collectSTNData() {
+  // Map UI fields to backend model fields
+  const sourceId = parseInt(document.getElementById('fromWarehouse').value);
+  const destId = parseInt(document.getElementById('toWarehouse').value);
+  const reference = document.getElementById('reference').value.trim();
+  const remarks = document.getElementById('remarks').value.trim();
+
+  const noteParts = [];
+  if (reference) noteParts.push(`Reference: ${reference}`);
+  if (remarks) noteParts.push(`Remarks: ${remarks}`);
+
+  return {
+    source_warehouse: sourceId,
+    destination_warehouse: destId,
+    notes: noteParts.join('\n')
+  };
+}
+
+function resetForm() {
+  if (confirm('Are you sure you want to reset the form? All data will be lost.')) {
+    location.reload();
+  }
+}
+
+function notify(message, type = 'info') {
+  // Simple notification implementation
+  const alertClass = type === 'success' ? 'alert-success' : 
+                     type === 'error' ? 'alert-danger' : 
+                     type === 'warning' ? 'alert-warning' : 'alert-info';
+  
+  const div = document.createElement('div');
+  div.className = `alert ${alertClass} position-fixed`;
+  div.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+  div.innerHTML = `
+    <div class="d-flex justify-content-between align-items-center">
+      <span>${message}</span>
+      <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+    </div>
+  `;
+  
+  document.body.appendChild(div);
+  
+  // Auto remove after 4 seconds
+  setTimeout(() => {
+    if (div.parentElement) {
+      div.remove();
+    }
+  }, 4000);
+}
+</script>
