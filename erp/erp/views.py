@@ -552,6 +552,15 @@ def module_finance(request):
     return render_module(request, "Finance", menu, "finance_index.html")
 
 
+def module_inventory(request):
+    menu = [
+        {"label": "Dashboard", "href": "/app/inventory", "active": True},
+        {"label": "STN List", "href": "/app/inventory/stn"},
+        {"label": "Create STN", "href": "/app/inventory/stn/new"},
+    ]
+    return render_module(request, "Inventory Management", menu, "inventory_index.html")
+
+
 # CV Hub module
 
 def cv_hub_menu(active_href):
@@ -583,3 +592,19 @@ def cv_hub_entry_view(request, id: int):
 
 def cv_hub_entry_edit(request, id: int):
     return render_module(request, "Customer & Vendor Hub", cv_hub_menu("/app/cv_hub/entries"), "cv_hub/cv_hub_form.html")
+
+
+# Inventory STN views
+def inventory_stn_list(request):
+    """List all Stock Transfer Notes"""
+    return render(request, "inventory/stn_list.html")
+
+
+def inventory_stn_create(request):
+    """Create a new Stock Transfer Note"""
+    return render(request, "inventory/stn_create.html")
+
+
+def inventory_stn_detail(request, id: int):
+    """View details of a specific Stock Transfer Note"""
+    return render(request, "inventory/stn_detail.html", {"stn_id": id})
