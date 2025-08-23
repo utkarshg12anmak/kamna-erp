@@ -62,3 +62,20 @@ def city_cascade_deactivation(sender, instance: City, created, **kwargs):
     if old_is_active and not instance.is_active:
         # Deactivate all pincodes in this city
         Pincode.objects.filter(city=instance, is_active=True).update(is_active=False)
+
+
+# Territory signals
+@receiver(pre_save, sender='geo.Territory')
+def prevent_type_change_with_members(sender, instance, **kwargs):
+    """Prevent Territory.type changes after members have been added."""
+    if not instance.pk:
+        return
+    
+    try:
+        prev = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        return
+    
+    if prev.type != instance.type and prev.members.exists():
+        from django.core.exceptions import ValidationError
+        raise ValidationError('Cannot change Territory.type after members have been added')

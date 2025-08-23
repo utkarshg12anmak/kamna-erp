@@ -1,0 +1,37 @@
+{% extends 'admin/base_site.html' %}
+
+{% block content %}
+<h1>Import Territory Members</h1>
+<p>Upload CSV with the exact header for this Territory type: <strong>{{ territory.type }}</strong></p>
+
+{% if territory.type == 'STATE' %}
+<p><strong>Required CSV header:</strong> STATE_CODE</p>
+<p><strong>Example:</strong></p>
+<pre>STATE_CODE
+UP
+MP
+MH</pre>
+{% elif territory.type == 'CITY' %}
+<p><strong>Required CSV header:</strong> STATE_CODE,CITY_NAME</p>
+<p><strong>Example:</strong></p>
+<pre>STATE_CODE,CITY_NAME
+UP,Agra
+UP,Lucknow
+MP,Bhopal</pre>
+{% else %}
+<p><strong>Required CSV header:</strong> PINCODE</p>
+<p><strong>Example:</strong></p>
+<pre>PINCODE
+282001
+282002
+226001</pre>
+{% endif %}
+
+<form method='post' enctype='multipart/form-data'>
+  {% csrf_token %}
+  <input type='file' name='file' accept='.csv' required />
+  <button type='submit' class='button default'>Upload</button>
+</form>
+
+<p><strong>Note:</strong> Only ACTIVE geo entities can be added as members. Duplicates will be skipped.</p>
+{% endblock %}

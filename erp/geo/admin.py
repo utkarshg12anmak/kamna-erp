@@ -137,3 +137,182 @@ class PincodeAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+
+
+# Territory Admin
+from django import forms
+from .models import Territory, TerritoryMember
+
+
+class TerritoryMemberInlineForm(forms.ModelForm):
+    class Meta:
+        model = TerritoryMember
+        fields = ['state', 'city', 'pincode']
+    
+    def clean(self):
+        cleaned = super().clean()
+        # let model.clean() enforce rules
+        self.instance.territory = self.instance.territory
+        self.instance.state = cleaned.get('state')
+        self.instance.city = cleaned.get('city')
+        self.instance.pincode = cleaned.get('pincode')
+        self.instance.clean()
+        return cleaned
+
+
+class TerritoryMemberInline(admin.TabularInline):
+    model = TerritoryMember
+    form = TerritoryMemberInlineForm
+    extra = 0
+    fields = ('state', 'city', 'pincode')
+    
+    def get_fields(self, request, obj=None):
+        if not obj:
+            return ('state', 'city', 'pincode')
+        return ('state',) if obj.type == 'STATE' else ('city',) if obj.type == 'CITY' else ('pincode',)
+
+
+@admin.register(Territory)
+class TerritoryAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'type', 'is_active', 'members_count', 'effective_from', 'effective_till', 'updated_at')
+    list_filter = ('type', 'is_active', 'created_at')
+    search_fields = ('code', 'name')
+    readonly_fields = ('created_at', 'updated_at', 'created_by', 'updated_by')
+    fields = ('code', 'name', 'type', 'is_active', 'effective_from', 'effective_till', 'notes', 'created_at', 'updated_at', 'created_by', 'updated_by')
+    inlines = (TerritoryMemberInline,)
+    actions = ['activate_territories', 'deactivate_territories']
+
+    def save_model(self, request, obj, form, change):
+        """Automatically set audit fields and normalize data."""
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        obj.clean()
+        super().save_model(request, obj, form, change)
+
+    def members_count(self, obj):
+        return obj.members.count()
+    members_count.short_description = 'Members'
+
+    def activate_territories(self, request, queryset):
+        updated = queryset.update(is_active=True)
+        self.message_user(request, f"Activated {updated} territories.", level=messages.SUCCESS)
+    activate_territories.short_description = 'Activate selected territories'
+
+    def deactivate_territories(self, request, queryset):
+        updated = queryset.update(is_active=False)
+        self.message_user(request, f"Deactivated {updated} territories.", level=messages.WARNING)
+    deactivate_territories.short_description = 'Deactivate selected territories'
+
+    # ---- Admin CSV import/export for members (per territory type) ----
+    def get_urls(self):
+        urls = super().get_urls()
+        custom = [
+            path('<path:object_id>/import-members/', self.admin_site.admin_view(self.import_members_view), name='geo_territory_import_members'),
+            path('<path:object_id>/export-members/', self.admin_site.admin_view(self.export_members_view), name='geo_territory_export_members'),
+        ]
+        return custom + urls
+
+    def import_members_view(self, request, object_id):
+        territory = self.get_object(request, object_id)
+        if request.method == 'POST' and request.FILES.get('file'):
+            f = request.FILES['file']
+            try:
+                data = f.read().decode('utf-8')
+            except Exception:
+                self.message_user(request, 'Upload a UTF-8 CSV file', level=messages.ERROR)
+                return redirect('..')
+            
+            reader = csv.DictReader(io.StringIO(data))
+            ttype = territory.type
+            expected = {'STATE': {'STATE_CODE'}, 'CITY': {'STATE_CODE', 'CITY_NAME'}, 'PINCODE': {'PINCODE'}}[ttype]
+            
+            if set(map(str.upper, reader.fieldnames or [])) != expected:
+                self.message_user(request, f'CSV header must be exactly: {", ".join(expected)}', level=messages.ERROR)
+                return redirect('..')
+            
+            added = dupes = inactive = unknown = 0
+            for row in reader:
+                try:
+                    if ttype == 'STATE':
+                        sc = (row['STATE_CODE'] or '').strip().upper()
+                        s = State.objects.filter(code=sc).first()
+                        if not s: 
+                            unknown += 1
+                            continue
+                        if not s.is_active: 
+                            inactive += 1
+                            continue
+                        obj, created = TerritoryMember.objects.get_or_create(territory=territory, state=s)
+                        if created:
+                            added += 1
+                        else:
+                            dupes += 1
+                    elif ttype == 'CITY':
+                        sc = (row['STATE_CODE'] or '').strip().upper()
+                        cn = (row['CITY_NAME'] or '').strip()
+                        s = State.objects.filter(code=sc).first()
+                        if not s: 
+                            unknown += 1
+                            continue
+                        c = City.objects.filter(state=s, name=cn).first()
+                        if not c: 
+                            unknown += 1
+                            continue
+                        if not (s.is_active and c.is_active): 
+                            inactive += 1
+                            continue
+                        obj, created = TerritoryMember.objects.get_or_create(territory=territory, city=c)
+                        if created:
+                            added += 1
+                        else:
+                            dupes += 1
+                    else:  # PINCODE
+                        pc = (row['PINCODE'] or '').strip()
+                        p = Pincode.objects.filter(code=pc).first()
+                        if not p: 
+                            unknown += 1
+                            continue
+                        if not p.is_active: 
+                            inactive += 1
+                            continue
+                        obj, created = TerritoryMember.objects.get_or_create(territory=territory, pincode=p)
+                        if created:
+                            added += 1
+                        else:
+                            dupes += 1
+                except Exception:
+                    unknown += 1
+            
+            self.message_user(request, f'Import complete: added={added}, duplicates={dupes}, inactive={inactive}, unknown={unknown}', level=messages.SUCCESS)
+            return redirect('..')
+        
+        ctx = {
+            **self.admin_site.each_context(request), 
+            'opts': self.model._meta, 
+            'title': f'Import {territory.code} members',
+            'territory': territory
+        }
+        return render(request, 'admin/geo_import_members.html', ctx)
+
+    def export_members_view(self, request, object_id):
+        from django.http import HttpResponse
+        territory = self.get_object(request, object_id)
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename={territory.code}_members.csv'
+        writer = csv.writer(response)
+        
+        if territory.type == 'STATE':
+            writer.writerow(['STATE_CODE'])
+            for m in territory.members.select_related('state'):
+                writer.writerow([m.state.code])
+        elif territory.type == 'CITY':
+            writer.writerow(['STATE_CODE', 'CITY_NAME'])
+            for m in territory.members.select_related('city__state'):
+                writer.writerow([m.city.state.code, m.city.name])
+        else:  # PINCODE
+            writer.writerow(['PINCODE'])
+            for m in territory.members.select_related('pincode'):
+                writer.writerow([m.pincode.code])
+        
+        return response

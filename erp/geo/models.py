@@ -91,3 +91,111 @@ class Pincode(models.Model):
         if self.code: self.code = self.code.strip()
         super().save(*args, **kwargs)
     def __str__(self): return self.code
+
+
+# Territory feature models
+TERRITORY_TYPES = (
+    ('STATE', 'STATE'),
+    ('CITY', 'CITY'),
+    ('PINCODE', 'PINCODE'),
+)
+
+
+class Territory(models.Model):
+    """
+    Territory master data model for grouping geo entities.
+    
+    Audit fields (created_at, updated_at, created_by, updated_by) are automatically
+    managed by the system and should not be manually edited.
+    """
+    code = models.CharField(max_length=40, unique=True)
+    name = models.CharField(max_length=120)
+    type = models.CharField(max_length=10, choices=TERRITORY_TYPES)
+    is_active = models.BooleanField(default=True)
+    effective_from = models.DateField(null=True, blank=True)
+    effective_till = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    
+    # Audit fields - automatically managed, read-only in admin
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='geo_territory_created')
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='geo_territory_updated')
+    
+    history = HistoricalRecords()
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['type', 'is_active']), 
+            models.Index(fields=['effective_from', 'effective_till'])
+        ]
+        ordering = ['code']
+        verbose_name_plural = 'territories'
+    
+    def clean(self):
+        if self.code: 
+            self.code = self.code.strip().upper()
+        if self.name: 
+            self.name = self.name.strip()
+        if self.effective_from and self.effective_till and self.effective_till < self.effective_from:
+            raise ValidationError({'effective_till': 'effective_till must be on/after effective_from'})
+    
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+    
+    def __str__(self): 
+        return f"{self.code} ({self.type})"
+
+
+class TerritoryMember(models.Model):
+    """
+    Membership relationship between Territory and geo entities.
+    Territory type determines which geo entity can be added as member.
+    """
+    territory = models.ForeignKey(Territory, on_delete=models.CASCADE, related_name='members')
+    state = models.ForeignKey('State', null=True, blank=True, on_delete=models.PROTECT)
+    city = models.ForeignKey('City', null=True, blank=True, on_delete=models.PROTECT)
+    pincode = models.ForeignKey('Pincode', null=True, blank=True, on_delete=models.PROTECT)
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['territory', 'state'], name='uniq_state_member_per_territory'),
+            models.UniqueConstraint(fields=['territory', 'city'], name='uniq_city_member_per_territory'),
+            models.UniqueConstraint(fields=['territory', 'pincode'], name='uniq_pincode_member_per_territory'),
+        ]
+        indexes = [models.Index(fields=['territory'])]
+        verbose_name = 'territory member'
+        verbose_name_plural = 'territory members'
+    
+    def clean(self):
+        t = self.territory
+        if not t: 
+            return
+        
+        filled = [bool(self.state), bool(self.city), bool(self.pincode)]
+        if sum(filled) != 1:
+            raise ValidationError('Provide exactly one of state/city/pincode based on Territory.type')
+        
+        if t.type == 'STATE' and not self.state:
+            raise ValidationError({'state': 'Territory type STATE requires state; city/pincode must be empty'})
+        if t.type == 'CITY' and not self.city:
+            raise ValidationError({'city': 'Territory type CITY requires city; state/pincode must be empty'})
+        if t.type == 'PINCODE' and not self.pincode:
+            raise ValidationError({'pincode': 'Territory type PINCODE requires pincode; state/city must be empty'})
+        
+        if self.state and not self.state.is_active:
+            raise ValidationError({'state': 'Cannot add INACTIVE State as member'})
+        if self.city and not self.city.is_active:
+            raise ValidationError({'city': 'Cannot add INACTIVE City as member'})
+        if self.pincode and not self.pincode.is_active:
+            raise ValidationError({'pincode': 'Cannot add INACTIVE Pincode as member'})
+    
+    def __str__(self):
+        if self.state: 
+            return f"STATE:{self.state.code}"
+        if self.city: 
+            return f"CITY:{self.city.name}"
+        if self.pincode: 
+            return f"PIN:{self.pincode.code}"
+        return '<member>'

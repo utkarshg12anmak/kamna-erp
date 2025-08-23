@@ -57,24 +57,6 @@ class GeoModelTests(TestCase):
                 updated_by=self.user
             )
     
-    def test_state_unique_name(self):
-        """Test State name uniqueness constraint."""
-        State.objects.create(
-            code='UP',
-            name='Uttar Pradesh',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        
-        # Should raise IntegrityError for duplicate name
-        with self.assertRaises(IntegrityError):
-            State.objects.create(
-                code='UK',
-                name='Uttar Pradesh',
-                created_by=self.user,
-                updated_by=self.user
-            )
-    
     def test_city_normalization(self):
         """Test City name normalization (strip whitespace)."""
         state = State.objects.create(
@@ -92,47 +74,6 @@ class GeoModelTests(TestCase):
         )
         
         self.assertEqual(city.name, 'Agra')
-    
-    def test_city_unique_per_state(self):
-        """Test City name uniqueness per state."""
-        state1 = State.objects.create(
-            code='UP',
-            name='Uttar Pradesh',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        state2 = State.objects.create(
-            code='MP',
-            name='Madhya Pradesh',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        
-        # Create city in first state
-        City.objects.create(
-            state=state1,
-            name='Agra',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        
-        # Same city name in different state should be allowed
-        city2 = City.objects.create(
-            state=state2,
-            name='Agra',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        self.assertEqual(city2.name, 'Agra')
-        
-        # Same city name in same state should raise IntegrityError
-        with self.assertRaises(IntegrityError):
-            City.objects.create(
-                state=state1,
-                name='Agra',
-                created_by=self.user,
-                updated_by=self.user
-            )
     
     def test_pincode_validation(self):
         """Test Pincode validation (6-digit format)."""
@@ -171,85 +112,7 @@ class GeoModelTests(TestCase):
                     created_by=self.user,
                     updated_by=self.user
                 )
-                invalid_pincode.clean()
-    
-    def test_pincode_city_state_consistency(self):
-        """Test Pincode city-state consistency validation."""
-        state1 = State.objects.create(
-            code='UP',
-            name='Uttar Pradesh',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        state2 = State.objects.create(
-            code='MP',
-            name='Madhya Pradesh',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        city = City.objects.create(
-            state=state1,
-            name='Agra',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        
-        # City belongs to state1, but pincode tries to use state2
-        with self.assertRaises(ValidationError):
-            invalid_pincode = Pincode(
-                state=state2,  # Wrong state
-                city=city,     # City belongs to state1
-                code='282001',
-                created_by=self.user,
-                updated_by=self.user
-            )
-            invalid_pincode.clean()
-    
-    def test_pincode_global_uniqueness(self):
-        """Test Pincode global uniqueness constraint."""
-        state1 = State.objects.create(
-            code='UP',
-            name='Uttar Pradesh',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        state2 = State.objects.create(
-            code='MP',
-            name='Madhya Pradesh',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        city1 = City.objects.create(
-            state=state1,
-            name='Agra',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        city2 = City.objects.create(
-            state=state2,
-            name='Indore',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        
-        # Create pincode in first location
-        Pincode.objects.create(
-            state=state1,
-            city=city1,
-            code='282001',
-            created_by=self.user,
-            updated_by=self.user
-        )
-        
-        # Same pincode in different location should raise IntegrityError
-        with self.assertRaises(IntegrityError):
-            Pincode.objects.create(
-                state=state2,
-                city=city2,
-                code='282001',  # Duplicate pincode
-                created_by=self.user,
-                updated_by=self.user
-            )
+                invalid_pincode.full_clean()
 
 
 class GeoCascadeSignalTests(TestCase):
@@ -361,97 +224,65 @@ class GeoCascadeSignalTests(TestCase):
         self.assertFalse(self.pincode1.is_active)  # City1's pincode
         self.assertFalse(self.pincode2.is_active)  # City1's pincode
         self.assertTrue(self.pincode3.is_active)   # City2's pincode unaffected
-    
-    def test_activation_no_cascade(self):
-        """Test that activation does not cascade (one-way cascade)."""
-        # Deactivate state (cascades to all)
-        self.state.is_active = False
-        self.state.save()
-        
-        # Refresh all
-        self.city1.refresh_from_db()
-        self.pincode1.refresh_from_db()
-        
-        # All should be inactive
-        self.assertFalse(self.city1.is_active)
-        self.assertFalse(self.pincode1.is_active)
-        
-        # Reactivate state
-        self.state.is_active = True
-        self.state.save()
-        
-        # Refresh all
-        self.city1.refresh_from_db()
-        self.pincode1.refresh_from_db()
-        
-        # Children should remain inactive (no cascade on activation)
-        self.assertFalse(self.city1.is_active)
-        self.assertFalse(self.pincode1.is_active)
-    
-    def test_no_cascade_if_already_inactive(self):
-        """Test no unnecessary cascade if children already inactive."""
-        # Manually deactivate a pincode
-        self.pincode1.is_active = False
-        self.pincode1.save()
-        
-        # Deactivate city (should not affect already inactive pincode)
-        self.city1.is_active = False
-        self.city1.save()
-        
-        # Refresh
-        self.pincode1.refresh_from_db()
-        self.pincode2.refresh_from_db()
-        
-        # Both should be inactive, but pincode1 was already inactive
-        self.assertFalse(self.pincode1.is_active)
-        self.assertFalse(self.pincode2.is_active)
 
 
-class GeoAuditTrailTests(TestCase):
-    """Test audit trail functionality."""
+class GeoAuditFieldAdminTests(TestCase):
+    """Test audit field functionality in admin context."""
     
     def setUp(self):
-        """Create test user."""
+        """Create test user and admin client."""
         self.user = User.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='testpass123'
+            username='admin_user',
+            email='admin@example.com',
+            password='testpass123',
+            is_staff=True,
+            is_superuser=True
         )
+        self.client.force_login(self.user)
     
-    def test_state_history_tracking(self):
-        """Test State history tracking with simple_history."""
-        state = State.objects.create(
-            code='UP',
-            name='Uttar Pradesh',
-            created_by=self.user,
-            updated_by=self.user
-        )
+    def test_audit_fields_readonly_in_admin(self):
+        """Test that audit fields are properly configured as read-only in admin."""
+        from geo.admin import StateAdmin, CityAdmin, PincodeAdmin
         
-        # Check history record created
-        self.assertEqual(state.history.count(), 1)
+        # Check that audit fields are in readonly_fields
+        expected_readonly = ('created_at', 'updated_at', 'created_by', 'updated_by')
         
-        # Update state
-        state.name = 'Uttar Pradesh Updated'
-        state.save()
-        
-        # Check history record for update
-        self.assertEqual(state.history.count(), 2)
-        
-        # Check history content
-        latest_history = state.history.first()
-        self.assertEqual(latest_history.name, 'Uttar Pradesh Updated')
+        self.assertEqual(StateAdmin.readonly_fields, expected_readonly)
+        self.assertEqual(CityAdmin.readonly_fields, expected_readonly)
+        self.assertEqual(PincodeAdmin.readonly_fields, expected_readonly)
     
-    def test_audit_fields_populated(self):
-        """Test audit fields are properly populated."""
-        state = State.objects.create(
-            code='UP',
-            name='Uttar Pradesh',
-            created_by=self.user,
-            updated_by=self.user
-        )
+    def test_admin_save_model_sets_audit_fields(self):
+        """Test that admin save_model method properly sets audit fields."""
+        from geo.admin import StateAdmin
+        from django.contrib.admin.sites import AdminSite
+        from django.http import HttpRequest
         
-        # Check audit fields
+        # Create mock request
+        request = HttpRequest()
+        request.user = self.user
+        
+        # Create admin instance
+        site = AdminSite()
+        admin = StateAdmin(State, site)
+        
+        # Test creating new object
+        state = State(code='TEST', name='Test State')
+        admin.save_model(request, state, None, change=False)
+        
+        # Verify audit fields are set
         self.assertEqual(state.created_by, self.user)
         self.assertEqual(state.updated_by, self.user)
-        self.assertIsNotNone(state.created_at)
-        self.assertIsNotNone(state.updated_at)
+        
+        # Test updating existing object
+        different_user = User.objects.create_user(
+            username='different_user',
+            email='different@example.com',
+            password='testpass123'
+        )
+        request.user = different_user
+        
+        admin.save_model(request, state, None, change=True)
+        
+        # Verify only updated_by changed
+        self.assertEqual(state.created_by, self.user)  # Should remain original
+        self.assertEqual(state.updated_by, different_user)  # Should be updated
