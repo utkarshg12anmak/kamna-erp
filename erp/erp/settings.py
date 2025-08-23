@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "catalog",
     "warehousing",
     "cv_hub",
+    "geo",  # NEW installed_app for State→City→Pincode masters
 ]
 
 MIDDLEWARE = [
