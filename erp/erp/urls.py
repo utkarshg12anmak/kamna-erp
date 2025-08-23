@@ -29,7 +29,6 @@ from .views import (
     module_catalog,
     module_warehousing,
     module_manufacturing,
-    module_sales,
     module_finance,
     module_cv_hub,
     module_inventory,
@@ -102,7 +101,6 @@ urlpatterns = [
     path("app/warehousing/config/warehouses", warehousing_config_warehouses, name="warehousing_config_warehouses"),
     path("app/warehousing/config/locations", warehousing_config_locations, name="warehousing_config_locations"),
     path("app/manufacturing", module_manufacturing, name="module_manufacturing"),
-    path("app/sales", module_sales, name="module_sales"),
     path("app/finance", module_finance, name="module_finance"),
     # Inventory Management routes
     path("app/inventory", module_inventory, name="module_inventory"),

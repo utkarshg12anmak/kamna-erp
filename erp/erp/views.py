@@ -542,11 +542,6 @@ def module_manufacturing(request):
     return render_module(request, "Manufacturing", menu, "manufacturing_index.html")
 
 
-def module_sales(request):
-    menu = [{"label": "Dashboard", "href": "/app/sales", "active": True}]
-    return render_module(request, "Sales", menu, "sales_index.html")
-
-
 def module_finance(request):
     menu = [{"label": "Dashboard", "href": "/app/finance", "active": True}]
     return render_module(request, "Finance", menu, "finance_index.html")
