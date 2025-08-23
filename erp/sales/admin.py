@@ -80,3 +80,38 @@ class PriceListAdmin(admin.ModelAdmin):
                 updated += 1
         self.message_user(request, f"Archived {updated} price lists.", level=messages.WARNING)
     archive_lists.short_description = 'Archive selected price lists'
+
+class PriceListTierInlineForItem(admin.TabularInline):
+    model = PriceListTier
+    extra = 0
+    fields = ('max_qty','min_unit_price','is_open_ended')
+    ordering = ('max_qty',)
+
+@admin.register(PriceListItem)
+class PriceListItemAdmin(admin.ModelAdmin):
+    """A dedicated admin entry to manage tiers per (price_list ↔ item).
+    This appears as a separate menu item named 'Price Tiers'."""
+    list_display = ('price_list','item','tiers_count','price_list_status','territory')
+    list_filter = ('price_list__status','price_list__territory')
+    search_fields = ('price_list__code','item__sku','item__name')
+    inlines = (PriceListTierInlineForItem,)
+
+    def tiers_count(self, obj):
+        return obj.tiers.count()
+
+    def price_list_status(self, obj):
+        return obj.price_list.status
+
+    def territory(self, obj):
+        return obj.price_list.territory
+
+    def save_model(self, request, obj, form, change):
+        # normal save
+        super().save_model(request, obj, form, change)
+        # After any PLI change, trigger conflict scan and coverage sync
+        pl = obj.price_list
+        conflicts = has_conflicts_for_pricelist(pl)
+        if conflicts:
+            # revert with error
+            raise ValidationError({'item': f'Conflicts with existing price list(s): {conflicts[:5]} ...'})
+        sync_pricelist_coverage(pl.id)
