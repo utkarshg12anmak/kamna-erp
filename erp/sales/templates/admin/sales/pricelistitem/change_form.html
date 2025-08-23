@@ -1,0 +1,62 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block content %}
+{{ block.super }}
+<div class="card" style="margin-top:2em;max-width:500px;">
+  <div class="card-header"><strong>Tier Preview</strong></div>
+  <div class="card-body">
+    <form id="tier-preview-form" onsubmit="return false;">
+      <div class="form-group">
+        <label for="tier-preview-qty">Quantity:</label>
+        <input type="number" min="1" step="1" id="tier-preview-qty" class="form-control" value="1" style="width:120px;display:inline-block;">
+        <button type="button" class="btn btn-primary btn-sm" id="tier-preview-btn">Preview</button>
+      </div>
+    </form>
+    <div id="tier-preview-result" style="margin-top:1em;"></div>
+  </div>
+</div>
+<script>
+(function() {
+  const btn = document.getElementById('tier-preview-btn');
+  const qtyInput = document.getElementById('tier-preview-qty');
+  const resultDiv = document.getElementById('tier-preview-result');
+  btn.addEventListener('click', function() {
+    const qty = parseInt(qtyInput.value, 10);
+    if (!qty || qty < 1) {
+      resultDiv.innerHTML = '<span class="text-danger">Enter a valid quantity.</span>';
+      return;
+    }
+    const pliId = {{ original.id|default:'null' }};
+    if (!pliId) {
+      resultDiv.innerHTML = '<span class="text-warning">Save this item first to preview tiers.</span>';
+      return;
+    }
+    resultDiv.innerHTML = 'Loading...';
+    fetch(`/admin/sales-preview/preview/${pliId}/?qty=${qty}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) {
+          resultDiv.innerHTML = `<span class='text-danger'>${data.error}</span>`;
+        } else {
+          let html = `<b>Tier:</b> `;
+          if (data.tier) {
+            html += `max_qty: <b>${data.tier.max_qty ?? '∞'}</b>, min_unit_price: <b>${data.tier.min_unit_price}</b>`;
+            if (data.tier.is_open_ended) html += ' <span class="badge bg-info">open-ended</span>';
+          } else {
+            html += '<span class="text-warning">No tier found.</span>';
+          }
+          html += `<br><b>Resolved Price:</b> <span class='text-success'>${data.price ?? '-'}</span>`;
+          if (data.warning) {
+            html += `<br><span class='text-warning'>${data.warning}</span>`;
+          }
+          resultDiv.innerHTML = html;
+        }
+      })
+      .catch(() => {
+        resultDiv.innerHTML = '<span class="text-danger">Error fetching preview.</span>';
+      });
+  });
+})();
+</script>
+{% endblock %}

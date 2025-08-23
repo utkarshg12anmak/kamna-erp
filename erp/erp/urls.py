@@ -69,6 +69,7 @@ router.register(r"api/catalog/brands", BrandViewSet, basename="brand")
 
 urlpatterns = [
     path("", landing_page, name="landing_page"),
+    path("admin/sales-preview/", include("sales.urls_admin")),
     path("admin/", admin.site.urls),
     path("", include(router.urls)),
     path("", include("catalog.urls")),

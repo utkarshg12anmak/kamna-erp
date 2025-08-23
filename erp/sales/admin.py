@@ -95,6 +95,7 @@ class PriceListItemAdmin(admin.ModelAdmin):
     list_filter = ('price_list__status','price_list__territory')
     search_fields = ('price_list__code','item__sku','item__name')
     inlines = (PriceListTierInlineForItem,)
+    change_form_template = "admin/sales/pricelistitem/change_form.html"
 
     def tiers_count(self, obj):
         return obj.tiers.count()

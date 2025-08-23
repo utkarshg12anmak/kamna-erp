@@ -2,6 +2,8 @@ from datetime import date
 from django.db import transaction
 from geo.models import TerritoryCoverage
 from .models import PriceList, PriceListItem, PriceCoverage, PriceListStatus
+from decimal import Decimal
+from .models import PriceListItem, PriceListTier
 
 def windows_overlap(a_from, a_till, b_from, b_till):
     a0 = a_from or date.min; a1 = a_till or date.max
@@ -47,3 +49,17 @@ def has_conflicts_for_pricelist(pl: PriceList) -> list:
             if windows_overlap(pl.effective_from, pl.effective_till, pc.effective_from, pc.effective_till):
                 conflicts.append((item_id, pc.pincode_id, pc.price_list.code))
     return conflicts
+
+def resolve_min_unit_price_for_qty(pli: PriceListItem, qty: int):
+    tiers = list(pli.tiers.order_by('max_qty'))
+    if qty is None or qty < 1 or not tiers:
+        return None, None
+    # find first tier with max_qty >= qty (non-open-ended); else open-ended
+    for t in tiers:
+        if not t.is_open_ended and t.max_qty is not None and qty <= t.max_qty:
+            return t, t.min_unit_price
+    # fallback to open-ended
+    for t in tiers[::-1]:
+        if t.is_open_ended:
+            return t, t.min_unit_price
+    return None, None
