@@ -199,3 +199,13 @@ class TerritoryMember(models.Model):
         if self.pincode: 
             return f"PIN:{self.pincode.code}"
         return '<member>'
+
+
+class TerritoryCoverage(models.Model):
+    territory = models.ForeignKey('geo.Territory', on_delete=models.CASCADE, related_name='coverage')
+    pincode = models.ForeignKey('geo.Pincode', on_delete=models.PROTECT)
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['territory','pincode'], name='uniq_territory_pincode_coverage')]
+        indexes = [models.Index(fields=['territory']), models.Index(fields=['pincode'])]
+        verbose_name = 'Territory Coverage'
+        verbose_name_plural = 'Territory Coverage'

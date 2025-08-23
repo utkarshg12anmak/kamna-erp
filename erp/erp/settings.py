@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "warehousing",
     "cv_hub",
     "geo",  # NEW installed_app for State→City→Pincode masters
+    "sales",  # NEW installed_app for price lists
 ]
 
 MIDDLEWARE = [

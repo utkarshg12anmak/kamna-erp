@@ -184,11 +184,51 @@ class TerritoryAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         """Automatically set audit fields and normalize data."""
+        from django.db import transaction
+        from .models import TerritoryCoverage
+        
+        # Get previous pincodes before saving
+        prev_pins = set()
+        if change:
+            prev_pins = set(TerritoryCoverage.objects.filter(territory=obj).values_list('pincode_id', flat=True))
+        
         if not change:
             obj.created_by = request.user
         obj.updated_by = request.user
         obj.clean()
-        super().save_model(request, obj, form, change)
+        
+        with transaction.atomic():
+            super().save_model(request, obj, form, change)
+            
+            # After save, check for added pincodes that could cause conflicts
+            if change:
+                new_pins = set(TerritoryCoverage.objects.filter(territory=obj).values_list('pincode_id', flat=True))
+                added = new_pins - prev_pins
+                
+                if added:
+                    # Check if this territory has any PUBLISHED price lists
+                    try:
+                        from sales.models import PriceList, PriceCoverage, PriceListStatus
+                        published_lists = PriceList.objects.filter(territory=obj, status=PriceListStatus.PUBLISHED)
+                        
+                        if published_lists.exists():
+                            # Check for conflicts on added pincodes
+                            for pincode_id in added:
+                                conflicting = PriceCoverage.objects.filter(
+                                    pincode_id=pincode_id,
+                                    status__in=[PriceListStatus.DRAFT, PriceListStatus.PUBLISHED]
+                                ).exclude(price_list__territory=obj).select_related('price_list')
+                                
+                                for pc in conflicting:
+                                    # Check for overlapping windows
+                                    for pl in published_lists:
+                                        from sales.services import windows_overlap
+                                        if windows_overlap(pl.effective_from, pl.effective_till, pc.effective_from, pc.effective_till):
+                                            from django.core.exceptions import ValidationError
+                                            raise ValidationError(f'Territory expansion would create pricing conflicts for pincode {pincode_id} with price list {pc.price_list.code}')
+                    except ImportError:
+                        # Sales app not available yet, skip conflict check
+                        pass
 
     def members_count(self, obj):
         return obj.members.count()

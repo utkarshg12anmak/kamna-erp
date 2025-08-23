@@ -5,9 +5,10 @@ When a State is deactivated, all its Cities and Pincodes are deactivated.
 When a City is deactivated, all its Pincodes are deactivated.
 This is one-way cascade (deactivation only).
 """
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
-from .models import State, City, Pincode
+from .models import State, City, Pincode, TerritoryMember
+from .services import rebuild_territory_coverage
 
 
 @receiver(pre_save, sender=State)
@@ -79,3 +80,13 @@ def prevent_type_change_with_members(sender, instance, **kwargs):
     if prev.type != instance.type and prev.members.exists():
         from django.core.exceptions import ValidationError
         raise ValidationError('Cannot change Territory.type after members have been added')
+
+
+# Territory Coverage signals
+@receiver(post_save, sender=TerritoryMember)
+def _tm_saved(sender, instance, created, **kwargs):
+    rebuild_territory_coverage(instance.territory_id)
+
+@receiver(post_delete, sender=TerritoryMember)
+def _tm_deleted(sender, instance, **kwargs):
+    rebuild_territory_coverage(instance.territory_id)

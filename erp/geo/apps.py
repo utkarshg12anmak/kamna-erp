@@ -8,4 +8,4 @@ class GeoConfig(AppConfig):
     
     def ready(self):
         """Import signals when app is ready."""
-        from . import signals
+        from . import signals  # noqa
